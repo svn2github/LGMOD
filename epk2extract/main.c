@@ -1,10 +1,10 @@
 /*
  ============================================================================
- Name        : EPK.c
- Author      : 
- Version     :
- Copyright   : Your copyright notice
- Description : Hello World in C, Ansi-style
+ Name        : main.c
+ Author      : sirius
+ Version     : 0.1
+ Copyright   : published under GPL
+ Description : EPK2 firmware extractor for LG electronic digital tv's
  ============================================================================
  */
 #define stringify( name ) # name
@@ -18,6 +18,11 @@
 #include <openssl/aes.h>
 #include <string.h>
 #include <unistd.h>
+
+typedef int bool;
+#define TRUE   (1)
+#define FALSE  (0)
+bool verify = TRUE;
 
 const int MAX_PAK_CHUNK_SIZE = 0x400000;
 const char PEM_FILE[] = "general_pub.pem";
@@ -500,7 +505,6 @@ void scanPAKs(struct epak_header_t *epak_header, struct pak_t **pak_array) {
 				(struct pak_chunk_header_t*) (epak_offset
 						+ pak_header->_03_next_pak_file_offset + signature_sum);
 
-
 		unsigned int distance_between_paks =
 				((int) next_pak_offset->_01_type_code)
 						- ((int) pak_chunk_header->_01_type_code);
@@ -532,24 +536,30 @@ void scanPAKs(struct epak_header_t *epak_header, struct pak_t **pak_array) {
 				signed_length = pak_chunk_length;
 			}
 
-			if ((verified = API_SWU_VerifyImage(
-					pak_chunk_header->_00_signature, signed_length)) != 1) {
-				printf(
-						"verify pak chunk #%u of %s failed. trying fallback...\n",
-						pak->chunk_count + 1, getPakName(pak->type));
+			if (verify) {
+				if ((verified = API_SWU_VerifyImage(
+						pak_chunk_header->_00_signature, signed_length)) != 1) {
+					printf(
+							"verify pak chunk #%u of %s failed. trying fallback...\n",
+							pak->chunk_count + 1, getPakName(pak->type));
 
-				while (((verified = API_SWU_VerifyImage(
-						pak_chunk_header->_00_signature, signed_length)) != 1) && (signed_length > 0)) {
-					signed_length--;
-					//printf(	"probe with size: 0x%x\n", signed_length);
-				}
+					while (((verified = API_SWU_VerifyImage(
+							pak_chunk_header->_00_signature, signed_length))
+							!= 1) && (signed_length > 0)) {
+						signed_length--;
+						//printf(	"probe with size: 0x%x\n", signed_length);
+					}
 
-				if(verified) {
-					printf(	"successfull verified with size: 0x%x\n", signed_length);
-				} else {
-					printf(	"fallback failed. sorry, aborting now.\n");
-					exit(1);
+					if (verified) {
+						printf("successfull verified with size: 0x%x\n",
+								signed_length);
+					} else {
+						printf("fallback failed. sorry, aborting now.\n");
+						exit(1);
+					}
 				}
+			} else {
+				verified = 1;
 			}
 
 			// sum signature lengths
@@ -641,6 +651,8 @@ char *appendFilenameToDir(const char *directory, const char *filename) {
 
 int main(int argc, char *argv[]) {
 
+	verify = FALSE;
+
 	printf("LG electronics digital tv firmware EPK2 extractor\n");
 	printf("Version 0.1 by sirius (openlgtv.org.ru) 2011\n\n");
 
@@ -698,7 +710,7 @@ int main(int argc, char *argv[]) {
 	int verified = API_SWU_VerifyImage(buffer, epak_header->_07_header_length
 			+ SIGNATURE_SIZE);
 
-	if (verified != 1) {
+	if (verify && verified != 1) {
 		printf(
 				"firmware package can't be verified by it's digital signature.\n");
 		exit(1);
