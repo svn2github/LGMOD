@@ -18,10 +18,13 @@
 #include <openssl/aes.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 typedef int bool;
 #define TRUE   (1)
 #define FALSE  (0)
+// signature verification  may be disabled while development
 bool verify = TRUE;
 
 const int MAX_PAK_CHUNK_SIZE = 0x400000;
@@ -230,62 +233,6 @@ pak_type_t convertToPakType(unsigned char type[4]) {
 
 const char* getPakName(unsigned int pakType) {
 	return pak_type_names[pakType];
-}
-
-void hexdump(void *pAddressIn, long lSize) {
-	char szBuf[100];
-	long lIndent = 1;
-	long lOutLen, lIndex, lIndex2, lOutLen2;
-	long lRelPos;
-	struct {
-		char *pData;
-		unsigned long lSize;
-	} buf;
-	unsigned char *pTmp, ucTmp;
-	unsigned char *pAddress = (unsigned char *) pAddressIn;
-
-	buf.pData = (char *) pAddress;
-	buf.lSize = lSize;
-
-	while (buf.lSize > 0) {
-		pTmp = (unsigned char *) buf.pData;
-		lOutLen = (int) buf.lSize;
-		if (lOutLen > 16)
-			lOutLen = 16;
-
-		// create a 64-character formatted output line:
-		sprintf(szBuf, " >                            "
-			"                      "
-			"    %08lX", pTmp - pAddress);
-		lOutLen2 = lOutLen;
-
-		for (lIndex = 1 + lIndent, lIndex2 = 53 - 15 + lIndent, lRelPos = 0; lOutLen2; lOutLen2--, lIndex
-				+= 2, lIndex2++) {
-			ucTmp = *pTmp++;
-
-			sprintf(szBuf + lIndex, "%02X ", (unsigned short) ucTmp);
-			if (!isprint(ucTmp))
-				ucTmp = '.'; // nonprintable char
-			szBuf[lIndex2] = ucTmp;
-
-			if (!(++lRelPos & 3)) // extra blank after 4 bytes
-			{
-				lIndex++;
-				szBuf[lIndex + 2] = ' ';
-			}
-		}
-
-		if (!(lRelPos & 3))
-			lIndex--;
-
-		szBuf[lIndex] = '<';
-		szBuf[lIndex + 1] = ' ';
-
-		printf("%s\n", szBuf);
-
-		buf.pData += lOutLen;
-		buf.lSize -= lOutLen;
-	}
 }
 
 void SWU_CryptoInit() {
@@ -543,6 +490,8 @@ void scanPAKs(struct epak_header_t *epak_header, struct pak_t **pak_array) {
 							"verify pak chunk #%u of %s failed. trying fallback...\n",
 							pak->chunk_count + 1, getPakName(pak->type));
 
+					hexdump(pak_chunk_header->_01_type_code, 0x80);
+
 					while (((verified = API_SWU_VerifyImage(
 							pak_chunk_header->_00_signature, signed_length))
 							!= 1) && (signed_length > 0)) {
@@ -721,13 +670,30 @@ int main(int argc, char *argv[]) {
 
 	scanPAKs(epak_header, pak_array);
 
+	char *fw_version[0x10];
+
+	sprintf(fw_version, "%02x.%02x.%02x.%02x", epak_header->_05_fw_version[3],
+			epak_header->_05_fw_version[2], epak_header->_05_fw_version[1],
+			epak_header->_05_fw_version[0]);
+
+	struct stat st;
+	if (stat((const char*) fw_version, &st) != 0) {
+		if (mkdir((const char*) fw_version, 0744) != 0) {
+			printf("Can't create directory %s within current directory",
+					*fw_version);
+			exit(1);
+		}
+	}
+
 	int pak_index;
 	for (pak_index = 0; pak_index < epak_header->_03_pak_count; pak_index++) {
 		struct pak_t *pak = pak_array[pak_index];
 
 		printPakInfo(pak);
 
-		char filename[100] = "";
+		char filename[100] = "./";
+		strcat(filename, (const char*)fw_version);
+		strcat(filename, "/");
 		strcat(filename, getPakName(pak->type));
 		strcat(filename, ".image");
 
