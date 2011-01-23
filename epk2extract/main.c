@@ -692,7 +692,7 @@ int main(int argc, char *argv[]) {
 		printPakInfo(pak);
 
 		char filename[100] = "./";
-		strcat(filename, (const char*)fw_version);
+		strcat(filename, (const char*) fw_version);
 		strcat(filename, "/");
 		strcat(filename, getPakName(pak->type));
 		strcat(filename, ".image");
@@ -715,6 +715,15 @@ int main(int argc, char *argv[]) {
 		}
 
 		fclose(outfile);
+
+		if (pak->type == LGAP) {
+			char unpacked[100] = "./";
+			strcat(unpacked, (const char*) fw_version);
+			strcat(unpacked, "/");
+			strcat(unpacked, getPakName(pak->type));
+			strcat(unpacked, ".cramfs");
+			unpack((const char*)filename, (const char*)unpacked);
+		}
 	}
 
 	printf("extraction succeeded\n");
