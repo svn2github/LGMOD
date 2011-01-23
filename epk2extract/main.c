@@ -134,6 +134,11 @@ struct pak_t {
 	struct pak_chunk_t **chunks;
 };
 
+struct cramfs_header_t {
+	unsigned char _00_unknown1[0x50];
+	uint32_t _01_file_size;
+};
+
 struct pak_header_t* getPakHeader(unsigned char *buff) {
 	return (struct pak_header_t *) buff;
 }
@@ -328,7 +333,6 @@ void decryptImage(unsigned char* srcaddr, unsigned int len,
 	}
 
 	if (remaining != 0) {
-		printf("remaining %u\n", remaining);
 		decrypted = decrypted * AES_BLOCK_SIZE;
 		memcpy(dstaddr, srcaddr, remaining);
 	}
@@ -722,7 +726,57 @@ int main(int argc, char *argv[]) {
 			strcat(unpacked, "/");
 			strcat(unpacked, getPakName(pak->type));
 			strcat(unpacked, ".cramfs");
-			unpack((const char*)filename, (const char*)unpacked);
+
+			printf("uncompressing %s with modified LZO algorithm to %s\n", filename, unpacked);
+
+			lzo_unpack((const char*) filename, (const char*) unpacked);
+
+			FILE *cramfs = fopen(unpacked, "rb");
+
+			if (cramfs == NULL) {
+				printf("Can't open file %s\n", unpacked);
+				exit(1);
+			}
+
+			char _release[100] = "./";
+			strcat(_release, (const char*) fw_version);
+			strcat(_release, "/");
+			strcat(_release, "RELEASE");
+
+			FILE *release = fopen(_release, "wb");
+
+			if (release == NULL) {
+				printf("Can't open file RELEASE\n");
+				exit(1);
+			}
+
+			int buf_len = 0x1000;
+			char buffer[buf_len];
+
+			fread(buffer, 1, buf_len, cramfs);
+
+			struct cramfs_header_t *cramfs_header = (struct cramfs_header_t *)buffer;
+
+			uint32_t release_size = cramfs_header->_01_file_size;
+
+			// correct the size by replacing 0xc9 with 0x1
+			release_size -= 0xc8000000;
+
+			printf("RELEASE size from cramfs header: 0x%x\n", release_size);
+
+
+			int end_pos = release_size;
+			int count = 0;
+			while (count < end_pos) {
+				int diff = end_pos - count;
+				if(diff < buf_len) buf_len = diff;
+				size_t read = fread(buffer, 1, buf_len, cramfs);
+				size_t written = fwrite(buffer, 1, read, release);
+				count += written;
+			}
+
+			fclose(cramfs);
+			fclose(release);
 		}
 	}
 

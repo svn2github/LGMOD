@@ -275,16 +275,12 @@ int do_decompress(FILE *fi, FILE *fo) {
 	}
 
 	decomp_size = xread32(fi);
-	printf("Decompressed size : %d\n", decomp_size);
 
 	flags = xread32(fi);
-	printf("flags : %d\n", flags);
 
 	method = xgetc(fi);
-	printf("method : %d\n", method);
 
 	level = xgetc(fi);
-	printf("level : %d\n", level);
 
 	if (method != 1) {
 		printf("%s: header error - invalid method %d (level %d)\n", progname,
@@ -457,18 +453,12 @@ static void xclose(FILE *fp) {
  //
  **************************************************************************/
 
-int __lzo_cdecl_main unpack(const char* in_name, const char* out_name) {
+int __lzo_cdecl_main lzo_unpack(const char* in_name, const char* out_name) {
 
 	int r = 0;
 	FILE *fi = NULL;
 	FILE *fo = NULL;
 	lzo_uint opt_block_size;
-
-	printf("\nLZO real-time data compression library (v%s, %s).\n",
-			lzo_version_string(), lzo_version_date());
-	printf(
-			"Copyright (C) 1996-2008 Markus Franz Xaver Johannes Oberhumer\nAll Rights Reserved.\n\n");
-	printf("Patched by arno1 for LG TV firmware\n\n");
 
 	/*
 	 * Step 1: initialize the LZO library
@@ -499,7 +489,7 @@ int __lzo_cdecl_main unpack(const char* in_name, const char* out_name) {
 	fo = xopen_fo(out_name);
 	r = do_decompress(fi, fo);
 	if (r == 0)
-		printf("%s: decompressed %lu into %lu bytes\n", progname, total_in,
+		printf("decompressed %lu into %lu bytes\n", total_in,
 				total_out);
 
 	xclose(fi);
