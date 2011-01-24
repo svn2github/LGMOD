@@ -2,7 +2,7 @@
  ============================================================================
  Name        : main.c
  Author      : sirius
- Version     : 0.1
+ Version     : 0.2
  Copyright   : published under GPL
  Description : EPK2 firmware extractor for LG electronic digital tv's
  ============================================================================
@@ -607,7 +607,7 @@ int main(int argc, char *argv[]) {
 	verify = FALSE;
 
 	printf("LG electronics digital tv firmware EPK2 extractor\n");
-	printf("Version 0.1 by sirius (openlgtv.org.ru) 2011\n\n");
+	printf("Version 0.2 by sirius (openlgtv.org.ru) 2011\n\n");
 
 	SWU_CryptoInit();
 
@@ -729,7 +729,10 @@ int main(int argc, char *argv[]) {
 
 			printf("uncompressing %s with modified LZO algorithm to %s\n", filename, unpacked);
 
-			lzo_unpack((const char*) filename, (const char*) unpacked);
+			if(lzo_unpack((const char*) filename, (const char*) unpacked) != 0) {
+				printf("sorry. uncompression failed. aborting now.\n");
+				exit(1);
+			}
 
 			FILE *cramfs = fopen(unpacked, "rb");
 

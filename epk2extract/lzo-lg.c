@@ -56,7 +56,7 @@
 #define WANT_LZO_WILDARGV 1
 #include "include/lzo/portab.h"
 
-static const char *progname = NULL;
+
 
 static unsigned long total_in = 0;
 static unsigned long total_out = 0;
@@ -181,7 +181,7 @@ int do_compress(FILE *fi, FILE *fo, int level, lzo_uint block_size) {
 		wrk_len = LZO1X_1_MEM_COMPRESS;
 	wrkmem = (lzo_bytep) lzo_malloc(wrk_len);
 	if (in == NULL || out == NULL || wrkmem == NULL) {
-		printf("%s: out of memory\n", progname);
+		printf("out of memory\n");
 		r = 1;
 		goto err;
 	}
@@ -251,7 +251,7 @@ int do_compress(FILE *fi, FILE *fo, int level, lzo_uint block_size) {
  **************************************************************************/
 
 int do_decompress(FILE *fi, FILE *fo) {
-	int r = 0;
+	unsigned int r = 0;
 	lzo_bytep buf = NULL;
 	lzo_uint buf_len;
 	unsigned char m[sizeof(magic)];
@@ -268,8 +268,7 @@ int do_decompress(FILE *fi, FILE *fo) {
 	 */
 	if (xread(fi, m, sizeof(magic), 1) != sizeof(magic) || memcmp(m, magic,
 			sizeof(magic)) != 0) {
-		printf("%s: header error - this file is not compressed by lzopack\n",
-				progname);
+		printf("header error - this file is not compressed by lzopack\n");
 		r = 1;
 		goto err;
 	}
@@ -283,14 +282,13 @@ int do_decompress(FILE *fi, FILE *fo) {
 	level = xgetc(fi);
 
 	if (method != 1) {
-		printf("%s: header error - invalid method %d (level %d)\n", progname,
-				method, level);
+		printf("header error - invalid method %d (level %d)\n", method, level);
 		r = 2;
 		goto err;
 	}
 	block_size = xread32(fi);
 	if (block_size < 1024 || block_size > 8 * 1024 * 1024L) {
-		printf("%s: header error - invalid block size %ld\n", progname,
+		printf("header error - invalid block size %ld\n",
 				(long) block_size);
 		r = 3;
 		goto err;
@@ -303,7 +301,7 @@ int do_decompress(FILE *fi, FILE *fo) {
 	buf_len = block_size + block_size / 16 + 64 + 3;
 	buf = (lzo_bytep) lzo_malloc(buf_len);
 	if (buf == NULL) {
-		printf("%s: out of memory\n", progname);
+		printf("out of memory\n");
 		r = 4;
 		goto err;
 	}
@@ -330,7 +328,7 @@ int do_decompress(FILE *fi, FILE *fo) {
 		/* sanity check of the size values */
 		if (in_len > block_size || out_len > block_size || in_len == 0
 				|| in_len > out_len) {
-			printf("%s: block size error - data corrupted\n", progname);
+			printf("block size error - data corrupted\n");
 			r = 5;
 			goto err;
 		}
@@ -349,7 +347,7 @@ int do_decompress(FILE *fi, FILE *fo) {
 
 			r = lzo1x_decompress_safe(in, in_len, out, &new_len, NULL);
 			if (r != LZO_E_OK || new_len != out_len) {
-				printf("%s: compressed data violation\n", progname);
+				printf("compressed data violation: %u\n", r);
 				r = 6;
 				goto err;
 			}
@@ -371,7 +369,7 @@ int do_decompress(FILE *fi, FILE *fo) {
 	if (flags & 1) {
 		lzo_uint32 c = xread32(fi);
 		if (c != checksum) {
-			printf("%s: checksum error - data corrupted\n", progname);
+			printf("checksum error - data corrupted\n");
 			r = 7;
 			goto err;
 		}
@@ -393,7 +391,7 @@ static FILE *xopen_fi(const char *name) {
 
 	fp = fopen(name, "rb");
 	if (fp == NULL) {
-		printf("%s: cannot open input file %s\n", progname, name);
+		printf("cannot open input file %s\n",name);
 		exit(1);
 	} else {
 		struct stat st;
@@ -403,7 +401,7 @@ static FILE *xopen_fi(const char *name) {
 		else
 			fi_size = (lzo_uint32) st.st_size;
 		if (!is_regular) {
-			printf("%s: %s is not a regular file\n", progname, name);
+			printf("%s is not a regular file\n", name);
 			fclose(fp);
 			fp = NULL;
 			exit(1);
@@ -429,7 +427,7 @@ static FILE *xopen_fo(const char *name) {
 #endif
 	fp = fopen(name, "wb");
 	if (fp == NULL) {
-		printf("%s: cannot open output file %s\n", progname, name);
+		printf("cannot open output file %s\n", name);
 		exit(1);
 	}
 	return fp;
@@ -443,7 +441,7 @@ static void xclose(FILE *fp) {
 		if (fclose(fp) != 0)
 			err = 1;
 		if (err) {
-			printf("%s: error while closing file\n", progname);
+			printf("error while closing file\n");
 			exit(1);
 		}
 	}
