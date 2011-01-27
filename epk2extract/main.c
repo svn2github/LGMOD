@@ -2,7 +2,7 @@
  ============================================================================
  Name        : main.c
  Author      : sirius
- Version     : 0.2
+ Version     : 0.3
  Copyright   : published under GPL
  Description : EPK2 firmware extractor for LG electronic digital tv's
  ============================================================================
@@ -193,6 +193,9 @@ pak_type_t convertToPakType(unsigned char type[4]) {
 	case 0x6570616B:
 		return EPAK;
 	case 0x6F70656E:
+		return OPEN;
+	// for backward compatibility with older fw ('opsr' -> 'open')
+	case 0x6F707372:
 		return OPEN;
 	case 0x6D69636F:
 		return MICO;
@@ -473,8 +476,11 @@ void scanPAKs(struct epak_header_t *epak_header, struct pak_t **pak_array) {
 
 			unsigned int pak_chunk_length = distance_between_paks;
 
+			bool is_next_chunk_needed = FALSE;
+
 			if (pak_chunk_length > max_distance) {
 				pak_chunk_length = max_distance;
+				is_next_chunk_needed = TRUE;
 			}
 
 			unsigned int signed_length = current_pak_length;
@@ -491,10 +497,10 @@ void scanPAKs(struct epak_header_t *epak_header, struct pak_t **pak_array) {
 				if ((verified = API_SWU_VerifyImage(
 						pak_chunk_header->_00_signature, signed_length)) != 1) {
 					printf(
-							"verify pak chunk #%u of %s failed. trying fallback...\n",
-							pak->chunk_count + 1, getPakName(pak->type));
+							"verify pak chunk #%u of %s failed (size=0x%x). trying fallback...\n",
+							pak->chunk_count + 1, getPakName(pak->type), signed_length);
 
-					hexdump(pak_chunk_header->_01_type_code, 0x80);
+					//hexdump(pak_chunk_header->_01_type_code, 0x80);
 
 					while (((verified = API_SWU_VerifyImage(
 							pak_chunk_header->_00_signature, signed_length))
@@ -521,7 +527,7 @@ void scanPAKs(struct epak_header_t *epak_header, struct pak_t **pak_array) {
 			unsigned int pak_chunk_content_length = (pak_chunk_length
 					- pak_chunk_signature_length);
 
-			if (pak_chunk_length != distance_between_paks) {
+			if (is_next_chunk_needed) {
 				distance_between_paks -= pak_chunk_content_length;
 				current_pak_length -= pak_chunk_content_length;
 				verified = 0;
@@ -541,8 +547,10 @@ void scanPAKs(struct epak_header_t *epak_header, struct pak_t **pak_array) {
 			pak_chunk->header = pak_chunk_header;
 			pak_chunk->content = pak_chunk_header->_04_unknown3
 					+ sizeof(pak_chunk_header->_04_unknown3);
-			pak_chunk->content_len = pak_chunk_content_length
-					- sizeof(pak_chunk_header->_00_signature);
+//			pak_chunk->content_len = pak_chunk_content_length
+//					- sizeof(pak_chunk_header->_00_signature);
+			pak_chunk->content_len = signed_length
+								- sizeof(struct pak_chunk_header_t);
 
 			pak->chunks[pak->chunk_count - 1] = pak_chunk;
 
@@ -604,10 +612,8 @@ char *appendFilenameToDir(const char *directory, const char *filename) {
 
 int main(int argc, char *argv[]) {
 
-	verify = FALSE;
-
 	printf("LG electronics digital tv firmware EPK2 extractor\n");
-	printf("Version 0.2 by sirius (openlgtv.org.ru) 2011\n\n");
+	printf("Version 0.3 by sirius (openlgtv.org.ru) 01/2011\n\n");
 
 	SWU_CryptoInit();
 
@@ -654,6 +660,8 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 
+	printf("read %d bytes from %d.\n", read, fileLength);
+
 	fclose(file);
 
 	struct epak_header_t *epak_header = getEPakHeader(buffer);
@@ -693,6 +701,11 @@ int main(int argc, char *argv[]) {
 	for (pak_index = 0; pak_index < epak_header->_03_pak_count; pak_index++) {
 		struct pak_t *pak = pak_array[pak_index];
 
+		if (pak->type == UNKNOWN) {
+			printf("WARNING!! firmware file contains unknown pak type '%.*s'. ignoring it!\n", 4, pak->header->_00_type_code);
+			continue;
+		}
+
 		printPakInfo(pak);
 
 		char filename[100] = "./";
@@ -710,10 +723,13 @@ int main(int argc, char *argv[]) {
 		for (pak_chunk_index = 0; pak_chunk_index < pak->chunk_count; pak_chunk_index++) {
 			struct pak_chunk_t *pak_chunk = pak->chunks[pak_chunk_index];
 
-			unsigned char* decrypted = malloc(pak_chunk->content_len);
+			int content_len = pak_chunk->content_len;
 
-			decryptImage(pak_chunk->content, pak_chunk->content_len, decrypted);
-			fwrite(decrypted, 1, pak_chunk->content_len, outfile);
+			unsigned char* decrypted = malloc(content_len);
+			memset(decrypted, 0xFF, content_len);
+
+			decryptImage(pak_chunk->content, content_len, decrypted);
+			fwrite(decrypted, 1, content_len, outfile);
 
 			free(decrypted);
 		}
@@ -727,9 +743,10 @@ int main(int argc, char *argv[]) {
 			strcat(unpacked, getPakName(pak->type));
 			strcat(unpacked, ".cramfs");
 
-			printf("uncompressing %s with modified LZO algorithm to %s\n", filename, unpacked);
+			printf("uncompressing %s with modified LZO algorithm to %s\n",
+					filename, unpacked);
 
-			if(lzo_unpack((const char*) filename, (const char*) unpacked) != 0) {
+			if (lzo_unpack((const char*) filename, (const char*) unpacked) != 0) {
 				printf("sorry. uncompression failed. aborting now.\n");
 				exit(1);
 			}
@@ -758,7 +775,8 @@ int main(int argc, char *argv[]) {
 
 			fread(buffer, 1, buf_len, cramfs);
 
-			struct cramfs_header_t *cramfs_header = (struct cramfs_header_t *)buffer;
+			struct cramfs_header_t *cramfs_header =
+					(struct cramfs_header_t *) buffer;
 
 			uint32_t release_size = cramfs_header->_01_file_size;
 
@@ -767,12 +785,12 @@ int main(int argc, char *argv[]) {
 
 			printf("RELEASE size from cramfs header: 0x%x\n", release_size);
 
-
 			int end_pos = release_size;
 			int count = 0;
 			while (count < end_pos) {
 				int diff = end_pos - count;
-				if(diff < buf_len) buf_len = diff;
+				if (diff < buf_len)
+					buf_len = diff;
 				size_t read = fread(buffer, 1, buf_len, cramfs);
 				size_t written = fwrite(buffer, 1, read, release);
 				count += written;
