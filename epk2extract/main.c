@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <ctype.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <openssl/err.h>
@@ -26,6 +27,8 @@ typedef int bool;
 #define FALSE  (0)
 // signature verification  may be disabled while development
 bool verify = TRUE;
+
+const int PAK_ID_LENGTH = 5;
 
 const int MAX_PAK_CHUNK_SIZE = 0x400000;
 const char PEM_FILE[] = "general_pub.pem";
@@ -85,13 +88,13 @@ const char* pak_type_names[] = { stringify( BOOT ), stringify( MTDI ),
 		stringify( LGRE ), stringify( LGFO ), stringify( ADDO ),
 		stringify( ECZA ), stringify( RECD ), stringify( MICO ),
 		stringify( SPIB ), stringify( SYST ), stringify( USER ),
-		stringify( NETF ), stringify( IDFI ), stringify( NETF ),
-		stringify( LOGO ), stringify( OPEN ), stringify( YWED ),
-		stringify( NVRA ), stringify( PREL ), stringify( KIDS ),
-		stringify( STOR ), stringify( CERT ), stringify( AUTH ),
-		stringify( ESTR ), stringify( GAME ), stringify( BROW ),
-		stringify( CE_F ), stringify( ASIG ), stringify( RESE ),
-		stringify( EPAK ), stringify( UNKNOWN ) };
+		stringify( NETF ), stringify( IDFI ), stringify( LOGO ),
+		stringify( OPEN ), stringify( YWED ), stringify( NVRA ),
+		stringify( PREL ), stringify( KIDS ), stringify( STOR ),
+		stringify( CERT ), stringify( AUTH ), stringify( ESTR ),
+		stringify( GAME ), stringify( BROW ), stringify( CE_F ),
+		stringify( ASIG ), stringify( RESE ), stringify( EPAK ),
+		stringify( UNKNOWN ) };
 
 struct epak_header_t {
 	unsigned char _00_signature[SIGNATURE_SIZE];
@@ -194,7 +197,7 @@ pak_type_t convertToPakType(unsigned char type[4]) {
 		return EPAK;
 	case 0x6F70656E:
 		return OPEN;
-	// for backward compatibility with older fw ('opsr' -> 'open')
+		// for backward compatibility with older fw ('opsr' -> 'open')
 	case 0x6F707372:
 		return OPEN;
 	case 0x6D69636F:
@@ -240,7 +243,17 @@ pak_type_t convertToPakType(unsigned char type[4]) {
 }
 
 const char* getPakName(unsigned int pakType) {
-	return pak_type_names[pakType];
+	const char *pak_type_name = pak_type_names[pakType];
+
+	char *result = malloc(PAK_ID_LENGTH);
+
+	result[0] = tolower(pak_type_name[0]);
+	result[1] = tolower(pak_type_name[1]);
+	result[2] = tolower(pak_type_name[2]);
+	result[3] = tolower(pak_type_name[3]);
+	result[4] = 0;
+
+	return result;
 }
 
 void SWU_CryptoInit() {
@@ -498,7 +511,8 @@ void scanPAKs(struct epak_header_t *epak_header, struct pak_t **pak_array) {
 						pak_chunk_header->_00_signature, signed_length)) != 1) {
 					printf(
 							"verify pak chunk #%u of %s failed (size=0x%x). trying fallback...\n",
-							pak->chunk_count + 1, getPakName(pak->type), signed_length);
+							pak->chunk_count + 1, getPakName(pak->type),
+							signed_length);
 
 					//hexdump(pak_chunk_header->_01_type_code, 0x80);
 
@@ -547,10 +561,10 @@ void scanPAKs(struct epak_header_t *epak_header, struct pak_t **pak_array) {
 			pak_chunk->header = pak_chunk_header;
 			pak_chunk->content = pak_chunk_header->_04_unknown3
 					+ sizeof(pak_chunk_header->_04_unknown3);
-//			pak_chunk->content_len = pak_chunk_content_length
-//					- sizeof(pak_chunk_header->_00_signature);
+			//			pak_chunk->content_len = pak_chunk_content_length
+			//					- sizeof(pak_chunk_header->_00_signature);
 			pak_chunk->content_len = signed_length
-								- sizeof(struct pak_chunk_header_t);
+					- sizeof(struct pak_chunk_header_t);
 
 			pak->chunks[pak->chunk_count - 1] = pak_chunk;
 
@@ -581,7 +595,7 @@ void printEPakHeader(struct epak_header_t *epakHeader) {
 }
 
 void printPakInfo(struct pak_t* pak) {
-	printf("pak %s contains %d chunk(s).\n", getPakName(pak->type),
+	printf("pak '%s' contains %d chunk(s).\n", getPakName(pak->type),
 			pak->chunk_count);
 
 	int pak_chunk_index = 0;
@@ -613,7 +627,7 @@ char *appendFilenameToDir(const char *directory, const char *filename) {
 int main(int argc, char *argv[]) {
 
 	printf("LG electronics digital tv firmware EPK2 extractor\n");
-	printf("Version 0.3 by sirius (openlgtv.org.ru) 01/2011\n\n");
+	printf("Version 0.4 by sirius (openlgtv.org.ru) 01/2011\n\n");
 
 	SWU_CryptoInit();
 
@@ -635,8 +649,6 @@ int main(int argc, char *argv[]) {
 	printf("firmware file: %s\n", epk_file);
 
 	FILE *file = fopen(epk_file, "r");
-
-	//GP2_BB_V03.09.63.epk 022723(04.14.01.11)-GP2_DVB_EU_PDP_MP_RevNo41433_V04.14.01_usb_V2_SECURED.epk GP2_DVB_EU_PDP_MP_RevNo50942_V04.18.00_ota_V2_SECURED.epk
 
 	if (file == NULL) {
 		printf("Can't open file %s", epk_file);
@@ -702,7 +714,9 @@ int main(int argc, char *argv[]) {
 		struct pak_t *pak = pak_array[pak_index];
 
 		if (pak->type == UNKNOWN) {
-			printf("WARNING!! firmware file contains unknown pak type '%.*s'. ignoring it!\n", 4, pak->header->_00_type_code);
+			printf(
+					"WARNING!! firmware file contains unknown pak type '%.*s'. ignoring it!\n",
+					4, pak->header->_00_type_code);
 			continue;
 		}
 
@@ -719,7 +733,7 @@ int main(int argc, char *argv[]) {
 
 		FILE *outfile = fopen(((const char*) &filename), "w");
 
-		int pak_chunk_index = 0;
+		int pak_chunk_index;
 		for (pak_chunk_index = 0; pak_chunk_index < pak->chunk_count; pak_chunk_index++) {
 			struct pak_chunk_t *pak_chunk = pak->chunks[pak_chunk_index];
 
@@ -736,68 +750,77 @@ int main(int argc, char *argv[]) {
 
 		fclose(outfile);
 
-		if (pak->type == LGAP) {
+		if (pak->type == LGAP || pak->type == KERN) {
 			char unpacked[100] = "./";
 			strcat(unpacked, (const char*) fw_version);
 			strcat(unpacked, "/");
 			strcat(unpacked, getPakName(pak->type));
 			strcat(unpacked, ".cramfs");
 
-			printf("uncompressing %s with modified LZO algorithm to %s\n",
-					filename, unpacked);
-
-			if (lzo_unpack((const char*) filename, (const char*) unpacked) != 0) {
-				printf("sorry. uncompression failed. aborting now.\n");
-				exit(1);
+			int lzo_ret_code;
+			if ((lzo_ret_code = lzo_unpack((const char*) filename,
+					(const char*) unpacked)) != 0) {
+				if (lzo_ret_code != 1) {
+					printf("sorry. uncompression failed. aborting now.\n");
+					exit(1);
+				} else {
+					printf("uncompressed %s with modified LZO algorithm to %s\n",
+										filename, unpacked);
+				}
 			}
 
-			FILE *cramfs = fopen(unpacked, "rb");
+			if ((lzo_ret_code == 0) && (pak->type == LGAP)) {
 
-			if (cramfs == NULL) {
-				printf("Can't open file %s\n", unpacked);
-				exit(1);
+				FILE *cramfs = fopen(unpacked, "rb");
+
+				if (cramfs == NULL) {
+					printf("Can't open file %s\n", unpacked);
+					exit(1);
+				}
+
+				char _release[100] = "./";
+				strcat(_release, (const char*) fw_version);
+				strcat(_release, "/");
+				strcat(_release, "RELEASE");
+
+				FILE *release = fopen(_release, "wb");
+
+				if (release == NULL) {
+					printf("Can't open file RELEASE\n");
+					exit(1);
+				}
+
+				int buf_len = 0x1000;
+				char buffer[buf_len];
+
+				fread(buffer, 1, buf_len, cramfs);
+
+				struct cramfs_header_t *cramfs_header =
+						(struct cramfs_header_t *) buffer;
+
+				uint32_t release_size = cramfs_header->_01_file_size;
+
+				// correct the size by changing most significant byte from 0xc9 to 0x1
+				release_size -= 0xc8000000;
+
+				printf(
+						"extracting XIPed RELEASE executable from cramfs image to %s\n",
+						_release);
+
+				int end_pos = release_size;
+				int count = 0;
+				while (count < end_pos) {
+					int diff = end_pos - count;
+					if (diff < buf_len)
+						buf_len = diff;
+					size_t read = fread(buffer, 1, buf_len, cramfs);
+					size_t written = fwrite(buffer, 1, read, release);
+					count += written;
+				}
+
+				fclose(cramfs);
+				fclose(release);
 			}
-
-			char _release[100] = "./";
-			strcat(_release, (const char*) fw_version);
-			strcat(_release, "/");
-			strcat(_release, "RELEASE");
-
-			FILE *release = fopen(_release, "wb");
-
-			if (release == NULL) {
-				printf("Can't open file RELEASE\n");
-				exit(1);
-			}
-
-			int buf_len = 0x1000;
-			char buffer[buf_len];
-
-			fread(buffer, 1, buf_len, cramfs);
-
-			struct cramfs_header_t *cramfs_header =
-					(struct cramfs_header_t *) buffer;
-
-			uint32_t release_size = cramfs_header->_01_file_size;
-
-			// correct the size by replacing 0xc9 with 0x1
-			release_size -= 0xc8000000;
-
-			printf("RELEASE size from cramfs header: 0x%x\n", release_size);
-
-			int end_pos = release_size;
-			int count = 0;
-			while (count < end_pos) {
-				int diff = end_pos - count;
-				if (diff < buf_len)
-					buf_len = diff;
-				size_t read = fread(buffer, 1, buf_len, cramfs);
-				size_t written = fwrite(buffer, 1, read, release);
-				count += written;
-			}
-
-			fclose(cramfs);
-			fclose(release);
 		}
 	}
 

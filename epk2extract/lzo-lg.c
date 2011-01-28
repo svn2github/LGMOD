@@ -268,7 +268,7 @@ int do_decompress(FILE *fi, FILE *fo) {
 	 */
 	if (xread(fi, m, sizeof(magic), 1) != sizeof(magic) || memcmp(m, magic,
 			sizeof(magic)) != 0) {
-		printf("header error - this file is not compressed by lzopack\n");
+		//printf("header error - this file is not compressed by lzopack\n");
 		r = 1;
 		goto err;
 	}
