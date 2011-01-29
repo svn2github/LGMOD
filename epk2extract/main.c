@@ -66,6 +66,7 @@ typedef enum {
 	LOGO = 0x13,
 	OPEN = 0x14,
 	YWED = 0x15,
+	CMND = 0x16,
 	NVRA = 0x17,
 	PREL = 0x18,
 	KIDS = 0x19,
@@ -89,12 +90,12 @@ const char* pak_type_names[] = { stringify( BOOT ), stringify( MTDI ),
 		stringify( ECZA ), stringify( RECD ), stringify( MICO ),
 		stringify( SPIB ), stringify( SYST ), stringify( USER ),
 		stringify( NETF ), stringify( IDFI ), stringify( LOGO ),
-		stringify( OPEN ), stringify( YWED ), stringify( NVRA ),
-		stringify( PREL ), stringify( KIDS ), stringify( STOR ),
-		stringify( CERT ), stringify( AUTH ), stringify( ESTR ),
-		stringify( GAME ), stringify( BROW ), stringify( CE_F ),
-		stringify( ASIG ), stringify( RESE ), stringify( EPAK ),
-		stringify( UNKNOWN ) };
+		stringify( OPEN ), stringify( YWED ), stringify( CMND ),
+		stringify( NVRA ), stringify( PREL ), stringify( KIDS ),
+		stringify( STOR ), stringify( CERT ), stringify( AUTH ),
+		stringify( ESTR ), stringify( GAME ), stringify( BROW ),
+		stringify( CE_F ), stringify( ASIG ), stringify( RESE ),
+		stringify( EPAK ), stringify( UNKNOWN ) };
 
 struct epak_header_t {
 	unsigned char _00_signature[SIGNATURE_SIZE];
@@ -764,8 +765,9 @@ int main(int argc, char *argv[]) {
 					printf("sorry. uncompression failed. aborting now.\n");
 					exit(1);
 				} else {
-					printf("uncompressed %s with modified LZO algorithm to %s\n",
-										filename, unpacked);
+					printf(
+							"uncompressed %s with modified LZO algorithm to %s\n",
+							filename, unpacked);
 				}
 			}
 
