@@ -628,7 +628,7 @@ char *appendFilenameToDir(const char *directory, const char *filename) {
 int main(int argc, char *argv[]) {
 
 	printf("LG electronics digital tv firmware EPK2 extractor\n");
-	printf("Version 0.4 by sirius (openlgtv.org.ru) 01/2011\n\n");
+	printf("Version 0.5 by sirius (openlgtv.org.ru) 31/01/2011\n\n");
 
 	SWU_CryptoInit();
 
