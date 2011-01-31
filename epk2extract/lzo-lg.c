@@ -243,6 +243,8 @@ int do_compress(FILE *fi, FILE *fo, int level, lzo_uint block_size) {
 	return r;
 }
 
+
+
 /*************************************************************************
  // decompress / test
  //
@@ -445,6 +447,19 @@ static void xclose(FILE *fp) {
 			exit(1);
 		}
 	}
+}
+
+int check_lzo_header(const char *name) {
+
+	FILE *fi = xopen_fi(name);
+
+	unsigned char m[sizeof(magic)];
+	int result =  (xread(fi, m, sizeof(magic), 1) != sizeof(magic) || memcmp(m, magic,
+				sizeof(magic)) != 0);
+
+	xclose(fi);
+
+	return result;
 }
 
 /*************************************************************************

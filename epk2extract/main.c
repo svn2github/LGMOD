@@ -2,11 +2,11 @@
  ============================================================================
  Name        : main.c
  Author      : sirius
- Version     : 0.3
  Copyright   : published under GPL
  Description : EPK2 firmware extractor for LG electronic digital tv's
  ============================================================================
  */
+
 #define stringify( name ) # name
 
 #include <stdio.h>
@@ -762,14 +762,13 @@ int main(int argc, char *argv[]) {
 			if ((lzo_ret_code = lzo_unpack((const char*) filename,
 					(const char*) unpacked)) != 0) {
 				if (lzo_ret_code != 1) {
-					printf("sorry. uncompression failed. aborting now.\n");
+					printf("sorry. decompression failed. aborting now.\n");
 					exit(1);
-				} else {
-					printf(
-							"uncompressed %s with modified LZO algorithm to %s\n",
-							filename, unpacked);
 				}
 			}
+
+			printf("decompressed %s with modified LZO algorithm to %s\n",
+									filename, unpacked);
 
 			if ((lzo_ret_code == 0) && (pak->type == LGAP)) {
 
