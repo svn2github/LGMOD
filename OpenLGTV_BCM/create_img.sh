@@ -6,7 +6,8 @@ ver=`cat $dir/etc/ver2`
 cp -r $dir squashfs-root
 cd squashfs-root
 tar xzvf dev.tar.gz
-rm -f dev.tar.gz
+tar xzvf etc_passwd.tar.gz
+rm -f dev.tar.gz etc_passwd.tar.gz
 find . -name '.svn' | xargs rm -rf
 cd ..
 ofile=OpenLGTV_BCM-v$ver
