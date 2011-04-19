@@ -49,13 +49,20 @@ content-type: text/html
     <input type=file name=uploadfile>
     <input type=submit value=Upload>
     <br>
-    <% if test -n "$HASERL_uploadfile_path"; then %>
-        <% if [ ! -e /mnt/usb1/Drive1/LG_DTV ]; then mkdir /mnt/usb1/Drive1/LG_DTV fi %>
-        You uploaded a file named <b><% echo -n $FORM_uploadfile_name %></b>, and it was
-        stored on the TV as <i><% echo $HASERL_uploadfile_path %></i> (<% cat $HASERL_uploadfile_path | wc -c %> bytes).
-    <% else %>
-        You haven't uploaded a file yet.
-    <% fi %>
+     <? if [ -n "$HASERL_uploadfile_path" ]; then 
+          if [ ! -e /mnt/usb1/Drive1/LG_DTV ]; then
+             mkdir /mnt/usb1/Drive1/LG_DTV 
+          fi
+        echo "You uploaded a file named <b>"
+        echo -n $FORM_uploadfile_name
+        echo "</b>, and it was stored on the TV as <i>"
+        echo $HASERL_uploadfile_path
+        echo "</i>"
+        cat $HASERL_uploadfile_path | wc -c
+        echo "bytes)."
+     else 
+        echo "You haven't uploaded a file yet."
+     fi ?>
 </form>
 </div></div>
 
