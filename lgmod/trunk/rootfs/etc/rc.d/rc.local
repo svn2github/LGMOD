@@ -1,0 +1,62 @@
+#!/bin/sh
+CFG_DIR="/mnt/lg/user/lgmod"
+P_SH="$CFG_DIR/patch.sh"
+
+mount -t cramfs -o physaddr=`cat /proc/xipfs` lgapp /mnt/lg/lgapp
+
+FONTXIPADDR=`cat /proc/fontxipfs`
+if [ "$FONTXIPADDR" != "0x0" ]; then
+	mount -t cramfs -o physaddr=$FONTXIPADDR lgfont /mnt/lg/res/lgfont
+else
+	mount -t squashfs /dev/mtdblock10 /mnt/lg/res/lgfont
+fi
+
+# check bluetooth inclusion
+BT=`cat /proc/devices | grep bt_usb`
+if [ "$BT" != "" ]; then
+	mount -t tmpfs tmpfs /mnt/lg/bt -o size=10M
+fi
+
+BEQUIET=`cat /proc/cmdline | grep quiet_app`
+if [ "$BEQUIET" != "" ]; then
+	export PRINTLOG=0
+else
+	export PRINTLOG=1
+fi
+
+export LOG_CALLER=YES
+export OSAMEM_SIZE=0x200000
+export LOAD_SYM=1
+export HOOK_SEGV=NO
+
+# Create default patch script
+if [ ! -e $P_SH ]; then
+    echo "#!/bin/sh" > $P_SH
+    echo "# Patch script executed just before RELEASE launched" >> $P_SH
+    echo "# at that time you have NO USB AND NO network" >> $P_SH
+    echo "# This script is for patching memory/nvram or RELEASE" >> $P_SH
+    echo "# with commands like dd, cat, devmem, hexdump, etc..." >> $P_SH
+    echo "" >> $P_SH
+    echo "# Adress at which lgapp fs is mounted" >> $P_SH
+    echo "LGAPP_FS_ADRESS=\`cat /proc/xipfs\`" >> $P_SH
+    echo "# RELEASE is aligned in kernel page size (0x1000=4096) and is first file in lgapp fs" >> $P_SH
+    echo "PAGE_SIZE=0x1000" >> $P_SH
+    echo "RELEASE_BASE_ADRESS=\$((LGAPP_FS_ADRESS+PAGE_SIZE))" >> $P_SH
+    echo "" >> $P_SH
+    echo "# Then you can patch RELEASE this way" >> $P_SH
+    echo "# 1 Read value to patch, for exemple country feature, you have to know its offset in release executable" >> $P_SH
+    echo "#VALUE=\`devmem \$((RELEASE_BASE_ADRESS+countryfeatureoffsetinrelease)) 32\`" >> $P_SH
+    echo "# 2 Patch value" >> $P_SH
+    echo "#NEWVALUE=\$((VALUE|maskmodifier))" >> $P_SH
+    echo "# 3 write patched value" >> $P_SH
+    echo "#devmem \$((RELEASE_BASE_ADRESS+countryfeatureoffsetinrelease)) 32 \$NEWVALUE" >> $P_SH
+    chmod +x $P_SH
+fi
+# Launch patch script
+$P_SH
+
+cd /mnt/lg/lgapp
+if [ ! -e /mnt/lg/user/lgmod/debug ]; then
+./RELEASE
+else rm /mnt/lg/user/lgmod/debug
+fi
