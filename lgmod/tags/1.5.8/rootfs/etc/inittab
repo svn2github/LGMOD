@@ -1,0 +1,7 @@
+::sysinit:/etc/init.d/rcS boot
+#ttyS0::respawn:/sbin/getty -L ttyS0 115200 vt102
+#::respawn:/bin/login
+#ttyS0::askfirst:-/bin/sh
+console::once:-/bin/sh
+::shutdown:/etc/init.d/rcS shutdown
+::restart:/rom/sbin/init
