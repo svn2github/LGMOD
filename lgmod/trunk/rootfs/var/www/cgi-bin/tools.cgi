@@ -61,7 +61,8 @@ content-type: text/html
         cat $HASERL_uploadfile_path | wc -c
         echo "bytes)."
         mv /mnt/lg/bt/$FORM_uploadfile_name /mnt/usb1/Drive1/LG_DTV
-     else 
+        rm /mnt/lg/bt/$FORM_uploadfile_name
+     else
         echo "You haven't uploaded a file yet."
      fi ?>
 </form>
