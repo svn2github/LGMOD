@@ -1,5 +1,7 @@
 #!/bin/bash
-# OpenLGTV BCM rootfs image creation script by xeros
+# lgmod rootfs image creation script
+# Originally written for OpenLGTV_BCM by xeros
+# Modified for lgmod by hawkeye
 mkepk_bin=../../pack/mkepk
 size=1572864
 dir=trunk/rootfs
