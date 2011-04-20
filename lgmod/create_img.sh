@@ -20,6 +20,7 @@ osize=`wc -c $ofile.sqfs | awk '{print $1}'`
 if [ "$osize" -gt "$size" ]
 then
     echo "ERROR: Partition image too big for flashing."
+    rm -f $ofile.sqfs
     rm -rf squashfs-root
     exit 1
 else
