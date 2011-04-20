@@ -1,4 +1,4 @@
-#!/usr/bin/haserl --upload-limit=14096 --upload-dir=/mnt/usb1/Drive1/LG_DTV
+#!/usr/bin/haserl --upload-limit=14096 --upload-dir=/mnt/lg/bt
 content-type: text/html
 
 <html>
@@ -60,6 +60,7 @@ content-type: text/html
         echo "</i>"
         cat $HASERL_uploadfile_path | wc -c
         echo "bytes)."
+        mv /mnt/lg/bt/$FORM_uploadfile_name /mnt/usb1/Drive1/LG_DTV
      else 
         echo "You haven't uploaded a file yet."
      fi ?>
