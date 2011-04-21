@@ -33,6 +33,6 @@ else
     fi
 fi
 zip $ofile.zip $ofile.epk
-rm -f $ofile.pak $ofile.sqfs
+rm -f $ofile.pak
 rm -rf squashfs-root
-mv $ofile.zip $ofile.epk ../../
+mv $ofile.sqfs $ofile.zip $ofile.epk ../../
