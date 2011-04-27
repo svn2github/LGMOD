@@ -20,6 +20,7 @@ cd ..
 echo $LGMOD_VERSION > ./squashfs-root/var/www/cgi-bin/version
 sed -i -e "s/ver=/$LGMOD_VERSION/g" ./squashfs-root/var/www/cgi-bin/footer.inc
 sed -i -e "s/ver=/$LGMOD_VERSION/g" ./squashfs-root/var/www/cgi-bin/header.inc
+sed -i -e "s/ver=/$LGMOD_VERSION/g" ./squashfs-root/etc/lgmod.sh
 
 ofile=LGMOD-v$LGMOD_VERSION_ROOTFS
 rm -f $ofile.pak $ofile.sqfs $ofile.epk $ofile.zip
