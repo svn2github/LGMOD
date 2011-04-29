@@ -3,12 +3,14 @@
 # Originally written for OpenLGTV_BCM by xeros
 # Modified for lgmod by hawkeye
 LGMOD_VERSION="1.5.11"
-LGMOD_VERSION_ROOTFS="10511"
 LGMOD_VERSION_EPK="36703"
-mkepk_bin=../../pack/mkepk
+LGMOD_VERSION_ROOTFS=`echo $LGMOD_VERSION|sed 's/[.]/0/g'`
+mkepk_bin=../pack/mkepk
+mksquashfs_bin=../pack/mksquashfs
 
 size=1572864
 dir=trunk/rootfs
+rm -r squashfs-root
 cp -r $dir squashfs-root
 cd squashfs-root
 tar xvjf dev.tar.bz2
@@ -22,10 +24,10 @@ sed -i -e "s/ver=/$LGMOD_VERSION/g" ./squashfs-root/var/www/cgi-bin/footer.inc
 sed -i -e "s/ver=/$LGMOD_VERSION/g" ./squashfs-root/var/www/cgi-bin/header.inc
 sed -i -e "s/ver=/$LGMOD_VERSION/g" ./squashfs-root/etc/lgmod.sh
 
-ofile=LGMOD-v$LGMOD_VERSION_ROOTFS
+ofile=lgmod_$LGMOD_VERSION_ROOTFS
 rm -f $ofile.pak $ofile.sqfs $ofile.epk $ofile.zip
 
-mksquashfs squashfs-root $ofile.sqfs
+$mksquashfs_bin squashfs-root $ofile.sqfs -le -all-root -noappend
 osize=`wc -c $ofile.sqfs | awk '{print $1}'`
 
 if [ "$osize" -gt "$size" ]
@@ -44,4 +46,4 @@ fi
 zip $ofile.zip $ofile.epk
 rm -f $ofile.pak
 rm -rf squashfs-root
-mv $ofile.sqfs $ofile.zip $ofile.epk ../../
+mv $ofile.sqfs $ofile.zip $ofile.epk ../
