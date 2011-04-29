@@ -5,8 +5,8 @@
 LGMOD_VERSION="1.5.11"
 LGMOD_VERSION_ROOTFS="10511"
 LGMOD_VERSION_EPK="36703"
-
 mkepk_bin=../../pack/mkepk
+
 size=1572864
 dir=trunk/rootfs
 cp -r $dir squashfs-root
