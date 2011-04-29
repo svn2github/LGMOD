@@ -4,7 +4,7 @@
 # Modified for lgmod by hawkeye
 LGMOD_VERSION="1.5.11"
 LGMOD_VERSION_EPK="36703"
-LGMOD_VERSION_ROOTFS=`echo $LGMOD_VERSION|sed 's/[.]/0/g'`
+LGMOD_VERSION_ROOTFS="10511"
 mkepk_bin=../pack/mkepk
 mksquashfs_bin=../pack/mksquashfs
 
