@@ -1,36 +1,33 @@
 #!/bin/sh
 #
-# LGMOD v.ver=
+# LGMOD v.1.5.11
 # http://openlgtv.org.ru
 # Copyright 2009 Vuk
 # Copyright 2010 Arno1
 #
 CFG_DIR="/mnt/lg/user/lgmod"
 NETCONFIG="$CFG_DIR/network"
-UPNPCFG="$CFG_DIR/upnp"
 FS_MNT="$CFG_DIR/ndrvtab"
 HTTPD_CONF="$CFG_DIR/httpd.conf"
 A_SH="$CFG_DIR/auto_start.sh"
 S_SH="$CFG_DIR/auto_stop.sh"
 P_SH="$CFG_DIR/patch.sh"
-USB1_DIR="/mnt/usb1/Drive1/nfs"
 
 # Init usb
 echo 1 > /proc/usercalls
 
-# Wait until connect usb drive
+# Wait until usb drive is mounted
 k=0;
-while [ ! -e $USB1_DIR ]; 
+while [ ! `mount|grep Drive1` ]; 
 do
     sleep 1;
     k=$(($k+1))
     if [ $k -gt 30 ]; then break; fi
 done;
-#mount -t vfat -o iocharset=utf8,shortname=mixed /dev/sda1 /mnt/usb1/Drive1
 
-# Reset ALL config to default is magic file on USB drive
+# Reset ALL configs to default with magic file from USB drive
 if [ -e /mnt/usb1/Drive1/lgmod_reset_config ]; then
-    cp -R $CFG_DIR /mnt/usb1/Drive1		
+    cp -R $CFG_DIR /mnt/usb1/Drive1
     rm -rf $CFG_DIR
     mv /mnt/usb1/Drive1/lgmod_reset_config /mnt/usb1/Drive1/lgmod_reset_config_used
     echo "Configuration copied to USB drive and deleted ! will be reset to default."
@@ -95,7 +92,7 @@ if [ ! -e $A_SH ]; then
     echo "#cp \$CFG_DIR/* \$USB_ROOT" >> $A_SH
     echo "" >> $A_SH
     echo "# Luca's hack to release caches every second" >> $A_SH
-    echo "while true ; do echo 3 > /proc/sys/vm/drop_caches ; sleep 1 ; done &" >> $A_SH
+    echo "#while true ; do echo 3 > /proc/sys/vm/drop_caches ; sleep 1 ; done &" >> $A_SH
     echo "" >> $A_SH
     chmod +x $A_SH
 fi    
@@ -126,17 +123,11 @@ else
     IP=`awk '{ print $1}' $NETCONFIG`
     MASK=`awk '{ print $2}' $NETCONFIG`
     GW=`awk '{ print $3}' $NETCONFIG`
-
     ifconfig eth0 $IP netmask $MASK
     route add default gw $GW eth0
-
-    # Testing network
-    ping -c 2 $GW
 fi
 
 # From here we have network so launch network features
-
-# Mouting Shares
 echo "Mounting shares"
 cat $FS_MNT | while read ndrv; do
 
@@ -156,14 +147,17 @@ if [ "$automount" = "1" ];  then
 fi
 done
 
-# Launch telnet if telnet file exist in configuration directory
+# Launch ntpclient if ntp file exists in config folder
+[ -e /mnt/lg/user/lgmod/ntp ] && ntpd -q -p `cat $CFG_DIR/ntp`
+
+# Launch telnet if telnet file exists in config folder
 [ -e /mnt/lg/user/lgmod/telnet ] && /usr/sbin/telnetd -l /etc/auth.sh
 
+# Launch ftpd if ftp file exists in config folder
+[ -e $CFG_DIR/ftp ] && tcpsvd -E 0.0.0.0 21 ftpd -w `cat $CFG_DIR/ftp` &
+
 # launch UPNP
-if [ -e $UPNPCFG ]; then
-    upnpmnt=`cat $UPNPCFG`
-    sleep 5; /usr/bin/djmount -o iocharset=utf8,kernel_cache $upnpmnt
-fi
+[ -e $CFG_DIR/upnp ] && /usr/bin/djmount -o iocharset=utf8,kernel_cache `cat $CFG_DIR/upnp`
 
 # To be launched at the end webui and auto_start script
 # Launch Web UI
