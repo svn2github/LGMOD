@@ -125,6 +125,9 @@ else
     GW=`awk '{ print $3}' $NETCONFIG`
     ifconfig eth0 $IP netmask $MASK
     route add default gw $GW eth0
+    if [ -e $CFG_DIR/dns ]; then
+	echo $CFG_DIR/dns >/tmp/resolv.conf
+    fi
 fi
 
 # From here we have network so launch network features
