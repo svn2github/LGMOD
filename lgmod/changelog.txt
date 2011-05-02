@@ -1,0 +1,379 @@
+Changelog 1.6.0 :
+=================
+- Unicode support, busybox is recompiled, more utilities added (courtesy Hawkeye)
+- ftpd, ntp client, dns options are added in Network tab of Webui
+
+Changelog 1.5.10 :
+=================
+- Removed some unnecessary programs from busybox (sendmail and etc)
+- Recompiled busybox to add touch, uname, -a option to umount, ntpd (lprot request), tcpsvd
+
+Changelog 1.5.9 :
+=================
+- Password when logging into telnet is not displayed.
+- Minor changes in the info page.
+
+Changelog 1.5.8 :
+=================
+- Network shares are non blocking now (they are connecting in background). It makes possible to load network daemons faster even if there are some "dead" shares configured.
+- "Execute shell command" from Tools tab works again now
+- Password on the Tools tab is displayed as asterisks
+
+Changelog 1.5.7 :
+=================
+- Feature : Added pty module (thanks rtokarev) no need of custom kernel for telnet, module loaded by default (modules.sh)
+- Feature : Added mini_fo module (rtokarev thanks again) for rootfs overlay, not loaded by default (edit your modules.sh)
+- Remark : Updated copyright to vuk untill v1.2 and arno1 for later versions
+- Feature : Added Luca's hack to release caches every second (affects memory), should allow 720p video to be played over network smoothly
+- Feature : Added a script that runs at shutdown.
+- Feature : USB module initialized independantly and BEFORE RELEASE starts (thanks rtokarev)
+- Feature : removed sleep 30 for lgmod script as USB now activated before RELEASE start, for lgmod services to be started faster after switch on, now USB key mounted by lgmod.sh script, filesystem can be fat32, ntfs or ext2/3 (should load modules in modules.sh for the 2 later)
+- Time mount usb drive is reduced. (workaround). Now there are no problems. I've put my version in the post below.
+
+Changelog 1.5.6 :
+=================
+- Bugfix : webui/tools corruption solved, webui command line output attempt removed.
+
+Changelog 1.5.5 : => Webui/tools corrupted.
+=================
+- Bugfix : network config from USB stick now copied with dos2unix for issues if edited on windows.
+- Bugfix : httpd.conf config from USB stick now copied with dos2unix for issues if edited on windows.
+- Feature : Added autostart script (auto_start.sh) called after lgmod (very end of boot process when drive/mounts/network available) and this script also copied from usb if exits.
+- Feature : patch.sh is now copied from USB stick at startup, no more need of webui/network to patch RELEASE !
+- Bugfix : Webui launched at the very end of process, should no more show mounted drive as unmounted (see below 1.5.4 KNOWN BUGS).
+- Feature : In webui/tools attempt to report command line output => does corrupt webui/tools part !
+
+Changelog 1.5.4 :
+=================
+- Buf fix : NFS modules reverted to same as in 1.5.1 (no ACL), you have to mount drives with "-o nolock" if your NFS server not running statd (thanks to jenya for finding this and leegoo for explaination)
+- Webui : system info page
+* Added display of first init script /etc/init.d/rcS
+* Added display of script /etc/rc.d/rc.sysinit
+* Added display of script /etc/rc.d/rc.local
+* Added display of script /etc/lgmod.sh
+So know anyone can read those scripts and understand how lgmod boots and works.
+- Bug fix : Webui Tools pages shell command line now working even for complicated command lines (thanks topogigi to have reported bug)
+- Feature : auto_start.sh script now called at the end of lgmod, once RELEASE, USB and network working, you can add then anything you want to be done on your TV ! This script editable in webui tools page, some examples included (uncomment to make them active) :
+* Firmware backup
+* nvram backup
+* lgmod configuration backup
+* contributions/ideas welcome !
+- Feature : added a patch.sh script called just BEFORE RELEASE start to be able to patch it before running, tested working by modifying country feature, TAKE CARE YOU CAN BRICK YOUR TV with patching memory...
+* Example provided how to patch country features
+
+KNOWN BUGS :
+- Sometime share showed as unmounted in WebUI while working, any info welcome to fix it.
+Think I found reason why, httpd launched BEFORE drives are mounted, I had the same issue testing my patch.sh creation, as it is created after httpd launched also, so work-around for now is press reaload-page of your browser, I will make httpd to be launched at the very end of lgmod in next release
+
+TODO :
+- Djmount recompilation with uclibc (additionnal free space)
+- CIFS performance (study deeper ld450 cifs script)
+- ftpfs over fuse filesystem to read directly www ftp site
+- httpfs over fuse filesystem to read directly www http site
+- Busybox, haserl, djmount build on dynamic uclibc library not static, save additionnal space again
+- Still in the todo list : kai daemon for online gaming with my xbox
+- mpcs (1.7 ?), I am interested by DVB-T (TNT) french guys using this...
+- Multi-drive enabling : ld450 has this, need to study deeper...
+- framebuffer and/or nanox...
+- Upnp server (mediatomb ?) embedded in the TV to dispatch content to your network, but mainly access www content (youtube, lastfm, sopcast) through djmount...
+
+Changelog 1.5.3 :
+=================
+- Buf fix/Feature : included nfs_acl.ko module that I forgot in version 1.5.2
+- Webui : Added display of loaded modules (lsmod) in system info page, idea from drew, thanks !
+- Webui : Added display of dmesg output in system info page.
+- webui : Added display of RELEASE.cfg in system info page.
+- Configuration : some change in default modules.sh (first install only of config reset needed) :
+* Added loading of dm9601 and asix.88178 modules, for people not having a serial line and having those usb2net adaptors to have a chance to have webui.
+* Commented modules for CD-ROM, seems very few people using it, just need to uncomment if you want to use it.
+* Commented as well by default ext2 and ext3 modules.
+* Added (commented) modules for NFS in the right order.
+
+Changelog 1.5.2 :
+=================
+- Feature : recompiled NFS module with ACL.
+- Feature : recompiled dm9601 usb2net module with source from leegoo (2.6.29)
+
+Changelog 1.5.1 :
+=================
+- Feature : possibility to reset configuration to default and save the current configuration on USB drive. 1- insert a USB drive with a file name "lgmod_reset_config" at root no extension, lower case.2- Reboot your TV. Your old coniguration is saved on lgmod directory of usb drive, file lgmod_reset_config renamed lgmod_reset_config_used and TV configuration reset to default LGMOD (like fresh install).
+
+Changelog 1.5.0 :
+=================
+- Info : Recompiled ALL modules to have a clean build according to sources on my website, this saves room, but need to be tested...
+- Feature : Added modules for NFS, need to be added manually in modules.sh to be loaded.
+- Feature : recompiled busybox to add : dd, hexdump, dc, hd (for further RELEASE patching scripts) and dos2unix, unix2dos to get rid of ^M bug in webui
+- Bug fix : get rid of ^M when editing scripts in webui on windows host with dos2unix command added in webui scripts
+- Bug fix : avoid JFFS2 getting unclean by adding a sync command in webui scripts
+
+Changelog 1.4.2 :
+=================
+- Bug fix : resolv.conf file recreated at each boot now in /tmp no more in Nand to preserve nand device from write cycle.
+- Feature : LGMOD now released also in .epk format for easier upgrade.
+
+KNOWN BUGS :
+- Sometime share showed as unmounted in WebUI while working, any info welcome to fix it.
+- Seems user FS get unclean (JFFS2 error reported at boot time), thinking of 2 possible problems :
+1/ Still get those ^M at each end of line (dos text format instead of linux) : DONE in 1.5.0
+2/Files created by WEBUI/lgmod, should flush filesystem, need to add a sync command : DONE in 1.5.0
+
+TODO :
+- Djmount recompilation with uclibc (additionnal free space)
+- CIFS performance (study deeper ld450 cifs script)
+- ftpfs over fuse filesystem to read directly www ftp site
+- httpfs over fuse filesystem to read directly www http site
+- Busybox, haserl, djmount build on dynamic uclibc library not static, save additionnal space again
+- Still in the todo list : kai daemon for online gaming with my xbox
+- mpcs (1.7 ?), I am interested by DVB-T (TNT) french guys using this...
+- Multi-drive enabling : ld450 has this, need to study deeper...
+- framebuffer and/or nanox...
+- Compressed kernel modules for more space...: Useless rootfs is squashfs already compressed !
+- Upnp server (mediatomb ?) embedded in the TV to dispatch content to your network, but mainly access www content (youtube, lastfm, sopcast) through djmount...
+
+Changelog 1.4.1 :
+=================
+Web UI Bug fix
+
+- Bug fix : Modifying and saving files from webui (modules.sh and others..) did not work in 1.3.3 and 1.4 due to new busybox was not compiled with "-n" option for "echo" command, this version include a busybox with that option enabled.
+- Info : Found why haserl did not work in 1.3.3, I did linked it dynamically not static !!! (shame on me), recompiled but could not make it smaller as already available version, so kept that one, but point closed in todo.
+- Info : Finally got djmount recompiled with uclibc (saving 700Ko space, which would allow including NFS modules in LGMOD) but not working yet, need investigate further, so not included in that version.
+
+KNOWN BUGS :
+- Sometime share showed as unmounted in WebUI while working, any info welcome to fix it.
+- Seems user FS get unclean (JFFS2 error reported at boot time), thinking of 2 possible problems :
+1/resolv.conf file recreated at each boot, will move it to /tmp in next version : DONE in 1.4.2
+2/Files created by WEBUI/lgmod, should flush filesystem, need to add a sync command
+
+TODO :
+- Djmount recompilation with uclibc (additionnal free space)
+- CIFS performance (study deeper ld450 cifs script)
+- ftpfs over fuse filesystem to read directly www ftp site
+- httpfs over fuse filesystem to read directly www http site
+- Busybox, haserl, djmount build on dynamic uclibc library not static, save additionnal space again
+- Still in the todo list : kai daemon for online gaming with my xbox
+- mpcs (1.7 ?), I am interested by DVB-T (TNT) french guys using this...
+- Multi-drive enabling : ld450 has this, need to study deeper...
+- framebuffer and/or nanox...
+- Compressed kernel modules for more space...
+- Upnp server (mediatomb ?) embedded in the TV to dispatch content to your network, but mainly access www content (youtube, lastfm, sopcast) through djmount...
+- Find a way to create .epk from .sqfs for simpler upgrading : DONE in 1.4.2
+
+Changelog 1.4 :
+===============
+DHCP auto network configuration and network name resolving.
+
+- Bug fix : reverted haserl (76Ko) to previous version (not those of 1.3.3) and web UI working again...need to understand...
+- Feature : DHCP : It is working automatically now, added simple.script from busybox and added link /etc/resolv.conf to /mnt/lg/user/lgmod/resolv.conf, did the same for hosts but not sure it helps there. DHCP is now DEFAULT network behaviour and is used if NO network file is detected, thus if your are upgrading from previous LGMOD version you need to delete this file, either manually or click DHCP button I have added in web UI network page. Here is a boot log with network file (no DHCP) :
+
+Setting network loopback
+Setting eth0...
+...using network configuration file
+[ 33.189000] eth0: set allmulti
+[ 33.195000] eth0: set allmulti
+PING 192.168.0.254 (192.168.0.254): 56 data bytes
+64 bytes from 192.168.0.254: seq=0 ttl=64 time=13.588 ms
+64 bytes from 192.168.0.254: seq=1 ttl=64 time=3.872 ms
+
+And here is one with DHCP :
+
+Setting network loopback
+Setting eth0...
+...using DHCP
+udhcpc (v1.17.1) started
+Setting IP address 0.0.0.0 on eth0
+[ 33.217000] eth0: set allmulti
+[ 33.222000] eth0: set allmulti
+Sending discover...
+Sending select for 192.168.0.10...
+Lease of 192.168.0.10 obtained, lease time 864000
+Setting IP address 192.168.0.10 on eth0
+[ 33.341000] eth0: set allmulti
+[ 33.346000] eth0: set allmulti
+Deleting routers
+route: SIOCDELRT: No such process
+Adding router 192.168.0.254
+Recreating /mnt/lg/user/lgmod/resolv.conf
+Adding DNS server 212.27.40.241
+Adding DNS server 212.27.40.240
+
+- Feature : Network name resolving : As a consequence of having DHCP you now have network name resolving if your DHCP server send you DNS servers names, thus you have access to www adress resolution with DHCP enabled (should work also with network file, but you should have to edit resolv.conf yourself), so we are now ready for www features , here is the proof (ping google from my TV :
+
+/mnt/lg/lgapp # ping www.google.fr
+PING www.google.fr (66.249.92.104): 56 data bytes
+64 bytes from 66.249.92.104: seq=0 ttl=55 time=53.502 ms
+64 bytes from 66.249.92.104: seq=1 ttl=55 time=27.853 ms
+...
+
+- Feature : WebUI : Added a DHCP button to remove fixed network configuration file (see DHCP above).
+- Feature : WebUI : Changed display of "ifconfig eth0" to display of "ifconfig -a" and added display of resolv.conf file in web interface for more informations.
+
+Changelog 1.3.3 : => Buggy version (No webui due to new haserl => need to find why)
+====================
+made room, new busybox and commands, new usb2net drivers, usb2serial drivers, CIFS performance
+
+- Made room : busybox (1,5 Mo), haserl (76Ko) and djmount (1,1 Mo) executable on previous LGMOD were linked with Glibc making huge binaries (why no more room left), using a uclibc toolchain, I could recompile busybox and haserl dividing size by 2 (saved 800ko for busybox and 40ko for haserl). Did not successfully build djmount yet.
+- Feature : Busybox : Upgraded from v1.15.3 to v1.17.1, and added following commands :
+/bin
+dnsdomainname
+hostname
+ln
+
+/sbin
+udhcpc <= For DHCP (not configured nor included in configuration files yet)
+modinfo
+
+/usr/bin
+ftpget <= ftp client
+ftpput <= ftp client
+lsusb <= for usb investigation
+time <= For e.g network transfer performance measure (#time cat mynetworkfile > /dev/null)
+volname <= CD-ROM volume name
+wget <= for further www download (LGMOD extensions ? packages ? why not, but later :-) )
+
+/usr/sbin
+dnsd
+ftpd <= An ftp server in your TV !
+popmaildir
+sendmail
+- Feature : New supported usb2net chipset : included additional drivers are asix.88178.ko (thanks jenya), catc.ko, cdc_ether.ko, cdc_subset.ko, dm9601.ko, gl620a.ko, kaweth.ko, net1080.ko, plusb.ko, rndis_host.ko, rtl8150.ko, zaurus.ko in fact are now included in LGMOD ALL usb2net drivers included in 2.6.26 + asix.88178.ko
+None of this modules is included in default modules.sh, you have to add them yourself.(vi then web UI once you have network working)
+- Feature : usb2serial : added following modules : usbserial.ko, pl2303.ko for serial over usb (thanks jenya)
+None of this modules is included in default modules.sh, you have to add them yourself.(vi then web UI once you have network working)
+- Performance : CIFS (samba) : default buffer was 16ko only in previous LGMOD versions and can be increased up to 127ko by adding CIFSMaxBufSize=130048 when loading cifs.ko, done in this version, found that in ld450 firmware. This gave me +15% performance with my bad usb2net adapter (no buffer), your results welcome.
+
+Changelog 1.3.pre3 :
+====================
+This pre-release is supposed to help people configuring their network.
+
+- Feature : If a file named "network" exist on root first partition of USB key it will be copied to TV and used as network configuration file, no more need to use vi on the TV to edit this file anymore, for those not familiar to linux/shell/vi.
+- Feature : same thing for "httpd.conf" to ease reset of web UI user/password.
+
+Changelog 1.3.2 :
+=================
+This release add MCS7830 chipset support, enable usb2serial, ease modules configuration through web interface, increase again delay for more compatibility
+
+- Feature : Added mcs7830.ko module for this chipset usb2net support (not tested report welcome)
+- Bug fix : samba share mounting, increased sleep time from 20 sec to 30 sec before launching lgmod.sh for samba share to be mounted AFTER RELEASE mounts usb drive
+- Feature : Add modules script configuration through web interface (Tools part)
+- Feature : Added /dev/ttyUSB0 device for usb2serial support (you need to add module yourself not in rootfs)
+- Useless : Addes /mnt/usb2/Drive1,2,3,4 (those paths exist in RELEASE) but did not find the way to enable multiple drive mount
+- Help : Added descriptions and removed obsoletes comments in web interface to help user configure
+- Help : Added screen copy of web interface in zip archive to help users
+
+Changelog 1.3.1 :
+=================
+This release is a bugfix of version 1.3 for pegasus II chipset based usb to ethernet adaptors (tested on Belkin F5D122 and F5D5050), as well as bug fix for samba shares auto-mounting (whatever you ethernet adaptor is).
+
+- Bug fix : Now pegasus II chipset based usb 2 ethernet adaptor initialize correctly at boot, backported kernel 2.6.34 pegasus driver + patch for reading eeprom MAC adress if chipset registers not yet initialized by HW reset as should be (see ADM8511 datasheet).
+Supported usb to ethernet adaptors (wired no wifi)
+For Asix (from asix.c driver file) :
+
+Linksys USB200M
+Netgear FA120
+DLink DUB-E100
+Intellinet, ST Lab USB Ethernet
+Hawking UF200, TrendNet TU2-ET10
+Billionton Systems, USB2AR
+ATEN UC210T
+Buffalo LUA-U2-KTX
+Buffalo LUA-U2-GT 10/100/1000
+Sitecom LN-029 "USB 2.0 10/100 Ethernet adapter"
+corega FEther USB2-TX
+Surecom EP-1427X-2
+goodway corp usb gwusb2e
+JVC MP-PRX1 Port Replicator
+ASIX AX88772 10/100
+ASIX AX88178 10/100/1000
+Linksys USB200M Rev 2
+0Q0 cable ethernet
+DLink DUB-E100 H/W Ver B1
+DLink DUB-E100 H/W Ver B1 Alternate
+Linksys USB1000
+IO-DATA ETG-US2
+Belkin F5D5055
+Apple USB Ethernet Adapter
+
+For Pegasus (from pegasus.h driver file ) :
+
+Belkin F5D5050 USB Ethernet
+Belkin F5U122 10/100 USB Ethernet
+Billionton USB-100
+Billionton USBLP-100
+Compaq iPAQ Networking 10/100 USB
+Billionton USBEL-100
+Billionton USBE-100
+Corega FEther USB-TX
+Corega FEther USB-TXS
+D-Link DSB-650TX
+D-Link DSB-650
+Elcon GOLDPFEIL USB Adapter
+ELECOM USB Ethernet LD-USB20
+Mobility EasiDock Ethernet
+Elsa Micolink USB2Ethernet
+GIGABYTE GN-BR402W Wireless Router
+Hawking UF100 10/100 Ethernet
+HP hn210c Ethernet USB
+IO DATA USB ET/TX
+IO DATA USB ET/TX-S
+IO DATA USB ETX-US2
+Kingston KNU101TX Ethernet
+LANEED USB Ethernet LD-USB/TX
+LANEED USB Ethernet LD-USBL/TX
+LANEED USB Ethernet LD-USB/TX
+LANEED USB Ethernet LD-USB/T
+LANEED USB Ethernet LD-USB/TX
+Linksys USB10TX
+Linksys USB100TX
+Linksys USB100TX
+Linksys USB10T Ethernet Adapter
+Linksys USBVPN1
+Linksys USB USB100TX
+Linksys USB10TX
+MELCO/BUFFALO LUA-TX
+MELCO/BUFFALO LUA2-TX
+Microsoft MN-110
+NETGEAR FA101
+OCT Inc. OCT USB TO Ethernet
+smartNIC 2 PnP Adapter
+SMC 202 USB Ethernet
+SMC 2206 USB Ethernet
+SOHOware NUB100 Ethernet
+SOHOware NUB110 Ethernet
+SpeedStream USB 10/100 Ethernet
+
+- Bug fix : samba share mounting, increased sleep time from 15 sec to 20 sec before launching lgmod.sh for samba share to be mounted AFTER RELEASE mounts usb drive (same as openlgtv)
+
+Changelog 1.3 :
+===============
+This release does not include any new features (except reactivated etx2/ext3) but increase compatibility and save (little) space for future features.
+Should be compatible with all models 1.2 was compatible with (LH, LU, ...) as well as PK and PJ 2010 models.
+Tested on LG Plasma 50pk250 EU model with Firmware 3.14.
+
+Compatibility :
+- Added devices :
+/dev/mtd20, /dev/mtd21, /dev/mtd22, /dev/mtdblock20, /dev/mtdblock21, /dev/mtdblock22, /dev/ptmx
+- Added directories :
+/mnt/lg/ciplus
+/mnt/lg/ciplus/authcxt
+/mnt/lg/ciplus/cert
+- Modified /etc/fstab and /etc/rc.d/rc.sysinit to detect if 21 partitions (pk, pj model) or not (lh model) to mount correct files systems (cert, authcxt, recdb and user) with correct mtd depending on model
+
+Saved some space :
+- Removed all .svn directories, useless
+- Removed *.bak file, useless
+- Removed /lib/lod.so.1 link to USB drive, useless
+- Removed /mnt/usb1/Drive1/smb, useless
+- Removed /lib/modules/loop.ko, seems loop already in kernel
+
+Configuration :
+- Modified /etc/rc.d/rc.sysinit create shell script in user fs for modules configuartion : /mnt/lg/user/lgmod/modules.sh
+- One can then edit /mnt/lg/user/lgmod/modules.sh to choose module to load or not
+- For exemple I have a Pegasus chipset, I can comment line of asix.ko module, useless for me
+
+Cosmetic :
+- Changed version number in web pages
+- Added some description in main web page for Tools and System pages
+
+Credits : vuk for 1.2 version, thanks to him !
+
+Arno1
