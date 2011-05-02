@@ -126,7 +126,7 @@ else
     ifconfig eth0 $IP netmask $MASK
     route add default gw $GW eth0
     if [ -e $CFG_DIR/dns ]; then
-	echo $CFG_DIR/dns >/tmp/resolv.conf
+	cat $CFG_DIR/dns >/tmp/resolv.conf
     fi
 fi
 
