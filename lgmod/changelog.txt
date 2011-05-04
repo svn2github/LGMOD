@@ -1,3 +1,48 @@
+Changelog 1.6.2 :
+=================
+
+- Asix driver updated to the latest version v4.1.0
+
+Supports following adapters:
+
+ASIX AX88178 USB 2.0 Gigabit Ethernet Network Adapter
+ASIX AX88772 USB 2.0 Fast Ethernet Network Adapter
+ASIX AX88772A USB 2.0 Fast Ethernet Network Adapter
+ASIX AX88760 USB 2.0 MTT HUB and USB 2.0 to Fast Ethernet Combo Controller
+ASIX AX88772B USB 2.0 Fast Ethernet Network Adapter
+
+Revision History since driver v3.2 that was used in previous LGMOD versions:
+============================================================================
+Version 4.1.0		Mar. 15, 2011
+ * Added more vendor and product IDs.
+
+Version 4.0.0		Feb. 22, 2011
+ * Integrated usbnet.c into this driver.
+
+Version 3.6.0		Oct. 28, 2010
+ * Added conditional compilation flag "AX_FORCE_BUFF_ALIGN" for double word
+   alignment.
+ * Added conditional compilation flag "AX_772BHW_CHECKSUM" for IP header double
+   word alignment.
+ * Refined whole USB buffers with double word alignment.
+
+Version 3.5.0		Sep. 15, 2010
+ * Corrected the parameter "supports_gmii" of AX88178 MII structure.
+ * Corrected AX88178 PHY media mode check function.
+
+Version 3.4.0		Aug. 16, 2010
+ * Fixups for compilation issues in kernel version 2.6.35.
+ * Corrected PHY reset sequence for MARVELL M88E1111 RevB2.
+
+Version 3.3.0		Aug. 03, 2010
+ * Added Vitess PHY 8601 support.
+ * Refined AX88178 PHY initialization functions.
+ * Fixups for compilation issues in kernel version 2.6.29.
+ * Fixups for rx_fixup and tx_fixup functions.
+ * Fixups for AX88772B initialization function.
+ * Added validation of necessary header file "usbnet.h" in Makefile.
+
+
 Changelog 1.6.1 :
 =================
 - Compatibility with PK/PJ FW 3.25/3.28
