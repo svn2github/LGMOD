@@ -1,3 +1,7 @@
+Changelog 1.6.1 :
+=================
+- Compatibility with PK/PJ FW 3.25/3.28
+
 Changelog 1.6.0 :
 =================
 - Unicode support, busybox is recompiled, more utilities added (courtesy Hawkeye)

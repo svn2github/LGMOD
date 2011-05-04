@@ -2,9 +2,9 @@
 # lgmod rootfs image creation script
 # Originally written for OpenLGTV_BCM by xeros
 # Modified for lgmod by hawkeye
-LGMOD_VERSION="1.6.0"
-LGMOD_VERSION_EPK="36704"
-LGMOD_VERSION_ROOTFS="10600"
+LGMOD_VERSION="1.6.1"
+LGMOD_VERSION_EPK="36705"
+LGMOD_VERSION_ROOTFS="10601"
 mkepk_bin=../pack/mkepk
 mksquashfs_bin=../pack/mksquashfs
 

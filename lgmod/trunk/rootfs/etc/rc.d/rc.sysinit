@@ -3,6 +3,7 @@ CFG_DIR="/mnt/lg/user/lgmod"
 MODULES_SH="$CFG_DIR/modules.sh"
 
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+export LD_LIBRARY_PATH=/mnt/lg/res/lgres:/mnt/lg/res/lgfont:$LD_LIBRARY_PATH
 mount -a
 
 # Mount cert, authcxt, recdb, user depending on model
