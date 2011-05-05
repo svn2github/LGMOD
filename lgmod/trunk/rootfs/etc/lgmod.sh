@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# LGMOD v.1.5.11 (build ver=)
+# LGMOD version ver=
 # http://openlgtv.org.ru
 # Copyright 2009 Vuk
 # Copyright 2010 Arno1

@@ -35,8 +35,6 @@ if [ ! -e $MODULES_SH ]; then
     echo "insmod /lib/modules/asix.ko" >> $MODULES_SH
     echo "# MCS7830 network chipset module" >> $MODULES_SH
     echo "insmod /lib/modules/mcs7830.ko" >> $MODULES_SH
-    echo "# Asix 88178 network chipset module" >> $MODULES_SH
-    echo "insmod /lib/modules/asix.88178.ko" >> $MODULES_SH
     echo "# DM9601 network chipset module" >> $MODULES_SH
     echo "insmod /lib/modules/dm9601.ko" >> $MODULES_SH
     echo "" >> $MODULES_SH
