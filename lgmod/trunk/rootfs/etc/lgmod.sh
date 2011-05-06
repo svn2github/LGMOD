@@ -30,7 +30,7 @@ if [ -e /mnt/usb1/Drive1/lgmod_reset_config ]; then
     cp -R $CFG_DIR /mnt/usb1/Drive1
     rm -rf $CFG_DIR
     mv /mnt/usb1/Drive1/lgmod_reset_config /mnt/usb1/Drive1/lgmod_reset_config_used
-    echo "Configuration copied to USB drive and deleted ! will be reset to default."
+    echo "LGMOD config folder are copied to USB drive and deleted !"
 fi
 # Create directory for LGMOD configuration files if not exist
 if [ ! -e $CFG_DIR ]; then
@@ -41,18 +41,18 @@ if [ -e /mnt/usb1/Drive1/network ]; then
     cp /mnt/usb1/Drive1/network $NETCONFIG
     dos2unix $NETCONFIG
     mv /mnt/usb1/Drive1/network /mnt/usb1/Drive1/network_used
-    echo "Copied network configuration file from USB Stick"
+    echo "Network config file is copied from USB drive to LGMOD config folder"
 fi
 # Create default mounting FS if not exist (empty)
 if [ ! -e $FS_MNT ]; then
-    cat /dev/null  > $FS_MNT
+    cat /dev/null > $FS_MNT
 fi
 # Copy web UI configuration file from USB stick first partition if exist
 if [ -e /mnt/usb1/Drive1/httpd.conf ]; then
     cp /mnt/usb1/Drive1/httpd.conf $HTTPD_CONF
     dos2unix $HTTPD_CONF
     mv /mnt/usb1/Drive1/httpd.conf /mnt/usb1/Drive1/httpd.conf_used
-    echo "Copied web UI configuration file from USB Stick"
+    echo "Web UI config is copied from USB drive to LGMOD config folder"
 fi
 # create default webui config file with default user and password
 if [ ! -e $HTTPD_CONF ]; then
@@ -64,34 +64,16 @@ if [ -e /mnt/usb1/Drive1/auto_start.sh ]; then
     cp /mnt/usb1/Drive1/auto_start.sh $A_SH
     dos2unix $A_SH
     mv /mnt/usb1/Drive1/auto_start.sh /mnt/usb1/Drive1/auto_start.sh_used
-    echo "Copied autostart script from USB Stick"
+    echo "Autostart script is copied from USB drive to LGMOD config folder"
 fi
 # Create default autostart script
 if [ ! -e $A_SH ]; then
     echo "#!/bin/sh" > $A_SH
-    echo "# Autostart script launched at the end of lgmod boot" >> $A_SH
+    echo "# Autostart script launched at the end of LGMOD boot" >> $A_SH
     echo "# at that time you have USB and network working normally" >> $A_SH
     echo "# as well as RELEASE running" >> $A_SH
     echo "" >> $A_SH
-    echo "CFG_DIR="/mnt/lg/user/lgmod"" >> $A_SH
-    echo "USB_ROOT="/mnt/usb1/Drive1"" >> $A_SH
-    echo "" >> $A_SH
-    echo "# Copying RELEASE to USB is as simple as" >> $A_SH
-    echo "#cp /mnt/lg/lgapp/* \$USB_ROOT" >> $A_SH
-    echo "" >> $A_SH
-    echo "# Backup your firmware this way" >> $A_SH
-    echo "#cd /dev" >> $A_SH
-    echo "#for mtd in \`ls mtd[0-9]*\` do" >> $A_SH
-    echo "#cat /dev/\$mtd > \$USB_ROOT/\$mtd" >> $A_SH
-    echo "#done" >> $A_SH
-    echo "" >> $A_SH
-    echo "# Backup your nvram/eeprom this way" >> $A_SH
-    echo "#cat /dev/eeprom > \$USB_ROOT/eeprom" >> $A_SH
-    echo "" >> $A_SH
-    echo "# Backup your lgmod configuration this way" >> $A_SH
-    echo "#cp \$CFG_DIR/* \$USB_ROOT" >> $A_SH
-    echo "" >> $A_SH
-    echo "# Luca's hack to release caches every second" >> $A_SH
+    echo "# Luca's hack to release caches every second (uncomment if you use NFS shares)" >> $A_SH
     echo "#while true ; do echo 3 > /proc/sys/vm/drop_caches ; sleep 1 ; done &" >> $A_SH
     echo "" >> $A_SH
     chmod +x $A_SH
@@ -125,8 +107,8 @@ else
     GW=`awk '{ print $3}' $NETCONFIG`
     ifconfig eth0 $IP netmask $MASK
     route add default gw $GW eth0
-    if [ -e $CFG_DIR/dns ]; then
-	cat $CFG_DIR/dns >/tmp/resolv.conf
+    if [ -e $CFG_DIR/resolv.conf ]; then
+	cat $CFG_DIR/resolv.conf >/tmp/resolv.conf
     fi
 fi
 
@@ -162,7 +144,7 @@ done
 # launch UPNP
 [ -e $CFG_DIR/upnp ] && /usr/bin/djmount -o iocharset=utf8,kernel_cache `cat $CFG_DIR/upnp`
 
-# To be launched at the end webui and auto_start script
+# To be launched at the end Web UI and auto_start script
 # Launch Web UI
 /usr/sbin/httpd -c $HTTPD_CONF -h /var/www
 
