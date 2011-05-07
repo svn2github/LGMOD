@@ -133,10 +133,10 @@ fi
 done
 
 # Launch ntpclient if ntp file exists in config folder
-[ -e /mnt/lg/user/lgmod/ntp ] && ntpd -q -p `cat $CFG_DIR/ntp`
+[ -e $CFG_DIR/ntp ] && ntpd -q -p `cat $CFG_DIR/ntp`
 
 # Launch telnet if telnet file exists in config folder
-[ -e /mnt/lg/user/lgmod/telnet ] && /usr/sbin/telnetd -l /etc/auth.sh
+[ -e $CFG_DIR/telnet ] && /usr/sbin/telnetd -l /etc/auth.sh
 
 # Launch ftpd if ftp file exists in config folder
 [ -e $CFG_DIR/ftp ] && tcpsvd -E 0.0.0.0 21 ftpd -w `cat $CFG_DIR/ftp` &
