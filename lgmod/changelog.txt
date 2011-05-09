@@ -1,3 +1,13 @@
+Changelog 1.6.3 :
+=================
+
+- Asix driver 4.1.0 bugfixed and changed to 4.1.1:
+ * Linksys USB200M should work now
+ * Logitec LAN-GTJ U2A support added.
+
+- Manual DNS settings didn't work in 1.6.2. Fixed.
+
+
 Changelog 1.6.2 :
 =================
 
