@@ -1,3 +1,14 @@
+Changelog 1.6.4 :
+=================
+
+- Asix driver updated to 4.1.2, new adapters:
+ * 0Q0 cable ethernet
+ * Buffalo LUA-U2-GT 10/100/1000
+ * IO-DATA ETG-US2
+ * JVC MP-PRX1 Port Replicator
+ * Linksys USB1000
+ * Gembird NIC-U1
+
 Changelog 1.6.3 :
 =================
 
