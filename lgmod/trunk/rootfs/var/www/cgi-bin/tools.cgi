@@ -110,13 +110,13 @@ content-type: text/html
 
 <div class="post"><div class="posthead">Modules configuration script (you can comment/uncomment/add modules to fit your needs)</div><div class="posttext">
 <form action="tools.cgi" method="post">
-<? txt=`cat /mnt/lg/user/lgmod/modules.sh`; echo "<textarea name="script2" rows="10" cols="80">$txt</textarea>" ?>
+<? txt=`cat /mnt/lg/user/lgmod/module.sh`; echo "<textarea name="script2" rows="10" cols="80">$txt</textarea>" ?>
 <br>
 <input type="submit" name="save2" value="Save">
 </form>
 <? if [ "$FORM_save2" = "Save" ]; then
-    echo -n "$FORM_script2" > /mnt/lg/user/lgmod/modules.sh
-    dos2unix /mnt/lg/user/lgmod/modules.sh
+    echo -n "$FORM_script2" > /mnt/lg/user/lgmod/module.sh
+    dos2unix /mnt/lg/user/lgmod/module.sh
     sync
     echo "<script language="javascript" type="text/javascript">location.href='tools.cgi';</script>"
 fi ?>

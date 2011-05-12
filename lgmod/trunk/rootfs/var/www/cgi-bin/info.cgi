@@ -56,6 +56,10 @@ content-type: text/html
 <pre><? dmesg ?></pre>
 </div></div>
 
+<div class="post"><div class="posthead">Exports</div><div class="posttext">
+<pre><? export ?></pre>
+</div></div>
+
 <div class="post"><div class="posthead">/lg/model/RELEASE.cfg</div><div class="posttext">
 <pre><? cat /lg/model/RELEASE.cfg ?></pre>
 </div></div>

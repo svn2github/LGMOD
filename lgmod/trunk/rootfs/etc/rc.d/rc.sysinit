@@ -1,6 +1,6 @@
 #!/bin/sh
 CFG_DIR="/mnt/lg/user/lgmod"
-MODULES_SH="$CFG_DIR/modules.sh"
+MODULES_SH="$CFG_DIR/module.sh"
 
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export LD_LIBRARY_PATH=/mnt/lg/res/lgres:/mnt/lg/res/lgfont:$LD_LIBRARY_PATH
@@ -27,44 +27,45 @@ if [ ! -e $MODULES_SH ]; then
     echo "# Modules" >> $MODULES_SH
     echo "# Network modules" >> $MODULES_SH
     echo "# Core network modules" >> $MODULES_SH
-    echo "insmod /lib/modules/mii.ko" >> $MODULES_SH
-    echo "insmod /lib/modules/usbnet.ko" >> $MODULES_SH
+    echo "insmod /modules/mii.ko" >> $MODULES_SH
+    echo "insmod /modules/usbnet.ko" >> $MODULES_SH
     echo "# Pegasus network chipset module" >> $MODULES_SH
-    echo "insmod /lib/modules/pegasus.ko" >> $MODULES_SH
+    echo "insmod /modules/pegasus.ko" >> $MODULES_SH
     echo "# Asix network chipset module" >> $MODULES_SH
-    echo "insmod /lib/modules/asix.ko" >> $MODULES_SH
+    echo "insmod /modules/asix.ko" >> $MODULES_SH
     echo "# MCS7830 network chipset module" >> $MODULES_SH
-    echo "insmod /lib/modules/mcs7830.ko" >> $MODULES_SH
+    echo "insmod /modules/mcs7830.ko" >> $MODULES_SH
     echo "# DM9601 network chipset module" >> $MODULES_SH
-    echo "insmod /lib/modules/dm9601.ko" >> $MODULES_SH
+    echo "insmod /modules/dm9601.ko" >> $MODULES_SH
     echo "" >> $MODULES_SH
     echo "# File system modules" >> $MODULES_SH
     echo "# User space filesystem module" >> $MODULES_SH
-    echo "insmod /lib/modules/fuse.ko" >> $MODULES_SH
+    echo "insmod /modules/fuse.ko" >> $MODULES_SH
     echo "# CDROM filesystem modules" >> $MODULES_SH
-    echo "#insmod /lib/modules/cdrom.ko" >> $MODULES_SH
-    echo "#insmod /lib/modules/isofs.ko" >> $MODULES_SH
-    echo "#insmod /lib/modules/sr_mod.ko" >> $MODULES_SH
+    echo "#insmod /modules/cdrom.ko" >> $MODULES_SH
+    echo "#insmod /modules/isofs.ko" >> $MODULES_SH
+    echo "#insmod /modules/sr_mod.ko" >> $MODULES_SH
     echo "# CIFS/Samba filesystem module with max buffer size 127 Ko" >> $MODULES_SH
-    echo "insmod /lib/modules/cifs.ko CIFSMaxBufSize=130048" >> $MODULES_SH
+    echo "#insmod /modules/cifs.ko CIFSMaxBufSize=130048" >> $MODULES_SH
+    echo "insmod /modules/cifs.ko" >> $MODULES_SH
     echo "# EXT2 filesystem module" >> $MODULES_SH
-    echo "#insmod /lib/modules/ext2.ko" >> $MODULES_SH
+    echo "#insmod /modules/ext2.ko" >> $MODULES_SH
     echo "# Journaling layer for EXT3 filesystem" >> $MODULES_SH
-    echo "#insmod /lib/modules/jbd.ko" >> $MODULES_SH
+    echo "#insmod /modules/jbd.ko" >> $MODULES_SH
     echo "# EXT3 filesystem module" >> $MODULES_SH
-    echo "#insmod /lib/modules/ext3.ko" >> $MODULES_SH
+    echo "#insmod /modules/ext3.ko" >> $MODULES_SH
     echo "# NFS filesystem modules" >> $MODULES_SH
-    echo "#insmod /lib/modules/sunrpc.ko" >> $MODULES_SH
-    echo "#insmod /lib/modules/lockd.ko" >> $MODULES_SH
-    echo "#insmod /lib/modules/nfs.ko" >> $MODULES_SH
+    echo "#insmod /modules/sunrpc.ko" >> $MODULES_SH
+    echo "#insmod /modules/lockd.ko" >> $MODULES_SH
+    echo "#insmod /modules/nfs.ko" >> $MODULES_SH
     echo "" >> $MODULES_SH
     echo "# USB2Serial modules" >> $MODULES_SH
-    echo "#insmod /lib/modules/usbserial.ko" >> $MODULES_SH
-    echo "#insmod /lib/modules/pl2303.ko" >> $MODULES_SH
+    echo "#insmod /modules/usbserial.ko" >> $MODULES_SH
+    echo "#insmod /modules/pl2303.ko" >> $MODULES_SH
     echo "" >> $MODULES_SH
     echo "# pty and mini_fo modules" >> $MODULES_SH
-    echo "insmod /lib/modules/pty.ko" >> $MODULES_SH
-    echo "#insmod /lib/modules/mini_fo.ko" >> $MODULES_SH
+    echo "insmod /modules/pty.ko" >> $MODULES_SH
+    echo "#insmod /modules/mini_fo.ko" >> $MODULES_SH
     chmod +x $MODULES_SH
 fi
 
