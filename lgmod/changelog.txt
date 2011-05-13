@@ -1,3 +1,41 @@
+Changelog 1.6.6 :
+=================
+- New Devicom DM9601 (USB1.1 chip) driver. Supported adapters:
+--------------------------------------------------------------
+* Accton USB 10/100 Ethernet Adapter (0x083a, 0x1046)
+* ADMtek ADM8515 USB NIC (0x0a46, 0x8515)
+* ADMtek AN986 "Pegasus" USB Ethernet (eval board) (0x07a6, 0x0986)
+* Archeon Semiconductor SR9600 (0x0fe6, 0x8101)
+* Billionton USB-100 (0x08dd, 0x0986)
+* Billionton USBLP-100 (0x08dd, 0x0987)
+* Billionton USBEL-100 (0x08dd, 0x0988)
+* Corega FEter USB-TX (0x07aa, 0x0004)
+* Corega FEther USB-TXC (0x07aa, 0x9601)
+* Davicom USB-100 (0x0a46, 0x9601), (0x3334, 0x1701)
+* D-Link DSB-650TX (0x2001, 0x4001)
+* D-Link DSB-650TX (0x2001, 0x4002)
+* D-Link DSB-650TX(PNA) (0x2001, 0x4003)
+* D-Link DSB-650 (0x2001, 0xabc1)
+* D-Link DU-E10 (0x07b8, 0xabc1
+* D-Link DU-E100 (0x07b8, 0x4002,
+* Hirose USB-100 (0x0a47, 0x9601)
+* IO DATA USB ET/TX (0x04bb, 0x0904,
+* LANEED USB Ethernet LD-USB/TX (0x056e, 0x4002)
+* Linksys USB10TX (0x066b, 0x2202)
+* Linksys USB100TX (0x066b, 0x2203)
+* Linksys USB100TX (0x066b, 0x2204)
+* Linksys USB Ethernet Adapter (0x066b, 0x2206)
+* MELCO/BUFFALO LUA-TX (0x0411, 0x0001)
+* ShanTou ST268 USB NIC (0x0a46, 0x0268)
+* SMC 202 USB Ethernet (0x0707, 0x0200)
+* SOHOware NUB100 Ethernet (0x0a46, 0x9601)
+* ZT6688 USB NIC (0x0a46, 0x6688)
+
+
+Changelog 1.6.5 :
+=================
+- /lib/modules moved to /modules for compatibility with 3.25-3.28 PK/PJ firmwares
+
 Changelog 1.6.4 :
 =================
 
