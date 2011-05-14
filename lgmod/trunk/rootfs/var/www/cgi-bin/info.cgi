@@ -24,6 +24,7 @@ content-type: text/html
 
 <div class="post"><div class="posthead">Memory info</div><div class="posttext">
 <pre><? free ?></pre>
+<pre><? echo "LGAPP is mounted at:`cat /proc/xipfs`" ?></pre>
 </div></div>
 
 <div class="post"><div class="posthead">USB info</div><div class="posttext">

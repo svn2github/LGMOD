@@ -88,8 +88,11 @@ if [ -e /mnt/usb1/Drive1/patch.sh ]; then
     cp /mnt/usb1/Drive1/patch.sh $P_SH
     dos2unix $P_SH
     mv /mnt/usb1/Drive1/patch.sh /mnt/usb1/Drive1/patch.sh_used
-    echo "Copied patch script from USB Stick, will be used at next boot"
+    sync
+    echo "Copied patch script from USB Stick. Rebooting..."
+    reboot
 fi
+sync
 # Setting Network
 echo "Setting network loopback"
 ifconfig lo 127.0.0.1
