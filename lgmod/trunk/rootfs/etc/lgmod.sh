@@ -30,7 +30,9 @@ if [ -e /mnt/usb1/Drive1/lgmod_reset_config ]; then
     cp -R $CFG_DIR /mnt/usb1/Drive1
     rm -rf $CFG_DIR
     mv /mnt/usb1/Drive1/lgmod_reset_config /mnt/usb1/Drive1/lgmod_reset_config_used
-    echo "LGMOD config folder are copied to USB drive and deleted !"
+    sync
+    echo "LGMOD config folder is copied to USB drive and deleted. Rebooting..."
+    reboot
 fi
 # Create directory for LGMOD configuration files if not exist
 if [ ! -e $CFG_DIR ]; then
@@ -42,10 +44,6 @@ if [ -e /mnt/usb1/Drive1/network ]; then
     dos2unix $NETCONFIG
     mv /mnt/usb1/Drive1/network /mnt/usb1/Drive1/network_used
     echo "Network config file is copied from USB drive to LGMOD config folder"
-fi
-# Create default mounting FS if not exist (empty)
-if [ ! -e $FS_MNT ]; then
-    cat /dev/null > $FS_MNT
 fi
 # Copy web UI configuration file from USB stick first partition if exist
 if [ -e /mnt/usb1/Drive1/httpd.conf ]; then

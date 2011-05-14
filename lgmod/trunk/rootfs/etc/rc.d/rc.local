@@ -32,24 +32,23 @@ export HOOK_SEGV=NO
 # Create default patch script
 if [ ! -e $P_SH ]; then
     echo "#!/bin/sh" > $P_SH
-    echo "# Patch script executed just before RELEASE launched" >> $P_SH
-    echo "# at that time you have NO USB AND NO network" >> $P_SH
-    echo "# This script is for patching memory/nvram or RELEASE" >> $P_SH
-    echo "# with commands like dd, cat, devmem, hexdump, etc..." >> $P_SH
+    echo "# Patch script is executed just before RELEASE is launched." >> $P_SH
+    echo "# At that time you have no USB and no network" >> $P_SH
+    echo "# This script is for patching memory (RELEASE) with " >> $P_SH
+    echo "# commands like dd, cat, devmem, hexdump, etc..." >> $P_SH
     echo "" >> $P_SH
-    echo "# Adress at which lgapp fs is mounted" >> $P_SH
-    echo "LGAPP_FS_ADRESS=\`cat /proc/xipfs\`" >> $P_SH
-    echo "# RELEASE is aligned in kernel page size (0x1000=4096) and is first file in lgapp fs" >> $P_SH
-    echo "PAGE_SIZE=0x1000" >> $P_SH
-    echo "RELEASE_BASE_ADRESS=\$((LGAPP_FS_ADRESS+PAGE_SIZE))" >> $P_SH
+    echo "# Address at which LGAPP is mounted LGAPP_FS_ADDRESS=\`cat /proc/xipfs\`" >> $P_SH
     echo "" >> $P_SH
-    echo "# Then you can patch RELEASE this way" >> $P_SH
-    echo "# 1 Read value to patch, for exemple country feature, you have to know its offset in release executable" >> $P_SH
-    echo "#VALUE=\`devmem \$((RELEASE_BASE_ADRESS+countryfeatureoffsetinrelease)) 32\`" >> $P_SH
-    echo "# 2 Patch value" >> $P_SH
+    echo "# RELEASE is a first file in LGAPP_FS and is aligned in kernel PAGE_SIZE=0x1000" >> $P_SH
+    echo "# RELEASE_BASE_ADDRESS=\$((LGAPP_FS_ADDRESS+PAGE_SIZE))" >> $P_SH
+    echo "" >> $P_SH
+    echo "# So can patch RELEASE this way:" >> $P_SH
+    echo "# 1. Read value to patch, for example country feature, you have to know its offset in RELEASE" >> $P_SH
+    echo "#VALUE=\`devmem \$((RELEASE_BASE_ADDRESS+country_feature_offset)) 32\`" >> $P_SH
+    echo "# 2. Patch value" >> $P_SH
     echo "#NEWVALUE=\$((VALUE|maskmodifier))" >> $P_SH
-    echo "# 3 write patched value" >> $P_SH
-    echo "#devmem \$((RELEASE_BASE_ADRESS+countryfeatureoffsetinrelease)) 32 \$NEWVALUE" >> $P_SH
+    echo "# 3. Write patched value" >> $P_SH
+    echo "#devmem \$((RELEASE_BASE_ADDRESS+country_feature_offset)) 32 \$NEWVALUE" >> $P_SH
     chmod +x $P_SH
 fi
 # Launch patch script
