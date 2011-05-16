@@ -18,9 +18,11 @@ content-type: text/html
 </div></div>
 <? 
  if [ "$FORM_change" = "Change" ]; then
-	cp /mnt/lg/user/lgmod/httpd.conf /mnt/lg/user/lgmod/httpd.conf.tmp
+	cp /mnt/lg/user/lgmod/httpd.conf /tmp/httpd.conf.tmp
 	old_pw=`awk -F: '/cgi-bin/ {print $3}' /mnt/lg/user/lgmod/httpd.conf`
-	sed "s/$old_pw/$FORM_passwd/" /mnt/lg/user/lgmod/httpd.conf.tmp > /mnt/lg/user/lgmod/httpd.conf
+	sed "s/$old_pw/$FORM_passwd/" /tmp/httpd.conf.tmp > /mnt/lg/user/lgmod/httpd.conf
+	rm /tmp/httpd.conf.tmp
+	sync
 	echo "<div class="ok"><p align=center><b>Restart your TV to apply changes</b></p></div>"
   fi 
 ?>
@@ -35,35 +37,37 @@ content-type: text/html
     echo -n "$FORM_shell" > /tmp/shell_command.sh
     dos2unix /tmp/shell_command.sh
     chmod +x /tmp/shell_command.sh
-    /tmp/shell_command.sh &> /tmp/shell_command.out   
+    /tmp/shell_command.sh &> /tmp/shell_command.out
+    rm /tmp/shell_command.in
     sync
     echo "<pre>"
     cat /tmp/shell_command.out
+    rm /tmp/shell_command.out
     echo "</pre>"
  fi
 ?>
 </div></div>
 
-<div class="post"><div class="posthead">Upload the firmware on the flash drive into a folder LG_DTV. If the folder "LG_DTV" does not exist - download the file twice.</div><div class="posttext">
+<div class="post"><div class="posthead">Upload the firmware to USB drive (it should be FAT32) into LG_DTV folder. If the folder "LG_DTV" does not exist, it will be created.</div><div class="posttext">
 <form action="tools.cgi" method="post" enctype="multipart/form-data" >
-    <input type=file name=uploadfile>
-    <input type=submit value=Upload>
-    <br>
-     <? if [ -n "$HASERL_uploadfile_path" ]; then 
-          if [ ! -e /mnt/usb1/Drive1/LG_DTV ]; then
-             mkdir /mnt/usb1/Drive1/LG_DTV 
+    <input type=file name=uploadfile><input type=submit value=Upload><br>
+     <? if [ -n "$FORM_uploadfile_name" ]; then 
+        if [ ! -e /mnt/usb1/Drive1/LG_DTV ]; then
+           mkdir /mnt/usb1/Drive1/LG_DTV
+        fi
+        if [ -e /mnt/usb1/Drive1/LG_DTV ]; then
+          cp -f $HASERL_uploadfile_path /mnt/usb1/Drive1/LG_DTV/$FORM_uploadfile_name
+          sync
+          if [ -e /mnt/usb1/Drive1/LG_DTV/$FORM_uploadfile_name ]; then
+            echo "File <b>$FORM_uploadfile_name</b> is uploaded to LG_DTV folder to the USB drive."
+          else
+            echo "<b>Error! Cannot upload file. Probably USB drive is read only."
           fi
-        echo "You uploaded a file named <b>"
-        echo -n $FORM_uploadfile_name
-        echo "</b>, and it was stored on the TV as <i>"
-        echo $HASERL_uploadfile_path
-        echo "</i>"
-        cat $HASERL_uploadfile_path | wc -c
-        echo "bytes)."
-        mv /mnt/lg/bt/$FORM_uploadfile_name /mnt/usb1/Drive1/LG_DTV
-        rm /mnt/lg/bt/$FORM_uploadfile_name
+        else
+          echo "Cannot create LG_DTV folder. Probably USB drive is read only."
+        fi
      else
-        echo "You haven't uploaded a file yet."
+        echo "Select file and press Upload button."
      fi ?>
 </form>
 </div></div>
@@ -122,7 +126,7 @@ content-type: text/html
 fi ?>
 </div></div>
 
-<div class="post"><div class="posthead">Patch script (executed BEFORE RELEASE and lgmod)</div><div class="posttext">
+<div class="post"><div class="posthead">Patch script (executed before RELEASE and LGMOD)</div><div class="posttext">
 <form action="tools.cgi" method="post">
 <? txt=`cat /mnt/lg/user/lgmod/patch.sh`; echo "<textarea name="script3" rows="10" cols="80">$txt</textarea>" ?>
 <br>
