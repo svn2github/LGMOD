@@ -13,10 +13,10 @@ A_SH="$CFG_DIR/auto_start.sh"
 S_SH="$CFG_DIR/auto_stop.sh"
 P_SH="$CFG_DIR/patch.sh"
 
-# Init usb
+# Init USB
 echo 1 > /proc/usercalls
 
-# Wait until usb drive is mounted
+# Wait until USB drive is mounted
 k=0;
 while [ ! `mount|grep Drive1` ]; 
 do
@@ -52,7 +52,7 @@ if [ -e /mnt/usb1/Drive1/httpd.conf ]; then
     mv /mnt/usb1/Drive1/httpd.conf /mnt/usb1/Drive1/httpd.conf_used
     echo "Web UI config is copied from USB drive to LGMOD config folder"
 fi
-# create default webui config file with default user and password
+# create default Web UI config file with default user and password
 if [ ! -e $HTTPD_CONF ]; then
     echo "A:*"  > $HTTPD_CONF
     echo "/cgi-bin:admin:lgadmin"  >> $HTTPD_CONF
@@ -72,7 +72,7 @@ if [ ! -e $A_SH ]; then
     echo "# as well as RELEASE running" >> $A_SH
     echo "" >> $A_SH
     echo "# Luca's hack to release caches every second (uncomment if you use NFS shares)" >> $A_SH
-    echo "#while true ; do echo 3 > /proc/sys/vm/drop_caches ; sleep 1 ; done &" >> $A_SH
+    echo "#while true ; do echo 3 > /proc/sys/vm/drop_caches ; sleep 10 ; done &" >> $A_SH
     echo "" >> $A_SH
     chmod +x $A_SH
 fi    
@@ -81,7 +81,7 @@ if [ ! -e $S_SH ]; then
     echo "#!/bin/sh" >> $S_SH
     chmod +x $S_SH
 fi    
-# Copy patch script from USB stick first partition if exist
+# Copy patch script from USB drive if exists
 if [ -e /mnt/usb1/Drive1/patch.sh ]; then
     cp /mnt/usb1/Drive1/patch.sh $P_SH
     dos2unix $P_SH
@@ -97,7 +97,7 @@ ifconfig lo 127.0.0.1
 
 echo "Setting eth0..."
 # No network configuration file, using dhcp
-if [ ! -e $NETCONFIG ]; then
+if [ ! -e $NETCONFIG -o -e $CFG_DIR/dhcp ]; then
     echo "...using DHCP"
     udhcpc
 # Network config file exists using defined values
@@ -142,7 +142,7 @@ done
 # Launch ftpd if ftp file exists in config folder
 [ -e $CFG_DIR/ftp ] && tcpsvd -E 0.0.0.0 21 ftpd -w `cat $CFG_DIR/ftp` &
 
-# launch UPNP
+# launch UPnP
 [ -e $CFG_DIR/upnp ] && /usr/bin/djmount -o iocharset=utf8,kernel_cache `cat $CFG_DIR/upnp`
 
 # To be launched at the end Web UI and auto_start script

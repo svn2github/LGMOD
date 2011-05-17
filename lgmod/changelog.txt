@@ -1,8 +1,8 @@
 Changelog 1.6.7 :
 =================
-* Pegasus.ko driver: new ID added.
+* Fixed dhcp config bug (thanks to Arno for pointing this)
 * Haserl is updated to v0.9.29
-* Now you can upgrade firmware via WebUI->Tools->Upload the firmware to USB drive
+* Now you can upgrade LGMOD via WebUI->Tools->Upload the firmware to USB drive
 * Other fixes
 
 Changelog 1.6.6 :
