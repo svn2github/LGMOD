@@ -137,13 +137,13 @@ done
 [ -e $CFG_DIR/ntp ] && ntpd -q -p `cat $CFG_DIR/ntp`
 
 # Launch telnet if telnet file exists in config folder
-[ -e $CFG_DIR/telnet ] && /usr/sbin/telnetd -l /etc/auth.sh
+[ -e $CFG_DIR/telnet ] && insmod /modules/pty.ko && /usr/sbin/telnetd -l /etc/auth.sh
 
 # Launch ftpd if ftp file exists in config folder
 [ -e $CFG_DIR/ftp ] && tcpsvd -E 0.0.0.0 21 ftpd -w `cat $CFG_DIR/ftp` &
 
 # launch UPnP
-[ -e $CFG_DIR/upnp ] && /usr/bin/djmount -o iocharset=utf8,kernel_cache `cat $CFG_DIR/upnp`
+[ -e $CFG_DIR/upnp ] && insmod /modules/fuse.ko && /usr/bin/djmount -f -o kernel_cache `cat $CFG_DIR/upnp` &
 
 # To be launched at the end Web UI and auto_start script
 # Launch Web UI

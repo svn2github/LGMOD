@@ -1,6 +1,14 @@
+Changelog 1.6.8 :
+=================
+* djmount 0.71 (patched to enable 2GByte files/streams size limit) recompiled with uClibc toolchain 
+  over libupnp 1.6.6 and fuse 2.8.5. See: http://wdtvforum.com/main/index.php?topic=1308.0 for patch details.
+  We now have some space in rootfs to add dropbear & ftp with authentification in future versions
+* Now you can remove pty.ko & fuse.ko from modules script as that modules are autoload if needed
+* Removed obsolete link asix.88178.ko, after 1.6.5 it's not needed anymore
+
 Changelog 1.6.7 :
 =================
-* Fixed dhcp config bug (thanks to Arno for pointing this)
+* Fixed DHCP config bug (thanks to Arno for pointing this)
 * Haserl is updated to v0.9.29
 * Now you can upgrade LGMOD via WebUI->Tools->Upload the firmware to USB drive
 * Other fixes

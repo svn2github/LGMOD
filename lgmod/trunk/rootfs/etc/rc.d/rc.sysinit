@@ -40,7 +40,6 @@ if [ ! -e $MODULES_SH ]; then
     echo "" >> $MODULES_SH
     echo "# File system modules" >> $MODULES_SH
     echo "# User space filesystem module" >> $MODULES_SH
-    echo "insmod /modules/fuse.ko" >> $MODULES_SH
     echo "# CDROM filesystem modules" >> $MODULES_SH
     echo "#insmod /modules/cdrom.ko" >> $MODULES_SH
     echo "#insmod /modules/isofs.ko" >> $MODULES_SH
@@ -59,12 +58,9 @@ if [ ! -e $MODULES_SH ]; then
     echo "#insmod /modules/lockd.ko" >> $MODULES_SH
     echo "#insmod /modules/nfs.ko" >> $MODULES_SH
     echo "" >> $MODULES_SH
-    echo "# USB2Serial modules" >> $MODULES_SH
+    echo "# USB2Serial and mini_fo modules" >> $MODULES_SH
     echo "#insmod /modules/usbserial.ko" >> $MODULES_SH
     echo "#insmod /modules/pl2303.ko" >> $MODULES_SH
-    echo "" >> $MODULES_SH
-    echo "# pty and mini_fo modules" >> $MODULES_SH
-    echo "insmod /modules/pty.ko" >> $MODULES_SH
     echo "#insmod /modules/mini_fo.ko" >> $MODULES_SH
     chmod +x $MODULES_SH
 fi
