@@ -24,8 +24,6 @@ fi
 # Create script for modules loading if not exist (first boot)
 if [ ! -e $MODULES_SH ]; then
     echo "#!/bin/sh" > $MODULES_SH
-    echo "# Modules" >> $MODULES_SH
-    echo "# Network modules" >> $MODULES_SH
     echo "# Core network modules" >> $MODULES_SH
     echo "insmod /modules/mii.ko" >> $MODULES_SH
     echo "insmod /modules/usbnet.ko" >> $MODULES_SH
@@ -38,13 +36,11 @@ if [ ! -e $MODULES_SH ]; then
     echo "# DM9601 network chipset module" >> $MODULES_SH
     echo "insmod /modules/dm9601.ko" >> $MODULES_SH
     echo "" >> $MODULES_SH
-    echo "# File system modules" >> $MODULES_SH
-    echo "# User space filesystem module" >> $MODULES_SH
     echo "# CDROM filesystem modules" >> $MODULES_SH
     echo "#insmod /modules/cdrom.ko" >> $MODULES_SH
     echo "#insmod /modules/isofs.ko" >> $MODULES_SH
     echo "#insmod /modules/sr_mod.ko" >> $MODULES_SH
-    echo "# CIFS/Samba filesystem module with max buffer size 127 Ko" >> $MODULES_SH
+    echo "# CIFS/Samba filesystem module with max buffer size 127Kbyte" >> $MODULES_SH
     echo "#insmod /modules/cifs.ko CIFSMaxBufSize=130048" >> $MODULES_SH
     echo "insmod /modules/cifs.ko" >> $MODULES_SH
     echo "# EXT2 filesystem module" >> $MODULES_SH

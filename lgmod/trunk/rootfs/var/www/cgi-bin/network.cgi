@@ -96,6 +96,7 @@ fi
     else
       echo -n "/mnt/usb1/Drive1/upnp" > /mnt/lg/user/lgmod/upnp
     fi
+    [ ! -e `cat /mnt/lg/user/lgmod/upnp` ] && mkdir `cat /mnt/lg/user/lgmod/upnp`
   else
     rm /mnt/lg/user/lgmod/upnp
   fi
