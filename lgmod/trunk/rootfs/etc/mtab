@@ -1,3 +1,1 @@
-rootfs / rootfs rw 0 0
-/dev/root / ext2 rw 0 0
-/proc /proc proc rw,nodiratime 0 0
+/proc/mounts
