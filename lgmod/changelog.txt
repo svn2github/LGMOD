@@ -1,6 +1,6 @@
 Changelog 1.6.9 :
 =================
-* Pegasus.ko - added fake IDs (0x835c, 0x7765) & (0x835e, 0x7765) for Gile USB LAN Card UN-001 (Infineon ADM8515 chip)
+* Pegasus.ko - added fake IDs (0x835a, 0x7765),(0x835c, 0x7765),(0x835e, 0x7765) for Gile USB LAN Card UN-001 (Infineon ADM8515 chip)
   The bug is related to Pegasus II chips behaviour on HW reset and at this time I do not know how resolve it: 
   http://www.mail-archive.com/linux-usb-devel@lists.sourceforge.net/msg46771.html
   http://www.mail-archive.com/debian-kernel@lists.debian.org/msg35273.html

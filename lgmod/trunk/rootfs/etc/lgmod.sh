@@ -95,7 +95,7 @@ if [ -e /mnt/usb1/Drive1/patch.sh ]; then
     dos2unix $P_SH
     mv /mnt/usb1/Drive1/patch.sh /mnt/usb1/Drive1/patch.sh_used
     sync
-    echo "Copied patch script from USB Stick. Rebooting..."
+    echo "Copied patch script from USB drive. Rebooting..."
     reboot
 fi
 sync
@@ -130,7 +130,7 @@ opt=`echo $ndrv | awk -F# '{print $5}'`
 uname=`echo $ndrv | awk -F# '{print $6}'`
 pass=`echo $ndrv | awk -F# '{print $7}'`
 
-if [ "$automount" = "1" ];  then
+if [ "$automount" = "1" ]; then
     mnt_opt="-o noatime";
     [ "$uname" ] && mnt_opt="${mnt_opt},user=$uname,pass=$pass"
     [ "$opt" ] && mnt_opt="${mnt_opt},${opt}"
@@ -142,13 +142,19 @@ done
 [ -e $CFG_DIR/ntp ] && ntpd -q -p `cat $CFG_DIR/ntp`
 
 # Launch telnet server
-[ -e $CFG_DIR/telnet ] && insmod /modules/pty.ko ; /usr/sbin/telnetd -l /etc/auth.sh
+if [ -e $CFG_DIR/telnet ]; then
+  insmod /modules/pty.ko
+  /usr/sbin/telnetd -l /etc/auth.sh
+fi
 
 # Launch FTP server
 [ -e $CFG_DIR/ftp ] && tcpsvd -E 0.0.0.0 21 ftpd -w `cat $CFG_DIR/ftp` &
 
 # Launch UPnP client
-[ -e $CFG_DIR/upnp ] && insmod /modules/fuse.ko ; /usr/bin/djmount -f -o kernel_cache `cat $CFG_DIR/upnp` &
+if [ -e $CFG_DIR/upnp ]; then
+ insmod /modules/fuse.ko
+ /usr/bin/djmount -f -o kernel_cache `cat $CFG_DIR/upnp` &
+fi
 
 # Launch Web UI
 /usr/sbin/httpd -c $HTTPD_CONF -h /var/www
