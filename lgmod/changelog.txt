@@ -1,3 +1,6 @@
+Changelog 1.6.
+* Pegasus.ko - added fake IDs (0x835c, 0x7765) & (0x835e, 0x7765) for Gile USB LAN Card UN-001 (AMD8515 based)
+
 Changelog 1.6.8 :
 =================
 * djmount 0.71 (patched to enable 2GByte files/streams size limit) recompiled with uClibc toolchain 
