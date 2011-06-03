@@ -71,6 +71,9 @@ content-type: text/html
      fi ?>
 </form>
 </div></div>
+<div class="post"><div class="posthead">LG_DTV Folder contents</div><div class="posttext">
+<pre><? ls -l /mnt/usb1/Drive1/LG_DTV ?></pre>
+</div></div>
 
 <div class="post"><div class="posthead">Autostart script (to be executed after lgmod (network available) and RELEASE running (USB available))</div><div class="posttext">
 <form action="tools.cgi" method="post">
