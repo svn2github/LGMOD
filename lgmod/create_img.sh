@@ -3,7 +3,7 @@
 # Originally written for OpenLGTV_BCM by xeros
 # Modified for lgmod by hawkeye
 LGMOD_VERSION="1.6.10"
-LGMOD_VERSION_EPK="36910"
+LGMOD_VERSION_EPK="37501"
 LGMOD_VERSION_ROOTFS="10610"
 mkepk_bin=../pack/mkepk
 mksquashfs_bin=../pack/mksquashfs
