@@ -1,0 +1,9 @@
+.Keyboard {
+	background: transparent url(../Images/Keyboard/keypad.png) 0 0 no-repeat;
+}
+.Keyboard a{
+	background: transparent url(../Images/Keyboard/bt_nofocus.png) 0 0 no-repeat;
+}
+.Keyboard a:hover, a:focus{
+	background: transparent url(../Images/Keyboard/bt_focus.png) -50px -50px no-repeat;
+}
