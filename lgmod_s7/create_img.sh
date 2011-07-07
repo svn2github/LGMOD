@@ -25,15 +25,15 @@ then
 fi
 #_new_# <<
 
-#_new-tmp_#rm -r squashfs-root
-#_new-tmp_#cp -r $dir squashfs-root
-#_new-tmp_#cd squashfs-root
+rm -r squashfs-root
+cp -r $dir squashfs-root
+cd squashfs-root
 #_old_#tar xvjf dev.tar.bz2
 #_new-tmp_#tar xvjpf dev.tar.bz2
-#_new-tmp_#tar xvjf etc_passwd.tar.bz2
-#_new-tmp_#rm -f dev.tar.bz2 etc_passwd.tar.bz2
-#_new-tmp_#find . -name '.svn' | xargs rm -rf
-#_new-tmp_#cd ..
+tar xvjf etc_passwd.tar.bz2
+rm -f dev.tar.bz2 etc_passwd.tar.bz2
+find . -name '.svn' | xargs rm -rf
+cd ..
 
 echo $LGMOD_VERSION > ./squashfs-root/var/www/cgi-bin/version
 sed -i -e "s/ver=/$LGMOD_VERSION/g" ./squashfs-root/var/www/cgi-bin/footer.inc
