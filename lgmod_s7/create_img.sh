@@ -52,14 +52,14 @@ if [ "$osize" -gt "$size" ]
 then
     echo "ERROR: Partition image too big for flashing."
     rm -f $ofile.sqfs
-    #_new-tmp_#rm -rf squashfs-root
+    rm -rf squashfs-root
     exit 1
 ##__new__## >>
 elif [ "$osize" != "$o4096" ]
 then
     echo "ERROR: Partition image is not multiple of 4096."
     rm -f $ofile.sqfs
-    #_new-tmp_#rm -rf squashfs-root
+    rm -rf squashfs-root
     exit 4
 elif [ "$1" == 'noepk' ] || [ ! -f "$mkepk_bin" ]
 then
@@ -78,5 +78,5 @@ else
 fi
 zip $ofile.zip $ofile.epk changelog.txt
 rm -f $ofile.pak
-#_new-tmp_#rm -rf squashfs-root
+rm -rf squashfs-root
 mv $ofile.sqfs $ofile.zip $ofile.epk ../
