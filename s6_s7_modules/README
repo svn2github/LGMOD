@@ -1,0 +1,7 @@
+This is a corrective version of usb2net module for pegasus/pegasus II chipset for LG TV.
+
+- Backported version of linux 2.6.34 to LG TV kernel version (2.6.26)
+- Added patch for reading MAC in eeprom when not already copied in pegasus RAM (stange usb reset behaviour of LG TV)
+- see source code or make a diff with LG file version for more details
+
+Arno1
