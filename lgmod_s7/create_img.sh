@@ -3,7 +3,7 @@
 # Originally written for OpenLGTV_BCM by xeros
 # Modified for lgmod by hawkeye
 # Modified for S7 by mmm4m5m
-LGMOD_VERSION="1.0.02"
+LGMOD_VERSION="1.0.03"
 LGMOD_VERSION_EPK="37501"
 LGMOD_VERSION_ROOTFS="10002"
 #mkepk_bin=../pack/mkepk
@@ -59,7 +59,7 @@ then
 elif [ "$1" == 'noepk' ] || [ ! -f "$mkepk_bin" ]
 then
     [ "$1" == 'noepk' ] || echo "WARNING: mkepk not found."
-    zip -j $ofile.zip $ofile.sqfs changelog.txt squashfs-root/mnt/lgmod/README
+    zip -j $ofile.zip $ofile.sqfs changelog.txt
     rm -rf squashfs-root
     mv $ofile.sqfs $ofile.zip ../
     exit
