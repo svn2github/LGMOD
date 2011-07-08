@@ -70,7 +70,7 @@ else
         $mkepk_bin -m 0x$LGMOD_VERSION_EPK HE_DTV_GP_M_AAAAABAA $ofile.epk $ofile.pak
     fi
 fi
-zip $ofile.zip $ofile.epk changelog.txt
+zip $ofile.zip mtd4_lginit changelog.txt
 rm -f $ofile.pak
 rm -rf squashfs-root
-mv $ofile.sqfs $ofile.zip $ofile.epk ../
+mv $ofile.sqfs $ofile.zip ../
