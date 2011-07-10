@@ -85,8 +85,9 @@ if [ -n "$install" ]; then
 fi
 [ $err != 0 ] && exit $err
 if [ -n "$install" ]; then
-	md5cur=$(md5sum "$rootfs"); md5chk=$(cat "$rootfs.md5")
-	[ "${md5cur% *}" = "${md5chk% *}" ] || { err=28; echo "ERROR($err): '$rootfs' md5 mismatch"; }
+	md5cur=$(md5sum "$rootfs") && md5chk=$(cat "$rootfs.md5") &&
+		[ "${md5cur% *}" = "${md5chk% *}" ] ||
+		{ err=28; echo "ERROR($err): '$rootfs' md5 mismatch"; }
 fi
 [ $err != 0 ] && exit $err
 
@@ -100,7 +101,7 @@ fi
 I=''
 if [ -n "$backup" ]; then
 	echo 'Backup: cat /proc/mtd'
-	I=$(cat /proc/mtd | sed -e 's/:.*"\(.*\)"//' | grep -v ' ') ||
+	I=$(cat /proc/mtd | sed -e 's/:.*"\(.*\)"/_\1/' | grep -v ' ') ||
 		{ err=34; echo "ERROR: $err"; }
 elif [ -n "$install_backup" ]; then
 	#I="${ROOTFS#/dev/}_rootfs ${LGINIT#/dev/}_lginit"
@@ -118,9 +119,9 @@ if [ -n "$I" ]; then
 	tar czpf "backup-$date-cmn_data.tar.gz" /mnt/lg/cmn_data ||
 		{ err=38; echo 'ERROR: Backup /usr/lg/cmn_data failed'; }
 	sync
-	[ $rootfs_size != $(stat -c %s "$bkpdir/mtd3_rootfs") ] &&
+	size=$(stat -c %s "$bkpdir/mtd3_rootfs") && [ $rootfs_size = "$size" ] ||
 		{ err=39; echo 'ERROR: Invalid file size: mtd3_rootfs'; }
-	#[ $lginit_size != $(stat -c %s "$bkpdir/mtd4_lginit") ] &&
+	#size=$(stat -c %s "$bkpdir/mtd4_lginit") && [ $lginit_size = "$size" ] ||
 	#	{ err=40; echo 'ERROR: Invalid file size: mtd4_lginit'; }
 	[ $err != 0 ] && exit $err
 	echo 'BACKUP DONE! SUCCESS!'
@@ -140,9 +141,8 @@ if [ -n "$install" ]; then
 	#		sync
 	#	fi
 	#	# check partition image size
-	#	size=$(stat -c %s "$lginit")
-	#	size4096=$(( $size / 4096 * 4096 ))
-	#	[ "$size" -gt "$lginit_size" ] &&
+	#	size=$(stat -c %s "$lginit") && size4096=$(( $size / 4096 * 4096 )) &&
+	#		[ "$size" -le "$lginit_size" ] ||
 	#		{ err=42; echo "ERROR($err): '$lginit' size is too big for flashing"; }
 	#	[ "$size" != "$size4096" ] &&
 	#		{ err=43; echo "ERROR($err): '$lginit' is not multiple of 4096"; }
@@ -163,9 +163,8 @@ if [ -n "$install" ]; then
 	sync; echo 3 > /proc/sys/vm/drop_caches; sleep 1
 
 	# check free ram
-	free=$(free | sed -e '2!d' -e 's/ \+/+/g' | cut -d + -f 4,6)
-	free=$(( $free ))
-	[ $free -lt $required_free_ram ] &&
+	free=$(free | sed -e '2!d' -e 's/ \+/+/g' | cut -d + -f 4,6) &&
+		free=$(( $free )) && [ $free -gt $required_free_ram ] ||
 		{ err=44; echo "ERROR($err): Low memory - very few free bytes available ($free < $required_free_ram)??!"; }
 
 
