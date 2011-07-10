@@ -1,53 +1,58 @@
 mmm4m5m & openlgtv community present LGMOD S7 v1.0.04 for LG TVs on Saturn 7 chipset 
 (was tested on LG 32LD465-ZA with firmware v03.03.11 and v03.03.32)
 ====================================================================================
-	
+
 Check the number of your partitions (especially if the TV is not EU or non LCD!)
-	cat /proc/mtdinfo
+	# cat /proc/mtdinfo
 LGMOD S7 was tested on TV with 25 partitions.
-
-Partition 3 must be rootfs, partition 4 nust be lginit.
-
-Install:
-	Enter debug mode (http://openlgtv.ru/wiki/index.php/Debug_mode_connection
-	Press F10 for debug prompt
-	Start 'sh'
-		$ call debug_os_shell+0xb0
-	Run installation script:
-		# /mnt/usb1/Drive1/install.sh
+	(mtd3=rootfs; mtd4=lginit; mtd11=user)
 
 Features:
 	LGMOD S7 is a port of LGMOD 1.6.10 with the following differences:
 		upload dir is /dev/shm/upload, limit 22M (tools.cgi is modified)
 		you can: /etc/init.d/lgmod start|stop
-		rc.sysinit and rc.local: /etc/init.d/lgmod boot|shutdown
-
-	startup options: /mnt/lgmod/lgmod.example
-		mount /dev/ as tmpfs
-		use lginit or "lginit as sh script"
-		do not start RELEASE (like it is in lgmod)
-		do not start lgmod
-
 	/dev/shm is tmpfs (33MB), skeleton from /mnt/lg/user/lgmod/init/devshm/
-		(the same as /mnt/lgmod/init/lgmod/init/devshm/)
 
-Changes:
-	/dev/shm/
-	dev-lgmod.tar.gz added to /dev/
-	dev*.tar.gz: chmod -R g+w,o+w - /dev/ as tmpfs
+Install:
+	Enter debug mode: http://openlgtv.ru/wiki/index.php/Debug_mode_connection
+		(you need RS232 cable and serial terminal program)
+	Press F10 for debug prompt
+	Start 'sh'
+		$ call debug_os_shell+0xb0
+	Run installation script:
+		# /mnt/usb1/Drive1/install.sh install
+		(or: 'install.sh install rootfs=filename.sqfs')
 
-	/etc/init.d/*
-	/etc/fstab - old (and wrong) LG fstab is also there
-	/etc/inittab
-	/etc/mtab
+It is important, your firmware to have unlocked uboot!
+	http://openlgtv.org.ru/wiki/index.php/Bootloader_connection
+	In case of troubles, you will need uboot!
 
-	/etc/auth.sh
-	/etc/lgmod.sh
-	/etc/udhcpc-default.script
+About install.sh script:
+	It does not write log file. Copy/Save the log from serial terminal program.
+	Info for your TV is saved into separate text file.
+	Force full backup: 'install.sh backup'. Dry run: 'install.sh dryrun'
+	Dry run does 'info' and 'backup'. Dry run skips only erase & flash
 
-	lgadm and lgdev added to /etc/passwd
+
+Advanced: manual backup & install
+	http://openlgtv.org.ru/wiki/index.php/How_to_backup_TV_firmware
+	http://openlgtv.org.ru/wiki/index.php/Partition_Editing
+Advanced: defails (/etc/init.d/rcS)
+	startup option: mount /dev/ as tmpfs
+	custom 'early init' script: /mnt/lg/user/lgmod/init/lginit
+Advanced: changes
+	dev.tar.gz - from LG as is (mtd55 was missing there)
+	dev-lgmod.tar.gz - pty.ko (lgmod telnetd), /dev/shm and more
+		(just in case: chmod -R g+w,o+w /dev)
+	/etc/init.d/* /etc/inittab /etc/mtab /etc/auth.sh /etc/lgmod.sh /etc/udhcpc-default.script /mnt/lgmod/
+	/etc/fstab (LG fstab content is also there)
 	/lib/modules/ (pty.ko and mini_fo.ko from rtokarev)
-	/mnt/lgmod/
+Advanced: notes
+	LG files in /etc/rc.d are not used. LG binaries and links are not removed/replaced:
+		example: /bin/kill (14K) /bin/ps (81K), /bin/watch (144K) (LG binaries instead of busybox links)
+		example: /bin/udhcpc (50K), /bin/top (200K), and more (busybox installed links are in /sbin, /usr/bin/, /usr/sbin)
+	Mostly, all files are preserved - as it is in LG firmware (files ownership is not preserved, anyway LG passwd file is invalid)
+	Removed LG binaries (we need space for modules): /bin/gdbserver /bin/udhcpc /bin/top
 
 
 

@@ -66,12 +66,12 @@ err=0
 type which > /dev/null      || { err=20; echo "Curse($err): The witch is not available!"; }
 which sync > /dev/null      || { err=21; echo "Error($err): 'sync' is out of sync!"; }
 which sed                     || err=22
-which stat                    || err=22
-which md5sum                  || err=22
-which cat > /dev/null       || { err=23; echo "Error($err): Your cat is somehow missing!"; }
+which stat                    || err=23
+which md5sum                  || err=24
+which cat > /dev/null       || { err=25; echo "Error($err): Your cat is somehow missing!"; }
 #if [ -n "$install" ] && [ -z "$update" ] && [ ! -f "$lginit" ]; then
-#	which rm                  || err=24
-#	which mv                  || err=25
+#	which rm                  || err=26
+#	which mv                  || err=26
 #	if [ -d squashfs-root ]; then
 #		rm -r squashfs-root || { err=26; echo "Error($err): can't remove 'squashfs-root'"; }
 #		sync
@@ -79,6 +79,9 @@ which cat > /dev/null       || { err=23; echo "Error($err): Your cat is somehow 
 #fi
 if [ -n "$install" ]; then
 	[ -f "$rootfs" ]        || { err=27; echo "Error($err): file not found '$rootfs'"; }
+	which flash_eraseall      || err=27
+	flash_eraseall --version | sed -e '2,$d' ||
+		{ err=29; echo "ERROR($err): 'flash_erasesall' something??!"; }
 fi
 [ $err != 0 ] && exit $err
 if [ -n "$install" ]; then
@@ -165,61 +168,59 @@ if [ -n "$install" ]; then
 	[ $free -lt $required_free_ram ] &&
 		{ err=44; echo "ERROR($err): Low memory - very few free bytes available ($free < $required_free_ram)??!"; }
 
-	# execute once and just before erase rootfs
-	echo | cat         || { err=42; echo "Error($err): Cat failed."; }
-	which flash_eraseall || err=43
-	flash_eraseall --version | sed -e '2,$d' ||
-		{ err=44; echo "ERROR($err): 'flash_erasesall' something??!"; }
-	[ $err != 0 ] && exit $err
-
-
-	# erase & write: rootfs
-	for i in 1 2; do
-		for j in 1 2; do
-			echo "$j: flash_eraseall $ROOTFS"
-			$TEST_ECHO flash_eraseall "$ROOTFS" && break
-			# TODO: try alternative erase (xeros)
-			err=45; echo "ERROR: $err (Critical!)"
-			[ $j -lt 2 ] && echo "ERROR: Trying again..."
-		done
-
-		echo "$i: cat $rootfs > $ROOTFS"
-		[ -n "$dryrun" ] && break
-		cat "$rootfs" > "$ROOTFS" && break
-		err=46; echo "ERROR: $err (Critical!)"
-		[ $i -lt 2 ] && echo "ERROR: Trying again..."
-	done
 
 	# erase & write: lginit
 	if [ $err = 0 ] && [ -z "$update" ]; then
 		for i in 1 2; do
 			for j in 1 2; do
-				echo "$j: flash_eraseall $LGINIT"
-				$TEST_ECHO flash_eraseall "$LGINIT" && break
+				echo "$j: flash_eraseall $LGINIT"; ERR=0
+				$TEST_ECHO flash_eraseall "$LGINIT" && break; ERR=$?
+				if [ $ERR = 138 ]; then echo "ERROR: $err ($ERR OK?)"; # Bus error?
+				else err=45; echo "ERROR: $err ($ERR Critical!)"; fi
 				# TODO: try alternative erase (xeros)
-				err=47; echo "ERROR: $err (Critical!)"
 				[ $j -lt 2 ] && echo "ERROR: Trying again..."
 			done
 
-			#echo "$i: cat $lginit > $LGINIT"
+			#echo "$i: cat $lginit > $LGINIT"; ERR=0
 			#[ -n "$dryrun" ] && break
-			#$TEST_ECHO cat "$lginit" > "$LGINIT" && break
-			#err=48; echo "ERROR: $err (Critical!)"
+			#cat "$lginit" > "$LGINIT" && break; ERR=$?
+			#err=46; echo "ERROR: $err ($ERR Critical!!!)"
 			#[ $i -lt 2 ] && echo "ERROR: Trying again..."
 			break
 		done
 	fi
 
+	# run once and just before erase rootfs
+	echo | cat || { err=47; echo "Error($err): Cat failed."; }
+
+	# erase & write: rootfs
+	for i in 1 2; do
+		for j in 1 2; do
+			echo "$j: flash_eraseall $ROOTFS"; ERR=0
+			$TEST_ECHO flash_eraseall "$ROOTFS" && break; ERR=$?
+			if [ $ERR = 138 ]; then echo "ERROR: $err ($ERR OK?)"; # Bus error?
+			else err=48; echo "ERROR: $err ($ERR Critical!)"; fi
+			# TODO: try alternative erase (xeros)
+			[ $j -lt 2 ] && echo "ERROR: Trying again..."
+		done
+
+		echo "$i: cat $rootfs > $ROOTFS"; ERR=0
+		[ -n "$dryrun" ] && break
+		cat "$rootfs" > "$ROOTFS" && break; ERR=$?
+		err=49; echo "ERROR: $err ($ERR Critical!!!)"
+		[ $i -lt 2 ] && echo "ERROR: Trying again..."
+	done
+
 	sync
 	if [ $err = 0 ]; then
-		echo 'FLASH DONE! SUCCESS! You can "reboot" now.
-			(Also you could copy and save all messages above.)'
+		echo 'FLASH DONE! SUCCESS! You can "reboot" now.'
+		echo '	(Also you could copy and save all messages above.)'
 	else
-		echo 'WARNING: Something is wrong!!!
-			1) do not touch TV and remote control
-			2) save and check messages above (copy messages from screen
-				or find the log file of your serial terminal program)
-			3) ask for assistance (forum/irc)'
+		echo 'WARNING: Something is wrong!!!'
+		echo '	1) do not touch TV and remote control'
+		echo '	2) save and check messages above (copy messages from screen'
+		echo '		or find the log file of your serial terminal program)'
+		echo '	3) ask for assistance (forum/irc)'
 		echo 'NOTE: Do it your self (advanced) - busybox binary is included in zip file'
 		exit $err
 	fi
