@@ -1,90 +1,23 @@
-mmm4m5m & openlgtv community present: 
-LGMOD v1.0.01 for LG TVs on Saturn 7 chipset (was tested on LG 32LD465-ZA with fw 03.03.11)
+mmm4m5m & openlgtv community present LGMOD S7 v1.0.04 for LG TVs on Saturn 7 chipset 
+(was tested on LG 32LD465-ZA with firmware v03.03.11 and v03.03.32)
+====================================================================================
 	
-	By default, lgmod is disabled. To enable it:
-		cd /mnt/lg/user && mkdir -p lgmod/init && touch lgmod/init/lgmod
-	To disable it: rm /mnt/lg/user/lgmod/init/lgmod
+Check the number of your partitions (especially if the TV is not EU or non LCD!)
+	cat /proc/mtdinfo
+LGMOD S7 was tested on TV with 25 partitions.
 
-Steps:
-	Prepare:
-		Check wiki: How to backup TV firmware
-			http://openlgtv.org.ru/wiki/index.php/How_to_backup_TV_firmware
-		Check wiki: Partition Editing
-			http://openlgtv.org.ru/wiki/index.php/Partition_Editing
-		Check wiki: Debug mode connection
-			http://openlgtv.org.ru/wiki/index.php/Debug_mode_connection
+Partition 3 must be rootfs, partition 4 nust be lginit.
 
-	Required!
-		Make a backup!
-		Verify your backup!
-		Double check the number of your partitions!
-			(especially if it is not EU firmware!!!)
-			rootfs must be number 3; lginit must be number 4
-
-	Install
-		Enter debug mode
-		Press F10 for debug prompt
-		Start 'sh'
-			$ call debug_os_shell+0xb0
-		Erase rootfs
-			# flash_eraseall /dev/mtd3
-		Write rootfs
-			# cat /mnt/usb1/Drive1/lgmod_S7_#####.sqfs > /dev/mtd3
-		Erase lginit
-			# flash_eraseall /dev/mtd4
-		Write lginit
-			# cat /mnt/usb1/Drive1/mtd4_lginit.sqfs > /dev/mtd4
-
+Install:
+	Enter debug mode (http://openlgtv.ru/wiki/index.php/Debug_mode_connection
+	Press F10 for debug prompt
+	Start 'sh'
+		$ call debug_os_shell+0xb0
+	Run installation script:
+		# /mnt/usb1/Drive1/install.sh
 
 Features:
-	lgmod for S7 - as it is (all features)
-		upload dir is /dev/shm/upload, limit 22M
-		you can do /etc/init.d/lgmod start|stop
-
-	/dev/shm is tmpfs (33MB)
-		directory skeleton from: /mnt/lg/user/lgmod/init/devshm/
-
-
-
-Advanced (just skip and ignore everything below):
-	startup/config options: check /etc/init.d/rcS
-		mount /dev/ as tmpfs
-		use lginit or "lginit as sh script"
-		do not start RELEASE (lgmod)
-		do not start lgmod
-	custom early init scripts: /mnt/lgmod/lginit.example
-
-Changes:
-	dev.tar.gz - from LG as is (mtd55 was missing there)
-	dev-lgmod.tar.gz - pty.ko (lgmod telnetd), /dev/shm and more
-		(just in case: chmod -R g+w,o+w /dev)
-
-	/etc/init.d/*
-	/etc/fstab - LG fstab content is also there
-	/etc/inittab
-	/etc/mtab
-
-	/etc/auth.sh
-	/etc/lgmod.sh
-	/etc/udhcpc-default.script
-
-	/lib/modules/ (pty.ko and mini_fo.ko from rtokarev)
-
-	/mnt/lgmod/
-
-More notes:
-	LG files in /etc/rc.d are not used (rc.sysinit and rc.local)
-	LG binaries and links are not touched, not removed
-		example: /bin/kill (14K) /bin/ps (81K), /bin/watch (144K)
-			All LG binaries instead of busybox links
-		example: /bin/udhcpc (50K), /bin/top (200K), and more...
-			busybox links are in /sbin, /usr/bin/, /usr/sbin
-	Mostly, all files are preserved - as it is in LG firmware
-		(files ownership is not preserved, anyway LG passwd file is invalid)
-
-
-
-It contains all LGMOD v1.6.10 features with the following differences:
+	LGMOD S7 is a port of LGMOD 1.6.10 with the following differences:
 		upload dir is /dev/shm/upload, limit 22M (tools.cgi is modified)
 		you can: /etc/init.d/lgmod start|stop
 		rc.sysinit and rc.local: /etc/init.d/lgmod boot|shutdown
@@ -94,8 +27,6 @@ It contains all LGMOD v1.6.10 features with the following differences:
 		use lginit or "lginit as sh script"
 		do not start RELEASE (like it is in lgmod)
 		do not start lgmod
-
-	custom init scripts: /mnt/lgmod/lginit.example
 
 	/dev/shm is tmpfs (33MB), skeleton from /mnt/lg/user/lgmod/init/devshm/
 		(the same as /mnt/lgmod/init/lgmod/init/devshm/)
@@ -115,24 +46,14 @@ Changes:
 	/etc/udhcpc-default.script
 
 	lgadm and lgdev added to /etc/passwd
-
 	/lib/modules/ (pty.ko and mini_fo.ko from rtokarev)
-
 	/mnt/lgmod/
 
 
-Notes:
-	LG files in /etc/rc.d are not used
-	LG binaries and busybox links are not touched, not removed
-		example: /bin/kill (14K) /bin/ps (81K), /bin/watch (144K)
-			All LG binaries instead of busybox links
-		example: /bin/udhcpc (50K), /bin/top (200K), and more...
-			busybox links are in /sbin, /usr/bin/, /usr/sbin
-	Mostly, all files/permissions are preserved - as it is from LG
 
-
-Changelog 1.6.9 :
-=================
+Changelog 1.6.10 :
+==================
+* DM9601 two new IDs added
 * You can see LG_DTV folder content on the USB drive in WebUI->Tools tab.
 
 Changelog 1.6.9 :
