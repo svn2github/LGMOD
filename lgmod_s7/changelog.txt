@@ -1,5 +1,7 @@
-mmm4m5m & openlgtv community present LGMOD S7 v1.0.04 for LG TVs on Saturn 7 chipset 
-(was tested on LG 32LD465-ZA with firmware v03.03.11 and v03.03.32)
+mmm4m5m & openlgtv community present LGMOD S7 v1.0.04 for LG TVs on Saturn 7 chipset. Tested on:
+	LG 32LD465-ZA, firmware v03.03.32 and v03.03.11
+	LG 42LD420-ZA, firmware v03.03.26
+	LG 42LD550-ZA, firmware v03.01.08
 ====================================================================================
 
 Check the number of your partitions (especially if the TV is not EU or non LCD!)
