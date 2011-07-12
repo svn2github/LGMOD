@@ -1,7 +1,8 @@
 mmm4m5m & openlgtv community present LGMOD S7 v1.0.04 for LG TVs on Saturn 7 chipset. Tested on:
-	LG 32LD465-ZA, firmware v03.03.32 and v03.03.11
+	LG 32LD465-ZA, firmware v03.03.11 and v03.03.32
 	LG 42LD420-ZA, firmware v03.03.26
 	LG 42LD550-ZA, firmware v03.01.08
+	LG 32LE3300-ZA, firmware v03.03.32 (debug enabled in advance)
 ====================================================================================
 
 Check the number of your partitions (especially if the TV is not EU or non LCD!)
@@ -18,6 +19,7 @@ Features:
 Install:
 	Enter debug mode: http://openlgtv.ru/wiki/index.php/Debug_mode_connection
 		(you need RS232 cable and serial terminal program)
+		Note: Debug is disabled after firmware v3.03.2x
 	Press F10 for debug prompt
 	Start 'sh'
 		$ call debug_os_shell+0xb0
@@ -28,6 +30,7 @@ Install:
 It is important, your firmware to have unlocked uboot!
 	http://openlgtv.org.ru/wiki/index.php/Bootloader_connection
 	In case of troubles, you will need uboot!
+	Note: Uboot is disabled after firmware v3.03.2x
 
 About install.sh script:
 	It does not write log file. Copy/Save the log from serial terminal program.

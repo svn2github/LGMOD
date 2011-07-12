@@ -11,18 +11,18 @@ lginit=mtd4_lg-init.sqfs
 info=1
 kill=1
 install=''
-install_backup=1
 dryrun=''
 ROOTFS=/dev/mtd3
 LGINIT=/dev/mtd4
+rootfs_size=7340032
+lginit_size=393216
+required_free_ram=10000
 
 
 # defaults
 [ -f /etc/lgmod.sh ] && update=1 || update=''
 [ -n "$update" ]     && backup='' || backup=1
-rootfs_size=7340032
-lginit_size=393216
-required_free_ram=10000
+install_backup=1
 
 
 # command line
@@ -43,7 +43,6 @@ for i in "$@"; do
 	[ "$i" = nobackup ]   && install_backup=''
 	[ "$i" = dryrun ]     && dryrun=1
 done
-[ -n "$install" ] && [ -z "$update" ] && install_backup=1
 [ -n "$dryrun" ] && TEST_ECHO=echo || TEST_ECHO=''
 
 
@@ -113,16 +112,19 @@ if [ -n "$I" ]; then
 		echo "Backup: $i ..."
 		[ -e "/dev/${i%_*}" ] || { err=35; echo "ERROR: $err"; }
 		cat "/dev/${i%_*}" > "$bkpdir/$i" || { err=36; echo "ERROR: $err"; }
+		sync && echo 3 > /proc/sys/vm/drop_caches || { err=37; echo "ERROR: $err"; }
 	done
-	tar czpf "backup-$date-user.tar.gz" /mnt/lg/user ||
-		{ err=37; echo 'ERROR: Backup /usr/lg/user failed'; }
-	tar czpf "backup-$date-cmn_data.tar.gz" /mnt/lg/cmn_data ||
-		{ err=38; echo 'ERROR: Backup /usr/lg/cmn_data failed'; }
-	sync
+	# TODO: tar from LG does not know 'z' ???
+	#	Usage: tar -[cxtvO] [-X FILE] [-f TARFILE] [-C DIR] [FILE(s)]...
+	#tar czpf "backup-$date-user.tar.gz" /mnt/lg/user ||
+	#	{ err=37; echo 'ERROR($err): Backup /usr/lg/user failed'; }
+	#tar czpf "backup-$date-cmn_data.tar.gz" /mnt/lg/cmn_data ||
+	#	{ err=38; echo 'ERROR($err): Backup /usr/lg/cmn_data failed'; }
+	#sync
 	size=$(stat -c %s "$bkpdir/mtd3_rootfs") && [ $rootfs_size = "$size" ] ||
-		{ err=39; echo 'ERROR: Invalid file size: mtd3_rootfs'; }
+		{ err=39; echo 'ERROR($err): Invalid file size: mtd3_rootfs'; }
 	#size=$(stat -c %s "$bkpdir/mtd4_lginit") && [ $lginit_size = "$size" ] ||
-	#	{ err=40; echo 'ERROR: Invalid file size: mtd4_lginit'; }
+	#	{ err=40; echo 'ERROR($err): Invalid file size: mtd4_lginit'; }
 	[ $err != 0 ] && exit $err
 	echo 'BACKUP DONE! SUCCESS!'
 fi
@@ -160,7 +162,7 @@ if [ -n "$install" ]; then
 		done
 		sleep 2
 	fi
-	sync; echo 3 > /proc/sys/vm/drop_caches; sleep 1
+	sync; echo 3 > /proc/sys/vm/drop_caches; sleep 2
 
 	# check free ram
 	free=$(free | sed -e '2!d' -e 's/ \+/+/g' | cut -d + -f 4,6) &&
