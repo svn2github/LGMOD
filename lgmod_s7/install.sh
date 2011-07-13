@@ -110,6 +110,7 @@ if [ -n "$I" ]; then
 		echo "WARNING: Create archive failed: /usr/lg/cmn_data"
 	sync
 	echo 'BACKUP DONE! SUCCESS!'
+	echo '	For backup and installation, start: install.sh install'
 	echo '	(Keep your backup safe! USB flash drive is NOT safe!)'
 fi
 [ $err != 0 ] && exit $err
