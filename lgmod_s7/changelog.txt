@@ -1,4 +1,4 @@
-mmm4m5m & openlgtv community present LGMOD S7 v1.0.04 for LG TVs on Saturn 7 chipset. Tested on:
+mmm4m5m & openlgtv community present LGMOD S7 v1.0.05 for LG TVs on Saturn 7 chipset. Tested on:
 	LG 32LD465-ZA, firmware v03.03.11 and v03.03.32
 	LG 42LD420-ZA, firmware v03.03.26
 	LG 42LD550-ZA, firmware v03.01.08
@@ -12,11 +12,12 @@ LGMOD S7 was tested on TV with 25 partitions.
 
 Features:
 	LGMOD S7 is a port of LGMOD 1.6.10 with the following differences:
-		upload dir is /dev/shm/upload, limit 22M (tools.cgi is modified)
+		upload dir is /dev/shm/upload, limit 22M
 		you can: /etc/init.d/lgmod start|stop
 	/dev/shm is tmpfs (33MB), skeleton from /mnt/lg/user/lgmod/init/devshm/
 
 Install:
+	In TV menu 'IN START'/'System 1' - change "Debug mode" to "DEBUG"
 	Enter debug mode: http://openlgtv.ru/wiki/index.php/Debug_mode_connection
 		(you need RS232 cable and serial terminal program)
 		Note: Debug is disabled after firmware v3.03.2x

@@ -3,9 +3,9 @@
 # Originally written for OpenLGTV_BCM by xeros
 # Modified for lgmod by hawkeye
 # Modified for S7 by mmm4m5m
-LGMOD_VERSION="1.0.04"
+LGMOD_VERSION="1.0.05"
 #LGMOD_VERSION_EPK="37501"
-LGMOD_VERSION_ROOTFS="10004"
+LGMOD_VERSION_ROOTFS="10005"
 #mkepk_bin=../pack/mkepk
 mksquashfs_bin=../pack/mksquashfs
 

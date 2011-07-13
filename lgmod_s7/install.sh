@@ -3,9 +3,9 @@
 cd "${0%/*}"
 
 # config
-date=$(date '+%Y%m%d-%H%M%S')
+date=$(date '+%Y%m%d-%H%M%S'); # TODO: long file names?
 infofile="backup-$date-info.txt"
-bkpdir="backup-$date"; # TODO: long file names?
+bkpdir="backup-$date"
 rootfs=$(echo lgmod_*.sqfs)
 lginit=mtd4_lg-init.sqfs
 info=1
@@ -18,11 +18,10 @@ rootfs_size=7340032
 lginit_size=393216
 required_free_ram=10000
 
-
 # defaults
 [ -f /etc/lgmod.sh ] && update=1 || update=''
 [ -n "$update" ]     && backup='' || backup=1
-install_backup=1
+update_backup=1
 
 
 # command line
@@ -40,176 +39,157 @@ for i in "$@"; do
 	[ "$i" = noupdate ]   && update=''
 	[ "$i" = backup ]     && backup=1
 	[ "$i" = nobackup ]   && backup=''
-	[ "$i" = nobackup ]   && install_backup=''
+	[ "$i" = nobackup ]   && update_backup=''
 	[ "$i" = dryrun ]     && dryrun=1
 done
 [ -n "$dryrun" ] && TEST_ECHO=echo || TEST_ECHO=''
 
 
+err=0
 # info
 if [ -n "$info" ]; then
 	(
+	echo; echo '#' lsmod; lsmod || exit 10
+	echo; echo '#' free; free || exit 11
+	echo; echo '#' ps w -A; ps w -A || exit 12
 	for i in /proc/version /proc/cpuinfo /proc/mounts /proc/mtd /etc/version_for_lg \
 		/lg/model/RELEASE.cfg /etc/init.d/rcS /etc/rc.d/rc.sysinit /etc/rc.d/rc.local; do
-		echo; echo '#' cat "$i"; cat "$i"
+		echo; echo '#' cat "$i"; cat "$i" || exit 13
 	done
-	echo; echo '#' free; free;
-	echo; echo '#' lsmod; lsmod;   echo; echo '#' printenv; printenv
-	echo; echo '#' export; export; echo; echo '#' dmesg; dmesg
-	) > "$infofile" || { err=10; echo "Error($err): can't create '$infofile' file"; exit $err; }
+	echo; echo '#' printenv; printenv || exit 14
+	echo; echo '#' export; export || exit 15
+	echo; echo '#' dmesg; dmesg || exit 16
+	) > "$infofile" || { err=$?; echo "Error($err): Info file failed: $infofile"; }
 fi
 
-
 # prepare
-err=0
-type which > /dev/null      || { err=20; echo "Curse($err): The witch is not available!"; }
-which sync > /dev/null      || { err=21; echo "Error($err): 'sync' is out of sync!"; }
-which sed                     || err=22
-which stat                    || err=23
-which md5sum                  || err=24
-which cat > /dev/null       || { err=25; echo "Error($err): Your cat is somehow missing!"; }
-#if [ -n "$install" ] && [ -z "$update" ] && [ ! -f "$lginit" ]; then
-#	which rm                  || err=26
-#	which mv                  || err=26
-#	if [ -d squashfs-root ]; then
-#		rm -r squashfs-root || { err=26; echo "Error($err): can't remove 'squashfs-root'"; }
-#		sync
-#	fi
-#fi
+type which && which sync stat cat sed md5sum mkdir flash_eraseall || err=21; #rm mv
+[ -f ./busybox ] || { err=22; echo "Error($err): File not found: busybox"; }
 if [ -n "$install" ]; then
-	[ -f "$rootfs" ]        || { err=27; echo "Error($err): file not found '$rootfs'"; }
-	which flash_eraseall      || err=27
+	[ -f "$rootfs" ] || { err=23; echo "Error($err): File not found: $rootfs"; }
 	flash_eraseall --version | sed -e '2,$d' ||
-		{ err=29; echo "ERROR($err): 'flash_erasesall' something??!"; }
+		{ err=24; echo "ERROR($err): 'flash_erasesall' something??!"; }
 fi
 [ $err != 0 ] && exit $err
 if [ -n "$install" ]; then
 	md5cur=$(md5sum "$rootfs") && md5chk=$(cat "$rootfs.md5") &&
 		[ "${md5cur% *}" = "${md5chk% *}" ] ||
-		{ err=28; echo "ERROR($err): '$rootfs' md5 mismatch"; }
+		{ err=25; echo "ERROR($err): md5 mismatch: $rootfs"; }
 fi
 [ $err != 0 ] && exit $err
 
 
 # backup
-if [ -n "$backup" ] || [ -n "$install_backup" ]; then
-	which mkdir             || err=31
-	[ -d "$bkpdir" ]      && { err=32; echo "Error($err): '$bkpdir' directory exist"; }
-	mkdir -p "$bkpdir"    || { err=33; echo "Error($err): can't create '$bkpdir' directory"; }
-fi
 I=''
-if [ -n "$backup" ]; then
-	echo 'Backup: cat /proc/mtd'
-	I=$(cat /proc/mtd | sed -e 's/:.*"\(.*\)"/_\1/' | grep -v ' ') ||
-		{ err=34; echo "ERROR: $err"; }
-elif [ -n "$install_backup" ]; then
-	#I="${ROOTFS#/dev/}_rootfs ${LGINIT#/dev/}_lginit"
-	I="${ROOTFS#/dev/}_rootfs"
+if [ -n "$backup" ] || [ -n "$update_backup" ]; then
+	[ -d "$bkpdir" ]   && { err=31; echo "Error($err): Directory exist: $bkpdir"; exit $err; }
+	mkdir -p "$bkpdir" || { err=32; echo "Error($err): Can't create directory: $bkpdir"; exit $err; }
+	I="${ROOTFS#/dev/}_rootfs ${LGINIT#/dev/}_lginit"
 fi
+if [ -n "$backup" ]; then
+	echo 'NOTE: Backup cat /proc/mtd ...'
+	I=$(cat /proc/mtd | sed -e 's/:.*"\(.*\)"/_\1/' | grep -v ' ') ||
+		{ err=33; echo "ERROR($err): /proc/mtd"; exit $err; }
+fi
+[ $err != 0 ] && exit $err
 if [ -n "$I" ]; then
-	[ $err != 0 ] && exit $err
 	for i in $I; do
 		echo "Backup: $i ..."
-		[ -e "/dev/${i%_*}" ] || { err=35; echo "ERROR: $err"; }
-		cat "/dev/${i%_*}" > "$bkpdir/$i" || { err=36; echo "ERROR: $err"; }
-		sync && echo 3 > /proc/sys/vm/drop_caches || { err=37; echo "ERROR: $err"; }
+		[ -e "/dev/${i%_*}" ] || { err=34; echo "ERROR($err): /dev/${i%_*}"; exit $err; }
+		cat "/dev/${i%_*}" > "$bkpdir/$i" || { err=35; echo "ERROR($err): $bkpdir/$i"; exit $err; }
+		sync; echo 3 > /proc/sys/vm/drop_caches; sleep 1
 	done
-	# TODO: tar from LG does not know 'z' ???
-	#	Usage: tar -[cxtvO] [-X FILE] [-f TARFILE] [-C DIR] [FILE(s)]...
-	#tar czpf "backup-$date-user.tar.gz" /mnt/lg/user ||
-	#	{ err=37; echo 'ERROR($err): Backup /usr/lg/user failed'; }
-	#tar czpf "backup-$date-cmn_data.tar.gz" /mnt/lg/cmn_data ||
-	#	{ err=38; echo 'ERROR($err): Backup /usr/lg/cmn_data failed'; }
-	#sync
 	size=$(stat -c %s "$bkpdir/mtd3_rootfs") && [ $rootfs_size = "$size" ] ||
-		{ err=39; echo 'ERROR($err): Invalid file size: mtd3_rootfs'; }
-	#size=$(stat -c %s "$bkpdir/mtd4_lginit") && [ $lginit_size = "$size" ] ||
-	#	{ err=40; echo 'ERROR($err): Invalid file size: mtd4_lginit'; }
-	[ $err != 0 ] && exit $err
+		{ err=36; echo "ERROR($err): Invalid file size($size): mtd3_rootfs"; }
+	size=$(stat -c %s "$bkpdir/mtd4_lginit") && [ $lginit_size = "$size" ] ||
+		{ err=37; echo "ERROR($err): Invalid file size($size): mtd4_lginit"; }
+	# LG stock: tar -[cxtvO] [-X FILE] [-f TARFILE] [-C DIR] [FILE(s)]...
+	./busybox tar czpf "backup-$date-user.tar.gz" /mnt/lg/user ||
+		echo "WARNING: Create archive failed: /usr/lg/user"
+	./busybox tar czpf "backup-$date-cmn_data.tar.gz" /mnt/lg/cmn_data ||
+		echo "WARNING: Create archive failed: /usr/lg/cmn_data"
+	sync
 	echo 'BACKUP DONE! SUCCESS!'
+	echo '	(Keep your backup safe! USB flash drive is NOT safe!)'
 fi
+[ $err != 0 ] && exit $err
+
+
+## install - create lginit sqfs image
+#if [ -n "$install" ] && [ -z "$update" ]; then
+#	if [ ! -f "$lginit" ] && [ -d squashfs-root ]; then
+#		rm -r squashfs-root && sync ||
+#			{ err=41; echo "Error($err): '$lginit' - can't remove directory: squashfs-root"; exit $err; }
+#	fi
+#	if [ ! -f "$lginit" ] && [ ! -d squashfs-root ]; then
+#		echo 'NOTE: Create lginit.sqfs image ...'
+#		./unsquashfs "$bkpdir/mtd4_lginit" &&
+#			mv squashfs-root/lginit squashfs-root/lg-init &&
+#			./mksquashfs squashfs-root "$lginit" -le -all-root -noappend &&
+#			rm -r squashfs-root && sync ||
+#			{ err=42; echo "ERROR($err): '$lginit' - unsquashfs/mksquashfs failed"; exit $err; }
+#	fi
+#	# check partition image size
+#	size=$(stat -c %s "$lginit") && [ "$size" -le "$lginit_size" ] ||
+#		{ err=43; echo "ERROR($err): '$lginit' - size is too big for flashing($size)"; }
+#	size4096=$(( $size / 4096 * 4096 )) && [ "$size" = "$size4096" ] ||
+#		{ err=44; echo "ERROR($err): '$lginit' - size is not multiple of 4096($size)"; }
+#fi
+
+# install - free ram
+if [ -n "$install" ] && [ -n "$kill" ]; then
+	echo 'NOTE: Freeing memory (killing daemons) ...'
+	# lgmod services: udhcpc ntpd telnetd tcpsvd djmount httpd
+	for i in udhcpc ntpd tcpsvd djmount; do
+		killall "$i"; pkill "$i";
+	done
+	sleep 2
+fi
+# install - check ram
+if [ -n "$install" ]; then
+	sync; echo 3 > /proc/sys/vm/drop_caches; sleep 1
+	free=$(free | sed -e '2!d' -e 's/ \+/+/g' | cut -d + -f 4,6) &&
+		free=$(( $free )) && [ $free -ge $required_free_ram ] ||
+		{ err=45; echo "ERROR($err): Low memory - very few bytes available ($free < $required_free_ram)??!"; }
+fi
+[ $err != 0 ] && exit $err
 
 
 # install
 if [ -n "$install" ]; then
-	## create lginit sqfs file
-	#if [ -z "$update" ]; then
-	#	if [ ! -f "$lginit" ]; then
-	#		./unsquashfs "$bkpdir/mtd4_lginit" &&
-	#			mv squashfs-root/lginit squashfs-root/lg-init &&
-	#			./mksquashfs squashfs-root "$lginit" -le -all-root -noappend ||
-	#			{ err=41; echo "ERROR($err): lginit - unsquash/mksquash failed!"; }
-	#		rm -r squashfs-root
-	#		sync
-	#	fi
-	#	# check partition image size
-	#	size=$(stat -c %s "$lginit") && size4096=$(( $size / 4096 * 4096 )) &&
-	#		[ "$size" -le "$lginit_size" ] ||
-	#		{ err=42; echo "ERROR($err): '$lginit' size is too big for flashing"; }
-	#	[ "$size" != "$size4096" ] &&
-	#		{ err=43; echo "ERROR($err): '$lginit' is not multiple of 4096"; }
-	#	[ $err != 0 ] && exit $err
-	#fi
-
-	# TODO: first copy partition images to /tmp - just in case (xeros)
-
-	# free ram
-	if [ -n "$kill" ]; then
-		# lgmod services: udhcpc ntpd telnetd tcpsvd djmount httpd
-		echo 'NOTE: Freeing memory (killing daemons)...'
-		for i in udhcpc ntpd tcpsvd djmount; do
-			killall "$i"; pkill "$i";
-		done
-		sleep 2
-	fi
-	sync; echo 3 > /proc/sys/vm/drop_caches; sleep 2
-
-	# check free ram
-	free=$(free | sed -e '2!d' -e 's/ \+/+/g' | cut -d + -f 4,6) &&
-		free=$(( $free )) && [ $free -gt $required_free_ram ] ||
-		{ err=44; echo "ERROR($err): Low memory - very few free bytes available ($free < $required_free_ram)??!"; }
-
-
-	# erase & write: lginit
-	if [ $err = 0 ] && [ -z "$update" ]; then
-		for i in 1 2; do
-			for j in 1 2; do
-				echo "$j: flash_eraseall $LGINIT"; ERR=0
-				$TEST_ECHO flash_eraseall "$LGINIT" && break; ERR=$?
-				if [ $ERR = 138 ]; then echo "ERROR: $err ($ERR OK?)"; # Bus error?
-				else err=45; echo "ERROR: $err ($ERR Critical!)"; fi
-				# TODO: try alternative erase (xeros)
-				[ $j -lt 2 ] && echo "ERROR: Trying again..."
-			done
-
-			#echo "$i: cat $lginit > $LGINIT"; ERR=0
-			#[ -n "$dryrun" ] && break
-			#cat "$lginit" > "$LGINIT" && break; ERR=$?
-			#err=46; echo "ERROR: $err ($ERR Critical!!!)"
-			#[ $i -lt 2 ] && echo "ERROR: Trying again..."
-			break
-		done
-	fi
-
-	# run once and just before erase rootfs
-	echo | cat || { err=47; echo "Error($err): Cat failed."; }
-
-	# erase & write: rootfs
-	for i in 1 2; do
+	# lginit - erase
+	if [ -z "$update" ]; then
 		for j in 1 2; do
-			echo "$j: flash_eraseall $ROOTFS"; ERR=0
-			$TEST_ECHO flash_eraseall "$ROOTFS" && break; ERR=$?
-			if [ $ERR = 138 ]; then echo "ERROR: $err ($ERR OK?)"; # Bus error?
-			else err=48; echo "ERROR: $err ($ERR Critical!)"; fi
+			[ $j != 1 ] && echo "$j: Trying again ..."
+			echo "$j: NOTE: Erase $LGINIT ..."; ERR=0
+			$TEST_ECHO flash_eraseall "$LGINIT" && break; ERR=$?
+			if [ $ERR = 138 ]; then echo "$j: Error($err): $LGINIT - Bus error($ERR) OK!?"
+			else err=46; echo "$j: ERROR($err): $LGINIT - Critical($ERR)!"; fi
 			# TODO: try alternative erase (xeros)
-			[ $j -lt 2 ] && echo "ERROR: Trying again..."
+		done
+		[ $err != 0 ] && exit $err
+	fi
+
+	# rootfs - run once just before erase
+	echo | cat || { err=47; echo "Error($err): Cat failed!"; exit $err; }
+
+	# rootfs - erase & write: 
+	for i in 1 2; do
+		[ $i != 1 ] && echo "$i: $ROOTFS - Trying again ..."
+
+		for j in 1 2; do
+			[ $j != 1 ] && echo "$j: Trying again ..."
+			echo "$j: NOTE: Erase $ROOTFS ..."; ERR=0
+			$TEST_ECHO flash_eraseall "$ROOTFS" && break; ERR=$?
+			if [ $ERR = 138 ]; then echo "$j: ERROR($err): $ROOTFS - Bus error($ERR) OK!?"
+			else err=48; echo "$j: ERROR($err): $ROOTFS - Critical($ERR)!!"; fi
+			# TODO: try alternative erase (xeros)
 		done
 
-		echo "$i: cat $rootfs > $ROOTFS"; ERR=0
+		echo "$i: NOTE: Write $ROOTFS ..."; ERR=0
 		[ -n "$dryrun" ] && break
 		cat "$rootfs" > "$ROOTFS" && break; ERR=$?
-		err=49; echo "ERROR: $err ($ERR Critical!!!)"
-		[ $i -lt 2 ] && echo "ERROR: Trying again..."
+		err=49; echo "$i: ERROR($err): $ROOTFS - Critical($ERR)!!!"
 	done
 
 	sync
@@ -221,8 +201,9 @@ if [ -n "$install" ]; then
 		echo '	1) do not touch TV and remote control'
 		echo '	2) save and check messages above (copy messages from screen'
 		echo '		or find the log file of your serial terminal program)'
+		echo '		or get a screenshots)'
 		echo '	3) ask for assistance (forum/irc)'
-		echo 'NOTE: Do it your self (advanced) - busybox binary is included in zip file'
+		echo 'ADVANCED: lgmod busybox is in zip file, wiki tells how to erase & write partitions'
 		exit $err
 	fi
 fi
