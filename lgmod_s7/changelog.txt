@@ -3,7 +3,7 @@ mmm4m5m & openlgtv community present LGMOD S7 v1.0.05 for LG TVs on Saturn 7 chi
 	42LD420-ZA, firmware v03.03.26
 	42LD550-ZA, firmware v03.01.08
 	32LE3300-ZA, firmware v03.03.32
-	60PZ250-ZA, firmware v03.33.13 (debug unlocked with PowerOnly)
+	60PZ250-ZB, firmware v03.33.13 (debug unlocked with PowerOnly)
 	32LD350-ZA, firmware v03.03.18 (stock FW v03.03.03 - some problems, maybe bad USB flash drive)
 ====================================================================================
 
