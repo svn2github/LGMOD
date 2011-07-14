@@ -27,6 +27,7 @@ Install:
 	Run installation script:
 		# /mnt/usb1/Drive1/install.sh install
 		(or: 'install.sh install rootfs=filename.sqfs')
+		(ntfs fs: 'sh install.sh install')
 
 It is important, your firmware to have unlocked uboot!
 	http://openlgtv.org.ru/wiki/index.php/Bootloader_connection
