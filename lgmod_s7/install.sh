@@ -104,12 +104,12 @@ if [ -n "$I" ]; then
 	size=$(stat -c %s "$bkpdir/mtd4_lginit") && [ $lginit_size = "$size" ] ||
 		{ err=37; echo "ERROR($err): Invalid file size($size): mtd4_lginit"; }
 	# LG stock: tar -[cxtvO] [-X FILE] [-f TARFILE] [-C DIR] [FILE(s)]...
-	./busybox tar czpf "backup-$date-user.tar.gz" /mnt/lg/user ||
+	./busybox tar cvzpf "backup-$date-user.tar.gz" /mnt/lg/user ||
 		echo "WARNING: Create archive failed: /usr/lg/user"
-	./busybox tar czpf "backup-$date-cmn_data.tar.gz" /mnt/lg/cmn_data ||
+	./busybox tar cvzpf "backup-$date-cmn_data.tar.gz" /mnt/lg/cmn_data ||
 		echo "WARNING: Create archive failed: /usr/lg/cmn_data"
 	sync
-	echo 'BACKUP DONE! SUCCESS!'
+	echo; echo 'BACKUP DONE! SUCCESS!'
 	echo '	For backup and installation, start: install.sh install'
 	echo '	(Keep your backup safe! USB flash drive is NOT safe!)'
 fi
@@ -195,10 +195,10 @@ if [ -n "$install" ]; then
 
 	sync
 	if [ $err = 0 ]; then
-		echo 'FLASH DONE! SUCCESS! You can "reboot" now.'
+		echo; echo 'FLASH DONE! SUCCESS! You can "reboot" now.'
 		echo '	(Also you could copy and save all messages above.)'
 	else
-		echo 'WARNING: Something is wrong!!!'
+		echo; echo 'WARNING: Something is wrong!!!'
 		echo '	1) do not touch TV and remote control'
 		echo '	2) save and check messages above (copy messages from screen'
 		echo '		or find the log file of your serial terminal program)'

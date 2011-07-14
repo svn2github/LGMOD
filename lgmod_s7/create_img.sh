@@ -23,7 +23,7 @@ then
 fi
 
 rm -r squashfs-root
-cp -r $dir squashfs-root
+cp -r --preserve=timestamps $dir squashfs-root
 cd squashfs-root
 tar xzf mnt/lgmod/dev.tar.gz
 tar xzf mnt/lgmod/dev-lgmod.tar.gz
@@ -62,9 +62,10 @@ then
     $mkepk_bin -c $ofile.pak $ofile.sqfs root DVB-SATURN 0x$LGMOD_VERSION_ROOTFS `date +%Y%m%d` RELEASE
     $mkepk_bin -m 0x$LGMOD_VERSION_EPK HE_DTV_GP2M_AAAAABAA $ofile.epk $ofile.pak
     zip -j $ofile.zip $ofile.pak $ofile.epk
+	mv $ofile.epk ../
 fi
 #zip $ofile.zip $ofile.epk changelog.txt
 zip -j $ofile.zip $ofile.sqfs changelog.txt $ofile.sqfs.md5 install.sh squashfs-root/bin/busybox
 rm -f $ofile.pak
 rm -rf $ofile.sqfs.md5 squashfs-root
-mv $ofile.sqfs $ofile.zip $ofile.epk ../
+mv $ofile.sqfs $ofile.zip ../

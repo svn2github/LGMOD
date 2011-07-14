@@ -16,6 +16,7 @@ Features:
 		upload dir is /dev/shm/upload, limit 22M
 		you can: /etc/init.d/lgmod start|stop
 		/dev/shm is 33MB tmpfs (skeleton from /mnt/lg/user/lgmod/init/devshm/)
+		logging: /dev/kmsg /dev/log ('syslogd -C16', logread)
 
 Install:
 	In TV menu "IN START"/"System 1" - set "Debug mode" to "DEBUG"
