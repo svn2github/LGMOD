@@ -3,10 +3,10 @@
 # Originally written for OpenLGTV_BCM by xeros
 # Modified for lgmod by hawkeye
 # Modified for S7 by mmm4m5m
-LGMOD_VERSION="1.0.05"
-#LGMOD_VERSION_EPK="37501"
-LGMOD_VERSION_ROOTFS="10005"
-#mkepk_bin=../pack/mkepk
+LGMOD_VERSION="1.0.06"
+LGMOD_VERSION_EPK="30333"
+LGMOD_VERSION_ROOTFS="10006"
+mkepk_bin=../pack/mkepk
 mksquashfs_bin=../pack/mksquashfs
 
 dir=trunk/rootfs
@@ -25,8 +25,8 @@ fi
 rm -r squashfs-root
 cp -r $dir squashfs-root
 cd squashfs-root
-tar xvzf mnt/lgmod/dev.tar.gz
-tar xvzf mnt/lgmod/dev-lgmod.tar.gz
+tar xzf mnt/lgmod/dev.tar.gz
+tar xzf mnt/lgmod/dev-lgmod.tar.gz
 tar xvzf etc_passwd.tar.gz
 rm -f etc_passwd.tar.gz
 find . -name '.svn' | xargs rm -rf
@@ -57,17 +57,14 @@ then
     rm -f $ofile.sqfs
     rm -rf squashfs-root
     exit 4
-#else
-#    if [ "$osize" -lt "$size" ]
-#    then
-#        $mkepk_bin -c $ofile.pak $ofile.sqfs root DVB-SATURN6 0x$LGMOD_VERSION_ROOTFS `date +%Y%m%d` RELEASE
-#        $mkepk_bin -m 0x$LGMOD_VERSION_EPK HE_DTV_GP_M_AAAAABAA $ofile.epk $ofile.pak
-#    fi
+elif [ "$1" == 'pak' ] || [ "$1" == 'epk' ]
+then
+    $mkepk_bin -c $ofile.pak $ofile.sqfs root DVB-SATURN 0x$LGMOD_VERSION_ROOTFS `date +%Y%m%d` RELEASE
+    $mkepk_bin -m 0x$LGMOD_VERSION_EPK HE_DTV_GP2M_AAAAABAA $ofile.epk $ofile.pak
+    zip -j $ofile.zip $ofile.pak $ofile.epk
 fi
 #zip $ofile.zip $ofile.epk changelog.txt
-#zip -j $ofile.zip $ofile.sqfs changelog.txt mtd4_lginit
-zip -j $ofile.zip changelog.txt $ofile.sqfs $ofile.sqfs.md5 install.sh squashfs-root/bin/busybox
-#rm -f $ofile.pak
+zip -j $ofile.zip $ofile.sqfs changelog.txt $ofile.sqfs.md5 install.sh squashfs-root/bin/busybox
+rm -f $ofile.pak
 rm -rf $ofile.sqfs.md5 squashfs-root
-#mv $ofile.sqfs $ofile.zip $ofile.epk ../
-mv $ofile.sqfs $ofile.zip ../
+mv $ofile.sqfs $ofile.zip $ofile.epk ../
