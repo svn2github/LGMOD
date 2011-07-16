@@ -9,7 +9,7 @@ mmm4m5m & openlgtv community present LGMOD S7 v1.0.07 for LG TVs on Saturn 7 chi
 
 WARNING: It is important, your firmware to have unlocked uboot! In case of troubles, you will need uboot!
 	http://openlgtv.org.ru/wiki/index.php/Bootloader_connection
-WARNING: Debug and uboot are disabled after firmware v3.03.2x
+WARNING: Debug and uboot are disabled after firmware v3.03.2x (approximately)
 WARNING: Flashing LG stock FW after LGMOD - LG FW may restore rootfs but not lginit partition.
 	This could brick your TV! FW 3.1.8 will restore rootfs and lginit partitions.
 	(version 1.00.07 is trying to handle such cases)
@@ -21,6 +21,12 @@ Features:
 		you can: /etc/init.d/lgmod start|stop
 		/dev/shm is 33MB tmpfs (skeleton from /mnt/lg/user/lgmod/init/devshm/)
 		logging: /dev/kmsg /dev/log ('syslogd -C16', logread)
+
+Upgrade:
+	Extract all file and upload using FTP or LGMOD webui: tools/upload
+	Then start the install command using telnet or webui: tools/run
+		# /mnt/usb1/Drive1/LG_DTV/install.sh install
+		(Files uploaded from webui are inside folder /LG_DTV)
 
 Install:
 	In TV menu "IN START"/"System 1" - set "Debug mode" to "DEBUG"

@@ -154,7 +154,7 @@ if [ -n "$install" ]; then
 	[ "$(echo ${I//mtd})" = '3rootfs 4lginit 7model 9cmndata 11user 12ezcal 13estream 14opsrclib 17lgres 18lgfont 19addon 21lgapp 23cert 24authcxt' ] ||
 		{ err=46; echo "ERROR($err): TV partitions mismath"; }
 fi
-if [ -n "$install" ] && [ -z "$update" ] && [ ! -f /mnt/lg/lginit/lg-init ]; then
+if [ -n "$install" ] && [ -z "$update" ] && [ -f /mnt/lg/lginit/lginit ] && [ ! -f /mnt/lg/lginit/lg-init ]; then
 	size=$(stat -c %s /mnt/lg/lginit/lginit) && [ $lginit_bin_size = "$size" ] ||
 		{ err=47; echo "ERROR($err): Invalid file size($size<>$lginit_bin_size): lginit"; }
 fi
