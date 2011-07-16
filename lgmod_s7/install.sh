@@ -19,11 +19,13 @@ ROOTFS=/dev/mtd3
 LGINIT=/dev/mtd4
 rootfs_size=7340032
 lginit_size=393216
+lginit_bin_size=608572
 required_free_ram=10000
 
 # defaults
-[ -f /etc/lgmod.sh ] && update=1 || update=''
-[ -n "$update" ]     && backup='' || backup=1
+[ -f /mnt/lg/lginit/lginit ] && [ -f /mnt/lg/lginit/lg-init ] &&
+	[ -f /etc/lgmod.sh ] && update=1 || update=''
+[ -f /etc/lgmod.sh ] && backup='' || backup=1
 update_backup=1
 
 
@@ -78,6 +80,9 @@ if [ -n "$install" ]; then
 	md5cur=$(md5sum "$rootfs") && md5chk=$(cat "$rootfs.md5") &&
 		[ "${md5cur% *}" = "${md5chk% *}" ] ||
 		{ err=25; echo "ERROR($err): md5 mismatch: $rootfs"; }
+	md5cur=$(md5sum "$lginit") && md5chk=$(cat "$lginit.md5") &&
+		[ "${md5cur% *}" = "${md5chk% *}" ] ||
+		{ err=26; echo "ERROR($err): md5 mismatch: $lginit"; }
 fi
 [ $err != 0 ] && exit $err
 
@@ -90,9 +95,9 @@ if [ -n "$backup" ] || [ -n "$update_backup" ]; then
 	I="${ROOTFS#/dev/}_rootfs ${LGINIT#/dev/}_lginit"
 fi
 if [ -n "$backup" ]; then
-	echo 'NOTE: Backup cat /proc/mtd ...'
+	echo 'NOTE: Backup /proc/mtd ...'
 	I=$(cat /proc/mtd | sed -e 's/:.*"\(.*\)"/_\1/' | grep -v ' ') ||
-		{ err=33; echo "ERROR($err): /proc/mtd"; exit $err; }
+		{ err=33; echo "ERROR($err): /proc/mtd (backup)"; exit $err; }
 fi
 [ $err != 0 ] && exit $err
 if [ -n "$I" ]; then
@@ -103,9 +108,9 @@ if [ -n "$I" ]; then
 		sync; echo 3 > /proc/sys/vm/drop_caches; sleep 1
 	done
 	size=$(stat -c %s "$bkpdir/mtd3_rootfs") && [ $rootfs_size = "$size" ] ||
-		{ err=36; echo "ERROR($err): Invalid file size($size): mtd3_rootfs"; }
+		{ err=36; echo "ERROR($err): Invalid file size($size<>$rootfs_size): mtd3_rootfs"; }
 	size=$(stat -c %s "$bkpdir/mtd4_lginit") && [ $lginit_size = "$size" ] ||
-		{ err=37; echo "ERROR($err): Invalid file size($size): mtd4_lginit"; }
+		{ err=37; echo "ERROR($err): Invalid file size($size<>$lginit_size): mtd4_lginit"; }
 	# LG stock: tar -[cxtvO] [-X FILE] [-f TARFILE] [-C DIR] [FILE(s)]...
 	./busybox tar cvzpf "backup-$date-user.tar.gz" /mnt/lg/user ||
 		echo "WARNING: Create archive failed: /usr/lg/user"
@@ -115,6 +120,7 @@ if [ -n "$I" ]; then
 	echo; echo 'BACKUP DONE! SUCCESS!'
 	echo '	For backup and installation, start: install.sh install'
 	echo '	(Keep your backup safe! USB flash drive is NOT safe!)'
+	echo
 fi
 [ $err != 0 ] && exit $err
 
@@ -140,6 +146,20 @@ fi
 #		{ err=44; echo "ERROR($err): '$lginit' - size is not multiple of 4096($size)"; }
 #fi
 
+
+# install
+if [ -n "$install" ]; then
+	I=$(cat /proc/mtd | sed -e 's/:.*"\(.*\)"/\1/' -e 's/^mtd//' | grep -v ' \|0bbminfo\|1boot\|2mtdinfo\|5boot\|6crc32info\|8logo\|10nvram\|15kernel\|16lgapp\|20kernel\|22lgres' | sort -n) ||
+		{ err=45; echo "ERROR($err): /proc/mtd (install)"; }
+	[ "$(echo ${I//mtd})" = '3rootfs 4lginit 7model 9cmndata 11user 12ezcal 13estream 14opsrclib 17lgres 18lgfont 19addon 21lgapp 23cert 24authcxt' ] ||
+		{ err=46; echo "ERROR($err): TV partitions mismath"; }
+fi
+if [ -n "$install" ] && [ -z "$update" ] && [ ! -f /mnt/lg/lginit/lg-init ]; then
+	size=$(stat -c %s /mnt/lg/lginit/lginit) && [ $lginit_bin_size = "$size" ] ||
+		{ err=47; echo "ERROR($err): Invalid file size($size<>$lginit_bin_size): lginit"; }
+fi
+[ $err != 0 ] && exit $err
+
 # install - free ram
 if [ -n "$install" ] && [ -n "$kill" ]; then
 	echo 'NOTE: Freeing memory (killing daemons) ...'
@@ -149,35 +169,42 @@ if [ -n "$install" ] && [ -n "$kill" ]; then
 	done
 	sleep 2
 fi
-# install - check ram
 if [ -n "$install" ]; then
 	sync; echo 3 > /proc/sys/vm/drop_caches; sleep 1
 	free=$(free | sed -e '2!d' -e 's/ \+/+/g' | cut -d + -f 4,6) &&
 		free=$(( $free )) && [ $free -ge $required_free_ram ] ||
-		{ err=45; echo "ERROR($err): Low memory - very few bytes available ($free < $required_free_ram)??!"; }
+		{ err=48; echo "ERROR($err): Low memory - very few bytes available ($free < $required_free_ram)??!"; }
 fi
 [ $err != 0 ] && exit $err
 
+# install - lginit
+if [ -n "$install" ] && [ -z "$update" ]; then
+	echo
 
-# install
-if [ -n "$install" ]; then
-	# lginit - erase
-	if [ -z "$update" ]; then
+	for i in 1 2; do
+		[ $i != 1 ] && echo "$i: $LGINIT - Trying again ..."
+
 		for j in 1 2; do
 			[ $j != 1 ] && echo "$j: Trying again ..."
 			echo "$j: NOTE: Erase $LGINIT ..."; ERR=0
 			$TEST_ECHO flash_eraseall "$LGINIT" && break; ERR=$?
 			if [ $ERR = 138 ]; then echo "$j: Error($err): $LGINIT - Bus error($ERR) OK!?"
-			else err=46; echo "$j: ERROR($err): $LGINIT - Critical($ERR)!"; fi
+			else err=51; echo "$j: ERROR($err): $LGINIT - Critical($ERR)?"; fi
 			# TODO: try alternative erase (xeros)
 		done
-		[ $err != 0 ] && exit $err
-	fi
 
+		echo "$i: NOTE: Write $LGINIT ..."; ERR=0
+		[ -n "$dryrun" ] && break
+		cat "$lginit" > "$LGINIT" && break; ERR=$?
+		err=52; echo "$i: ERROR($err): $LGINIT - Critical($ERR)!?"
+	done
+fi
+
+# install - rootfs
+if [ -n "$install" ]; then # && [ $err = 0 ]
 	# rootfs - run once just before erase
-	echo | cat || { err=47; echo "Error($err): Cat failed!"; exit $err; }
+	echo | cat || { err=50; echo "Error($err): Cat failed!"; exit $err; }
 
-	# rootfs - erase & write: 
 	for i in 1 2; do
 		[ $i != 1 ] && echo "$i: $ROOTFS - Trying again ..."
 
@@ -186,20 +213,23 @@ if [ -n "$install" ]; then
 			echo "$j: NOTE: Erase $ROOTFS ..."; ERR=0
 			$TEST_ECHO flash_eraseall "$ROOTFS" && break; ERR=$?
 			if [ $ERR = 138 ]; then echo "$j: ERROR($err): $ROOTFS - Bus error($ERR) OK!?"
-			else err=48; echo "$j: ERROR($err): $ROOTFS - Critical($ERR)!!"; fi
+			else err=55; echo "$j: ERROR($err): $ROOTFS - Critical($ERR)!!"; fi
 			# TODO: try alternative erase (xeros)
 		done
 
 		echo "$i: NOTE: Write $ROOTFS ..."; ERR=0
 		[ -n "$dryrun" ] && break
 		cat "$rootfs" > "$ROOTFS" && break; ERR=$?
-		err=49; echo "$i: ERROR($err): $ROOTFS - Critical($ERR)!!!"
+		err=56; echo "$i: ERROR($err): $ROOTFS - Critical($ERR)!!!"
 	done
+fi
 
+if [ -n "$install" ]; then
 	sync
 	if [ $err = 0 ]; then
 		echo; echo 'FLASH DONE! SUCCESS! You can "reboot" now.'
 		echo '	(Also you could copy and save all messages above.)'
+		echo
 	else
 		echo; echo 'WARNING: Something is wrong!!!'
 		echo '	1) do not touch TV and remote control'

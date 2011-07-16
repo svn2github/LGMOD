@@ -65,7 +65,8 @@ then
 	mv $ofile.epk ../
 fi
 #zip $ofile.zip $ofile.epk changelog.txt
-zip -j $ofile.zip $ofile.sqfs changelog.txt $ofile.sqfs.md5 install.sh squashfs-root/bin/busybox
+md5sum mtd4_lg-init.sqfs > mtd4_lg-init.sqfs.md5
+zip -j $ofile.zip $ofile.sqfs* mtd4_lg-init.sqfs* changelog.txt install.sh squashfs-root/bin/busybox
 rm -f $ofile.pak
 rm -rf $ofile.sqfs.md5 squashfs-root
 mv $ofile.sqfs $ofile.zip ../
