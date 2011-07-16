@@ -1,4 +1,7 @@
 #!/bin/sh
+# OpenLGTV BCM installation script v.1.5 by xeros
+# Source code released under GPL License
+# Rewriten for lgmod S7 by mmm4m5m
 
 cd "${0%/*}"
 
