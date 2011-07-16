@@ -7,9 +7,16 @@ mmm4m5m & openlgtv community present LGMOD S7 v1.0.05 for LG TVs on Saturn 7 chi
 	32LD350-ZA, firmware v03.03.18 (stock FW v03.03.03 - some problems, maybe bad USB flash drive)
 ====================================================================================
 
-Check the number of your partitions (especially if the TV is not EU or non LCD!)
-	# cat /proc/mtd
-LGMOD S7 was tested on TV with 25 partitions: mtd3=rootfs; mtd4=lginit; mtd11=user
+WARNING: It is important, your firmware to have unlocked uboot! In case of troubles, you will need uboot!
+		http://openlgtv.org.ru/wiki/index.php/Bootloader_connection
+WARNING: Debug and uboot are disabled after firmware v3.03.2x
+WARNING: Flashing LG stock FW after LGMOD could brick your TV! Reason - not every LG FW will restore
+	the lginit partition. (LGMOD installation does erase lginit and write new rootfs.)
+	You can flash first FW 3.1.8 - this will restore lginit partition of your TV.
+WARNING: Check the number of your partitions (especially if the TV is not EU or non LCD!)
+		# cat /proc/mtd
+	LGMOD S7 was tested on TV with 25 partitions: mtd3=rootfs; mtd4=lginit; mtd11=user
+====================================================================================
 
 Features:
 	LGMOD S7 is a port of LGMOD 1.6.10 with the following differences:
@@ -21,7 +28,6 @@ Features:
 Install:
 	In TV menu "IN START"/"System 1" - set "Debug mode" to "DEBUG"
 	Enter debug and press F10: http://openlgtv.ru/wiki/index.php/Debug_mode_connection
-		(you need RS232 cable and serial terminal program)
 	Start 'sh' shell:
 		$ call debug_os_shell+0xb0
 	Run installation script:
@@ -29,16 +35,10 @@ Install:
 		(or: 'install.sh install rootfs=filename.sqfs')
 		(ntfs fs: 'sh install.sh install')
 
-It is important, your firmware to have unlocked uboot!
-	http://openlgtv.org.ru/wiki/index.php/Bootloader_connection
-	In case of troubles, you will need uboot!
-Note: Debug and uboot are disabled after firmware v3.03.2x
-
 Installation script does NOT write log file! Save the log from serial terminal program.
 	Info for your TV is saved into separate text file.
 	Force full backup: install.sh backup
 	Dry run - skip erase and flash/write: install.sh dryrun
-
 
 
 Changelog 1.6.10 :
