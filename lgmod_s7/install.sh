@@ -19,7 +19,7 @@ ROOTFS=/dev/mtd3
 LGINIT=/dev/mtd4
 rootfs_size=7340032
 lginit_size=393216
-lginit_bin_size=608572
+lginit_bin_md5=1e6ee0f4d9d08f920c406c2173f855a3
 required_free_ram=10000
 
 # defaults
@@ -53,36 +53,128 @@ done
 err=0
 # info
 if [ -n "$info" ]; then
-	(
-	echo; echo '#' lsmod; lsmod || exit 10
-	echo; echo '#' free; free || exit 11
-	echo; echo '#' ps w -A; ps w -A || exit 12
-	for i in /proc/version /proc/cpuinfo /proc/mounts /proc/mtd /etc/version_for_lg \
-		/lg/model/RELEASE.cfg /etc/init.d/rcS /etc/rc.d/rc.sysinit /etc/rc.d/rc.local; do
-		echo; echo '#' cat "$i"; cat "$i" || exit 13
-	done
-	echo; echo '#' printenv; printenv || exit 14
-	echo; echo '#' export; export || exit 15
-	echo; echo '#' dmesg; dmesg || exit 16
-	) > "$infofile" || { err=$?; echo "Error($err): Info file failed: $infofile"; }
+	echo 'NOTE: Create info file (1 min) ...'
+	echo -n > "$infofile" || err=19
+	( echo -ne '\n\n#$# INFO: '; date
+	echo -e '\n\n$#' export; export | sort || err=19
+	echo -e '\n\n$#' printenv; printenv | sort || err=10
+	echo -e '\n\n$#' hostname; hostname || err=10
+	echo -e '\n\n$#' busybox; busybox || err=10
+	echo -e '\n\n$#' help; help || err=10
+	echo -e '\n\n$#' lsmod; lsmod || err=11
+	echo -e '\n\n$#' ps axl; ps axl || err=11
+	echo -e '\n\n$#' ps axw; ps axw || err=11
+	echo -e '\n\n$#' free; free || err=12
+	echo -e '\n\n$#' df -h; df -h || err=13
+	echo -e '\n\n$# fdisk -l'
+	for i in $(cat /proc/mtd | grep mtd | sed -e 's/:.*//'); do
+		fdisk -l /dev/$i | grep "$i:" || err=14; done
+	exit $err ) >> "$infofile" || err=$?
+	( echo -ne '\n\n#$# INFO: '; date
+	echo -e '\n\n$# dump mtdinfo (/dev/mtd2)'; ./busybox hexdump /dev/mtd2 -vs240 \
+		-e'32 "%_p" " %08x ""%08x " 32 "%_p" " %8d"" %8x " /1 "Uu:%x" /1 " %x " /1 "CIMF:%x" /1 " %x" "\n"' |
+		head -n$(cat /proc/mtd | wc -l)
+	echo -e '\n\n$# diff backup /dev/mtd# '
+		diff /dev/mtd1 /dev/mtd5; diff /dev/mtd15 /dev/mtd20
+		diff /dev/mtd16 /dev/mtd21; diff /dev/mtd17 /dev/mtd22
+	echo -e '\n\n$# dump lgapp (/dev/mem)'; ./busybox hexdump /dev/mem -vs$((appxip_addr)) -n160 \
+		-e'4 "%08x "" " 16 "%_p"" " 4 "%08x "" " 10 "%_p" 1/2 " %04x" "\n" 7 "%08x "" " 7 "%_p"" " 1/1 "%02x " 4 "%08x " "\n" 10 "%_p" 1/2 " %04x" 3 " %08x"" " 15 "%_p" 3 " %08x" "\n"'
+	echo -e '\n\n$# dump RELEASE (/dev/mem)'; ./busybox hexdump /dev/mem \
+		-vs$((appxip_addr+1024*4)) -n512 -e'128 "%_p" "\n"'
+	echo -e '\n\n$# dump boot version (/dev/mtd1)'
+	s=7;w=5;m=3;cat /dev/mtd1 |tr [:space:] ' '|tr -c ' [:alnum:][:punct:]' '\n'|
+		sed -e'/[a-zA-Z]\{'$m'\}\|[0-9]\{'$m'\}/!d' -e'/[-_=/\.:0-9a-zA-Z]\{'$w'\}/!d' -e's/  \+/ /g' -e'/.\{'$s'\}/!d'|
+		head -n5
+	echo -e '\n\n$# dump boot version (/dev/mtd5)'
+	s=7;w=5;m=3;cat /dev/mtd5 |tr [:space:] ' '|tr -c ' [:alnum:][:punct:]' '\n'|
+		sed -e'/[a-zA-Z]\{'$m'\}\|[0-9]\{'$m'\}/!d' -e'/[-_=/\.:0-9a-zA-Z]\{'$w'\}/!d' -e's/  \+/ /g' -e'/.\{'$s'\}/!d'|
+		head -n5
+	echo -e '\n\n$# dump RELEASE version'
+	f=/mnt/lg/lgapp/RELEASE; b=10000; s=$(stat -c%s $f); s=$((s/b*8/17))
+	dd bs=$b skip=$s count=300 if=$f|tr [:space:] ' '|tr -c ' [:alnum:][:punct:]' '\n'|
+		grep '....'|grep -m2 -B1 -A5 swfarm &&
+		dd bs=$b skip=$((s+600)) count=300 if=$f|tr [:space:] ' '|tr -c ' [:alnum:][:punct:]' '\n'|
+			grep '....'|grep -m2 -B1 -A10 swfarm ||
+		cat $f|tr [:space:] ' '|tr -c ' [:alnum:][:punct:]' '\n'|grep '....'|grep -m2 -B1 -A10 swfarm
+	exit $err ) >> "$infofile" || err=$?
+	( echo -ne '\n\n#$# INFO: '; date
+	for i in /proc/mtd /proc/mounts /proc/cmdline /proc/version /proc/cpuinfo \
+		/proc/filesystems /etc/version_for_lg /lg/model/* /mnt/lg/cmn_data/*exc_log_[0-9]*.txt \
+		/lgsw/* /etc/init.d/* /mnt/lg/user/lgmod/init/* /etc/rc.d/* ; do
+		[ ! -f "$i" ] && continue
+		echo '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'
+		echo -e '\n\n$#' cat "$i"; cat "$i" || err=17
+	done; echo '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'
+	echo -e '\n\n$# ls -lR'
+	ls -lR /etc /mnt/lg/lginit /mnt/lg/user /mnt/lg/model /mnt/lg/lgapp /usr/local \
+		/mnt/lg/bt /mnt/lg/ciplus /mnt/lg/cmn_data /mnt/lg/res/lgres /mnt/lg/res/lgfont
+	ls -l /home/lgmod /mnt/lg/res/estreamer /mnt/addon /mnt/addon/* /mnt/addon/*/* \
+		/mnt/addon/*/*/*
+	exit $err ) >> "$infofile" || err=$?
+	( echo -ne '\n\n#$# INFO: '; date
+	echo -e '\n\n$# strings boot (/dev/mtd1)'
+	s=7;w=5;m=3;cat /dev/mtd1 |tr [:space:] ' '|tr -c ' [:alnum:][:punct:]' '\n'|
+		sed -e'/[a-zA-Z]\{'$m'\}\|[0-9]\{'$m'\}/!d' -e'/[-_=/\.:0-9a-zA-Z]\{'$w'\}/!d' -e's/  \+/ /g' -e'/.\{'$s'\}/!d'|
+		tail -n35
+	echo -e '\n\n$# strings boot (/dev/mtd5)'
+	s=7;w=5;m=3;cat /dev/mtd5 |tr [:space:] ' '|tr -c ' [:alnum:][:punct:]' '\n'|
+		sed -e'/[a-zA-Z]\{'$m'\}\|[0-9]\{'$m'\}/!d' -e'/[-_=/\.:0-9a-zA-Z]\{'$w'\}/!d' -e's/  \+/ /g' -e'/.\{'$s'\}/!d'|
+		tail -n35
+	echo -e '\n\n$# strings lginit (lg-init)'
+	f=/mnt/lg/lginit/lg-init; [ ! -f $f ] && f=/mnt/lg/lginit/lginit
+	w=5;m=3;cat $f |tr [:space:] ' '|tr -c ' [:alnum:][:punct:]' '\n'|
+		sed -e'/[a-zA-Z]\{'$m'\}\|[0-9]\{'$m'\}/!d' -e'/[-_=/\.:0-9a-zA-Z]\{'$w'\}/!d' -e's/  \+/ /g'| head -n70
+	echo -e '\n\n$#' dmesg; dmesg || err=18
+	echo -ne '\n\n#$# INFO: '; date
+	exit $err ) >> "$infofile" || err=$?
+	[ $err != 0 ] && { err=$?; echo "Error($err): Info file failed: $infofile"; }
 fi
 
 # prepare
-type which && which sync stat cat sed md5sum mkdir flash_eraseall || err=21; #rm mv
-[ -f ./busybox ] || { err=22; echo "Error($err): File not found: busybox"; }
+type which && which printenv lsmod ps ls df fdisk hostname dmesg diff head tail tr dd &&
+	which grep sort md5sum awk mkdir stat killall pkill sleep cut sed free &&
+	which flash_eraseall cat sync || err=21; #rm mv
+[ -f ./busybox ] || { err=22; echo "Error($err): File not found: busybox"; }; #hexdump devmem tar
 if [ -n "$install" ]; then
 	[ -f "$rootfs" ] || { err=23; echo "Error($err): File not found: $rootfs"; }
 	flash_eraseall --version | sed -e '2,$d' ||
 		{ err=24; echo "ERROR($err): 'flash_erasesall' something??!"; }
+	I=$(cat /proc/mtd | sed -e 's/:.*"\(.*\)"/\1/' -e 's/^mtd//' | grep -v ' \|0bbminfo\|1boot\|2mtdinfo\|5boot\|6crc32info\|8logo\|10nvram\|15kernel\|16lgapp\|20kernel\|22lgres' | sort -n) ||
+		{ err=25; echo "ERROR($err): /proc/mtd (install)"; }
+	[ "$(echo ${I//mtd})" = '3rootfs 4lginit 7model 9cmndata 11user 12ezcal 13estream 14opsrclib 17lgres 18lgfont 19addon 21lgapp 23cert 24authcxt' ] ||
+		{ err=26; echo "ERROR($err): TV partitions mismath"; }
+fi
+if [ -n "$install" ] && [ -z "$update" ]; then
+	if [ -f /mnt/lg/lginit/lginit ] && [ ! -f /mnt/lg/lginit/lg-init ]; then
+		md5chk=$lginit_bin_md5; md5cur=$(md5sum /mnt/lg/lginit/lginit) &&
+			[ "${md5chk% *}" = "${md5cur% *}" ] ||
+			{ err=27; echo "ERROR($err): md5 mismatch: /mnt/lg/lginit/lginit"; }
+	fi
 fi
 [ $err != 0 ] && exit $err
 if [ -n "$install" ]; then
-	md5cur=$(md5sum "$rootfs") && md5chk=$(cat "$rootfs.md5") &&
-		[ "${md5cur% *}" = "${md5chk% *}" ] ||
-		{ err=25; echo "ERROR($err): md5 mismatch: $rootfs"; }
-	md5cur=$(md5sum "$lginit") && md5chk=$(cat "$lginit.md5") &&
-		[ "${md5cur% *}" = "${md5chk% *}" ] ||
-		{ err=26; echo "ERROR($err): md5 mismatch: $lginit"; }
+	md5chk=$(cat "$rootfs.md5") && md5cur=$(md5sum "$rootfs") &&
+		[ "${md5chk% *}" = "${md5cur% *}" ] ||
+		{ err=28; echo "ERROR($err): md5 mismatch: $rootfs"; }
+	md5chk=$(cat "$lginit.md5") && md5cur=$(md5sum "$lginit") &&
+		[ "${md5chk% *}" = "${md5cur% *}" ] ||
+		{ err=29; echo "ERROR($err): md5 mismatch: $lginit"; }
+fi
+# LG rc.local and BCM lginit sh script
+APP_XIP=`cat /proc/cmdline | awk -v RS='[ ]' -F= '/appxip_addr=/ { print $2 }'`
+FONT_XIP=`cat /proc/cmdline | awk -v RS='[ ]' -F= '/fontxip_addr=/ { print $2 }'`
+if [ "${APP_XIP}" != "" ] && [ "${APP_XIP}" != "0x0" ]; then
+	cramfs_magic=`./busybox devmem $((APP_XIP+16)) 64`
+	release_magic=`./busybox devmem $((APP_XIP+1024*4)) 32`
+	[ "$cramfs_magic" != '0x73736572706D6F43' ] &&
+		{ err=101; echo "ERROR($err): lgapp_xip - WRONG MAGIC"; }
+	[ "$release_magic" != '0x464C457F' ] &&
+		{ err=102; echo "ERROR($err): RELEASE - WRONG MAGIC"; }
+fi
+if [ "${FONT_XIP}" != "" ] && [ "${FONT_XIP}" != "0x0" ]; then
+	cramfs_magic=`./busybox devmem $((FONT_XIP+16)) 64`
+	[ "$cramfs_magic" != '0x73736572706D6F43' ] &&
+		{ err=103; echo "ERROR($err): lgfont_xip - WRONG MAGIC"; }
 fi
 [ $err != 0 ] && exit $err
 
@@ -90,12 +182,12 @@ fi
 # backup
 I=''
 if [ -n "$backup" ] || [ -n "$update_backup" ]; then
+	echo; echo 'NOTE: BACKUP ...'
 	[ -d "$bkpdir" ]   && { err=31; echo "Error($err): Directory exist: $bkpdir"; exit $err; }
 	mkdir -p "$bkpdir" || { err=32; echo "Error($err): Can't create directory: $bkpdir"; exit $err; }
 	I="${ROOTFS#/dev/}_rootfs ${LGINIT#/dev/}_lginit"
 fi
 if [ -n "$backup" ]; then
-	echo 'NOTE: Backup /proc/mtd ...'
 	I=$(cat /proc/mtd | sed -e 's/:.*"\(.*\)"/_\1/' | grep -v ' ') ||
 		{ err=33; echo "ERROR($err): /proc/mtd (backup)"; exit $err; }
 fi
@@ -119,7 +211,7 @@ if [ -n "$I" ]; then
 	sync
 	echo; echo 'BACKUP DONE! SUCCESS!'
 	echo '	For backup and installation, start: install.sh install'
-	echo '	(Keep your backup safe! USB flash drive is NOT safe!)'
+	echo '	Keep your backup safe! USB flash drive is NOT safe!'
 	echo
 fi
 [ $err != 0 ] && exit $err
@@ -147,24 +239,12 @@ fi
 #fi
 
 
-# install
-if [ -n "$install" ]; then
-	I=$(cat /proc/mtd | sed -e 's/:.*"\(.*\)"/\1/' -e 's/^mtd//' | grep -v ' \|0bbminfo\|1boot\|2mtdinfo\|5boot\|6crc32info\|8logo\|10nvram\|15kernel\|16lgapp\|20kernel\|22lgres' | sort -n) ||
-		{ err=45; echo "ERROR($err): /proc/mtd (install)"; }
-	[ "$(echo ${I//mtd})" = '3rootfs 4lginit 7model 9cmndata 11user 12ezcal 13estream 14opsrclib 17lgres 18lgfont 19addon 21lgapp 23cert 24authcxt' ] ||
-		{ err=46; echo "ERROR($err): TV partitions mismath"; }
-fi
-if [ -n "$install" ] && [ -z "$update" ] && [ -f /mnt/lg/lginit/lginit ] && [ ! -f /mnt/lg/lginit/lg-init ]; then
-	size=$(stat -c %s /mnt/lg/lginit/lginit) && [ $lginit_bin_size = "$size" ] ||
-		{ err=47; echo "ERROR($err): Invalid file size($size<>$lginit_bin_size): lginit"; }
-fi
-[ $err != 0 ] && exit $err
-
 # install - free ram
 if [ -n "$install" ] && [ -n "$kill" ]; then
 	echo 'NOTE: Freeing memory (killing daemons) ...'
+	# LG services: addon_mgr stagecraft
 	# lgmod services: udhcpc ntpd telnetd tcpsvd djmount httpd
-	for i in udhcpc ntpd tcpsvd djmount; do
+	for i in addon_mgr stagecraft udhcpc ntpd tcpsvd djmount; do
 		killall "$i"; pkill "$i";
 	done
 	sleep 2
@@ -173,7 +253,7 @@ if [ -n "$install" ]; then
 	sync; echo 3 > /proc/sys/vm/drop_caches; sleep 1
 	free=$(free | sed -e '2!d' -e 's/ \+/+/g' | cut -d + -f 4,6) &&
 		free=$(( $free )) && [ $free -ge $required_free_ram ] ||
-		{ err=48; echo "ERROR($err): Low memory - very few bytes available ($free < $required_free_ram)??!"; }
+		{ err=45; echo "ERROR($err): Low memory - very few bytes available ($free < $required_free_ram)??!"; }
 fi
 [ $err != 0 ] && exit $err
 
@@ -228,7 +308,8 @@ if [ -n "$install" ]; then
 	sync
 	if [ $err = 0 ]; then
 		echo; echo 'FLASH DONE! SUCCESS! You can "reboot" now.'
-		echo '	(Also you could copy and save all messages above.)'
+		echo '	You could copy and save all messages above.'
+		echo '	Proper nvram backup is created after restart (remote control).'
 		echo
 	else
 		echo; echo 'WARNING: Something is wrong!!!'

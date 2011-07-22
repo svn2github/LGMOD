@@ -1,26 +1,14 @@
 mmm4m5m & openlgtv community present LGMOD S7 v1.0.07 for LG TVs on Saturn 7 chipset. Tested on:
-	32LD465-ZA, firmware v03.03.11 and v03.03.32
-	42LD420-ZA, firmware v03.03.26
-	42LD550-ZA, firmware v03.01.08
-	32LE3300-ZA, firmware v03.03.32
+	32LD465-ZA, firmware v03.03.11 (and v03.03.32); 42LD420-ZA, firmware v03.03.26
+	42LD550-ZA, firmware v03.01.08; 32LE3300-ZA, firmware v03.03.32
 	60PZ250-ZB, firmware v03.33.13 (debug unlocked with PowerOnly)
-	32LD350-ZA, firmware v03.03.18 (stock FW v03.03.03 - some problems, maybe bad USB flash drive)
+	32LD350-ZA, firmware v03.03.18 (stock FW v03.03.03)
 ====================================================================================
 
 WARNING: It is important, your firmware to have unlocked uboot! In case of troubles, you will need uboot!
 	http://openlgtv.org.ru/wiki/index.php/Bootloader_connection
 WARNING: Debug and uboot are disabled after firmware v3.03.2x (approximately)
-WARNING: Flashing LG stock FW after LGMOD - LG FW may restore rootfs but not lginit partition.
-	This could brick your TV! FW 3.1.8 will restore rootfs and lginit partitions.
-	(version 1.00.07 is trying to handle such cases)
 ====================================================================================
-
-Features:
-	LGMOD S7 is a port of LGMOD 1.6.10 with the following differences:
-		upload dir is /dev/shm/upload, limit 22M
-		you can: /etc/init.d/lgmod start|stop
-		/dev/shm is 33MB tmpfs (skeleton from /mnt/lg/user/lgmod/init/devshm/)
-		logging: /dev/kmsg /dev/log ('syslogd -C16', logread)
 
 Upgrade:
 	Extract all file and upload using FTP or LGMOD webui: tools/upload
@@ -29,8 +17,8 @@ Upgrade:
 		(Files uploaded from webui are inside folder /LG_DTV)
 
 Install:
-	In TV menu "IN START"/"System 1" - set "Debug mode" to "DEBUG"
-	Enter debug and press F10: http://openlgtv.ru/wiki/index.php/Debug_mode_connection
+	In TV menu "IN START"/"System 1" - set "Debug mode" to "DEBUG" (you can use old remote control and PC audio out)
+	Enter debug and press F10: http://openlgtv.ru/wiki/index.php/Debug_mode_connection (you need RS232 serial cable)
 	Start 'sh' shell:
 		$ call debug_os_shell+0xb0
 	Run installation script:
@@ -43,6 +31,30 @@ Installation script does NOT write log file! Save the log from serial terminal p
 	Force full backup: install.sh backup
 	Dry run - skip erase and flash/write: install.sh dryrun
 
+
+Changelog 1.0.8 :
+=================
+* Timezone is fixed (webui / network / ntp client)
+* Custom swf files from USB drive - picasa works nice (/mnt and /mnt/addon are tmpfs)
+* Info file - much more information is included
+* Proper backup of nvram (all TV settings) is created after poweroff&poweron
+  (Backup is in user partition and during next LGMOD upgrade will be copied to USB drive)
+* Startup and install scripts do check cramfs. Also if TV crash <20sec. after start - this is detected.
+  If something is wrong - you get sh and LGMOD (telnet, ftp, webup, ...)
+  This is trying to prevent the endless loop "crash/reboot" (as result of bad LG FW upgrade)
+  
+
+Changelog 1.0.7 :
+=================
+* Port to S7 is considered as complete. Install script is finalized.
+- upload dir is /dev/shm/upload, limit 22M
+- you can: /etc/init.d/lgmod start|stop
+- /dev/shm is 33MB tmpfs (skeleton from /mnt/lg/user/lgmod/init/devshm/)
+- logging: /dev/kmsg /dev/log. You can start syslog: 'syslogd -C16' and read it: 'logread'
+* Delay LGMOD startup - slightly improved TV startup time
+* lginit partition is modified (old versions just erase it). This helps a lot if LG FW override only rootfs
+* Fixed unmount before reboot. Unmount before poweroff (remote control) is not solved (yet)
+  (If you write to USB drive - do 'sync' or 'eject' before poweroff)
 
 Changelog 1.6.10 :
 ==================

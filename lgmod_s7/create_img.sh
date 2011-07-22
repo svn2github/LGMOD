@@ -3,9 +3,9 @@
 # Originally written for OpenLGTV_BCM by xeros
 # Modified for lgmod by hawkeye
 # Modified for lgmod S7 by mmm4m5m
-LGMOD_VERSION="1.0.07"
+LGMOD_VERSION="1.0.08"
 LGMOD_VERSION_EPK="30333"
-LGMOD_VERSION_ROOTFS="10007"
+LGMOD_VERSION_ROOTFS="10008"
 mkepk_bin=../pack/mkepk
 mksquashfs_bin=../pack/mksquashfs
 
@@ -25,8 +25,8 @@ fi
 rm -r squashfs-root
 cp -r --preserve=timestamps $dir squashfs-root
 cd squashfs-root
-tar xzf mnt/lgmod/dev.tar.gz
-tar xzf mnt/lgmod/dev-lgmod.tar.gz
+tar xzf dev.tar.gz
+tar xzf dev-lgmod.tar.gz
 tar xvzf etc_passwd.tar.gz
 rm -f etc_passwd.tar.gz
 find . -name '.svn' | xargs rm -rf
@@ -36,6 +36,7 @@ echo $LGMOD_VERSION > ./squashfs-root/var/www/cgi-bin/version
 sed -i -e "s/ver=/S7 $LGMOD_VERSION/g" ./squashfs-root/var/www/cgi-bin/footer.inc
 sed -i -e "s/ver=/S7 $LGMOD_VERSION/g" ./squashfs-root/var/www/cgi-bin/header.inc
 sed -i -e "s/ver=/S7 $LGMOD_VERSION/g" ./squashfs-root/etc/lgmod.sh
+sed -i -e "s/ver=/S7 $LGMOD_VERSION/g" ./squashfs-root/etc/init.d/lgmod
 
 ofile=lgmod_S7_$LGMOD_VERSION_ROOTFS
 rm -f $ofile.pak $ofile.sqfs $ofile.epk $ofile.zip
@@ -62,11 +63,10 @@ then
     $mkepk_bin -c $ofile.pak $ofile.sqfs root DVB-SATURN 0x$LGMOD_VERSION_ROOTFS `date +%Y%m%d` RELEASE
     $mkepk_bin -m 0x$LGMOD_VERSION_EPK HE_DTV_GP2M_AAAAABAA $ofile.epk $ofile.pak
     zip -j $ofile.zip $ofile.pak $ofile.epk
-	mv $ofile.epk ../
+    rm -f $ofile.pak
+    mv $ofile.epk ../
 fi
-#zip $ofile.zip $ofile.epk changelog.txt
 md5sum mtd4_lg-init.sqfs > mtd4_lg-init.sqfs.md5
 zip -j $ofile.zip $ofile.sqfs* mtd4_lg-init.sqfs* changelog.txt install.sh squashfs-root/bin/busybox
-rm -f $ofile.pak
-rm -rf $ofile.sqfs.md5 squashfs-root
+rm -rf $ofile.sqfs.md5 mtd4_lg-init.sqfs.md5 squashfs-root
 mv $ofile.sqfs $ofile.zip ../
