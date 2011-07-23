@@ -42,7 +42,7 @@ Changelog 1.0.8 :
 * Startup and install scripts do check cramfs. Also if TV crash <20sec. after start - this is detected.
   If something is wrong - you get sh and LGMOD (telnet, ftp, webup, ...)
   This is trying to prevent the endless loop "crash/reboot" (as result of bad LG FW upgrade)
-  
+* LGMOD boot|shutdown msgs are visible in dmesg
 
 Changelog 1.0.7 :
 =================
@@ -55,6 +55,7 @@ Changelog 1.0.7 :
 * lginit partition is modified (old versions just erase it). This helps a lot if LG FW override only rootfs
 * Fixed unmount before reboot. Unmount before poweroff (remote control) is not solved (yet)
   (If you write to USB drive - do 'sync' or 'eject' before poweroff)
+
 
 Changelog 1.6.10 :
 ==================

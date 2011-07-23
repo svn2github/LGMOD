@@ -73,7 +73,7 @@ if [ -n "$info" ]; then
 	( echo -ne '\n\n#$# INFO: '; date
 	echo -e '\n\n$# dump mtdinfo (/dev/mtd2)'; ./busybox hexdump /dev/mtd2 -vs240 \
 		-e'32 "%_p" " %08x ""%08x " 32 "%_p" " %8d"" %8x " /1 "Uu:%x" /1 " %x " /1 "CIMF:%x" /1 " %x" "\n"' |
-		head -n$(cat /proc/mtd | wc -l)
+		head -n$(cat /proc/mtd | wc -l) | grep '' -n
 	echo -e '\n\n$# diff backup /dev/mtd# '
 		diff /dev/mtd1 /dev/mtd5; diff /dev/mtd15 /dev/mtd20
 		diff /dev/mtd16 /dev/mtd21; diff /dev/mtd17 /dev/mtd22
