@@ -13,16 +13,17 @@ WARNING: Debug and uboot are disabled after firmware v3.03.2x (approximately)
 Upgrade:
 	Extract all file and upload using FTP or LGMOD webui: tools/upload
 	Then start the install command using telnet or webui: tools/run
-		# /mnt/usb1/Drive1/LG_DTV/install.sh install
+		/mnt/usb1/Drive1/LG_DTV/install.sh install
 		(Files uploaded from webui are inside folder /LG_DTV)
 
 Install:
 	In TV menu "IN START"/"System 1" - set "Debug mode" to "DEBUG" (you can use old remote control and PC audio out)
-	Enter debug and press F10: http://openlgtv.ru/wiki/index.php/Debug_mode_connection (you need RS232 serial cable)
-	Start 'sh' shell:
-		$ call debug_os_shell+0xb0
-	Run installation script:
-		# /mnt/usb1/Drive1/install.sh install
+	Enter debug, then press F9 and press F10 - you will see ":debugMain $" (you need RS232 serial cable)
+		More info: http://openlgtv.ru/wiki/index.php/Debug_mode_connection
+	In debug, run 'sh' command to start shell. If 'sh' command is not there, then try:
+		call debug_os_shell+0xb0
+	You will see shell prompt: "/mnt/lg/lginit #". In shell run installation script:
+		/mnt/usb1/Drive1/install.sh install
 		(or: 'install.sh install rootfs=filename.sqfs')
 		(ntfs fs: 'sh install.sh install')
 
@@ -32,17 +33,21 @@ Installation script does NOT write log file! Save the log from serial terminal p
 	Dry run - skip erase and flash/write: install.sh dryrun
 
 
+Changelog 1.0.9 :
+=================
+* LGMOD boot msgs are visible with 'dmesg' command
+* Info file (install.sh) - modified because of problems with some TV/FW
+* Hosts and timezone (webui / network / ntp client)
+
 Changelog 1.0.8 :
 =================
-* Timezone is fixed (webui / network / ntp client)
 * Custom swf files from USB drive - picasa works nice (/mnt and /mnt/addon are tmpfs)
-* Info file - much more information is included
+* Info file (install.sh)- much more information is included
 * Proper backup of nvram (all TV settings) is created after poweroff&poweron
   (Backup is in user partition and during next LGMOD upgrade will be copied to USB drive)
 * Startup and install scripts do check cramfs. Also if TV crash <20sec. after start - this is detected.
   If something is wrong - you get sh and LGMOD (telnet, ftp, webup, ...)
   This is trying to prevent the endless loop "crash/reboot" (as result of bad LG FW upgrade)
-* LGMOD boot|shutdown msgs are visible in dmesg
 
 Changelog 1.0.7 :
 =================
