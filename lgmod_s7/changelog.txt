@@ -1,8 +1,8 @@
 mmm4m5m & openlgtv community present LGMOD S7 v1.0.07 for LG TVs on Saturn 7 chipset. Tested on:
-	32LD465-ZA, firmware v03.03.11 (and v03.03.32); 42LD420-ZA, firmware v03.03.26
-	42LD550-ZA, firmware v03.01.08; 32LE3300-ZA, firmware v03.03.32
-	60PZ250-ZB, firmware v03.33.13 (debug unlocked with PowerOnly)
-	32LD350-ZA, firmware v03.03.18 (stock FW v03.03.03)
+	60PZ250-ZB fw v03.37.13 (and v03.33.13, debug unlocked with PowerOnly)
+	32LD465-ZA fw v03.03.11 (and v03.03.32); 42LD420-ZA  fw v03.03.26
+	42LD550-ZA fw v03.01.08;                 32LE3300-ZA fw v03.03.32
+	32LD350-ZA fw v03.03.18 (old v03.03.03); 37LE5308-ZA fw v03.01.13 
 ====================================================================================
 
 WARNING: It is important, your firmware to have unlocked uboot! In case of troubles, you will need uboot!
@@ -11,12 +11,12 @@ WARNING: Debug and uboot are disabled after firmware v3.03.2x (approximately)
 ====================================================================================
 
 Upgrade:
-	Extract all file and upload using FTP or LGMOD webui: tools/upload
-	Then start the install command using telnet or webui: tools/run
+	Extract and upload all files (using FTP or LGMOD webui: tools/upload)
+	Then start the install command (using telnet or webui: tools/run):
 		/mnt/usb1/Drive1/LG_DTV/install.sh install
-		(Files uploaded from webui are inside folder /LG_DTV)
 
 Install:
+	Extract all files to USB drive
 	In TV menu "IN START"/"System 1" - set "Debug mode" to "DEBUG" (you can use old remote control and PC audio out)
 	Enter debug, then press F9 and press F10 - you will see ":debugMain $" (you need RS232 serial cable)
 		More info: http://openlgtv.ru/wiki/index.php/Debug_mode_connection
@@ -24,13 +24,14 @@ Install:
 		call debug_os_shell+0xb0
 	You will see shell prompt: "/mnt/lg/lginit #". In shell run installation script:
 		/mnt/usb1/Drive1/install.sh install
-		(or: 'install.sh install rootfs=filename.sqfs')
-		(ntfs fs: 'sh install.sh install')
 
 Installation script does NOT write log file! Save the log from serial terminal program.
-	Info for your TV is saved into separate text file.
+Info for your TV is collected and saved into separate text file.
+Additional options:
+	Only info and backup: install.sh
+	For NTFS: sh install.sh install
 	Force full backup: install.sh backup
-	Dry run - skip erase and flash/write: install.sh dryrun
+	Dry run (skip erase/flash/write): install.sh dryrun
 
 
 Changelog 1.0.9 :

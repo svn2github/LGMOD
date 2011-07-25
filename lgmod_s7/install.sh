@@ -62,7 +62,7 @@ err=0
 # info
 if [ -n "$info" ]; then
 	echo 'NOTE: Create info file (1 min) ...'
-	echo -n > "$infofile" || err=10
+	echo 10009 > "$infofile" || err=10; dmesg="$(dmesg)" || err=15
 	( echo -ne '\n\n#$# INFO: '; date
 		echo -e '\n\n$#' cat /proc/mtd; cat /proc/mtd || err=11
 		echo -e '\n\n$# dump mtdinfo (/dev/mtd2)'; ./busybox hexdump /dev/mtd2 -vs240 \
@@ -105,7 +105,7 @@ if [ -n "$info" ]; then
 		echo -e '\n\n$#' help; help || err=10
 	exit $err ) >> "$infofile" || err=$?; sync; echo 3 > /proc/sys/vm/drop_caches; sleep 1
 	( echo -ne '\n\n#$# INFO: '; date
-		echo -e '\n\n$#' dmesg; dmesg || err=15
+		echo -e '\n\n$#' dmesg; echo "$dmesg" || err=15
 		for i in /lg/model/* /mnt/lg/cmn_data/*exc_log_[0-9]*.txt /lgsw/* /etc/init.d/* /etc/rc.d/* \
 			/mnt/lg/user/lgmod/init/*; do [ ! -f "$i" ] && continue
 			echo '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'
@@ -135,8 +135,8 @@ if [ -n "$info" ]; then
 	exit $err ) >> "$infofile" || err=$?; sync; echo 3 > /proc/sys/vm/drop_caches; sleep 1
 	( echo -ne '\n\n#$# INFO: '; date
 		echo -e '\n\n$# strings lginit (lg-init)'
-		f=/mnt/lg/lginit/lg-init; [ ! -f $f ] && f=/mnt/lg/lginit/lginit
-		w=5;m=3;cat $f |tr [:space:] ' '|tr -c ' [:alnum:][:punct:]' '\n'|sed -e'/[a-zA-Z]\{'$m'\}\|[0-9]\{'$m'\}/!d' \
+		f=/mnt/lg/lginit/lg-init; [ ! -f $f ] && { f=/mnt/lg/lginit/lginit; [ -f $f ] && md5sum $f; }
+		w=5;m=3;[ -f $f ] && cat $f |tr [:space:] ' '|tr -c ' [:alnum:][:punct:]' '\n'|sed -e'/[a-zA-Z]\{'$m'\}\|[0-9]\{'$m'\}/!d' \
 			-e'/[-_=/\.:0-9a-zA-Z]\{'$w'\}/!d' -e's/  \+/ /g'| head -n70 || err=18
 		echo -e '\n\n$# strings boot (/dev/mtd1)'
 		s=7;w=5;m=3;cat /dev/mtd1 |tr [:space:] ' '|tr -c ' [:alnum:][:punct:]' '\n'|sed -e'/[a-zA-Z]\{'$m'\}\|[0-9]\{'$m'\}/!d' \
@@ -144,19 +144,19 @@ if [ -n "$info" ]; then
 		echo -e '\n\n$# strings boot (/dev/mtd5)'
 		s=7;w=5;m=3;cat /dev/mtd5 |tr [:space:] ' '|tr -c ' [:alnum:][:punct:]' '\n'|sed -e'/[a-zA-Z]\{'$m'\}\|[0-9]\{'$m'\}/!d' \
 			-e'/[-_=/\.:0-9a-zA-Z]\{'$w'\}/!d' -e's/  \+/ /g' -e'/.\{'$s'\}/!d'| tail -n35 || err=18
-		echo -e '\n\n$#' diff /dev/mtd1 /dev/mtd5; diff /dev/mtd1 /dev/mtd5 || err=13
+		echo -e '\n\n$#' diff /dev/mtd1 /dev/mtd5; diff /dev/mtd1 /dev/mtd5
 	exit $err ) >> "$infofile" || err=$?; sync; echo 3 > /proc/sys/vm/drop_caches; sleep 1
 	#( echo -ne '\n\n#$# INFO: '; date
 	#	# backup partitions
 	#	echo -e '\n\n$# diff backup /dev/mtd# '
-	#	diff /dev/mtd15 /dev/mtd20 && diff /dev/mtd16 /dev/mtd21 && diff /dev/mtd17 /dev/mtd22 || err=13
+	#	diff /dev/mtd15 /dev/mtd20 && diff /dev/mtd16 /dev/mtd21 && diff /dev/mtd17 /dev/mtd22
 	#	# cramfs - no need, we check the same below
 	#	appxip_addr=`cat /proc/cmdline | awk -v RS='[ ]' -F= '/appxip_addr=/ { print $2 }'`
 	#	echo -e '\n\n$# dump lgapp (/dev/mem)'; ./busybox hexdump /dev/mem -vs$((appxip_addr)) -n160 -e'4 "%08x "" " 16 "%_p"" " 4 "%08x "" " 10 "%_p" 1/2 " %04x" "\n" 7 "%08x "" " 7 "%_p"" " 1/1 "%02x " 4 "%08x " "\n" 10 "%_p" 1/2 " %04x" 3 " %08x"" " 15 "%_p" 3 " %08x" "\n"' || err=13
 	#	echo -e '\n\n$# dump RELEASE (/dev/mem)'; ./busybox hexdump /dev/mem -vs$((appxip_addr+1024*4)) -n512 -e'128 "%_p" "\n"' || err=13
 	#exit $err ) >> "$infofile" || err=$?; sync; echo 3 > /proc/sys/vm/drop_caches; sleep 1
-	( echo -ne '\n\n#$# INFO: '; date ) >> "$infofile" || err=10
-	[ $err != 0 ] && { err=$?; echo "Error($err): Info file failed: $infofile"; }
+	( echo -ne '\n\n#$# INFO: '; date ) >> "$infofile" || err=10; sync
+	[ $err != 0 ] && echo "Error($err): Info file failed: $infofile"
 fi
 
 # prepare
@@ -175,17 +175,17 @@ if [ -n "$install" ]; then
 fi
 if [ -n "$install" ] && [ -z "$update" ] && [ -n "$lginitmd5" ]; then
 	if [ -f /mnt/lg/lginit/lginit ] && [ ! -f /mnt/lg/lginit/lg-init ]; then
-		md5cur=$(md5sum /mnt/lg/lginit/lginit) && [ "$lginitmd5" = "${md5cur% *}" ] ||
+		md5cur=$(md5sum /mnt/lg/lginit/lginit) && [ "$lginitmd5" = "${md5cur%% *}" ] ||
 			{ err=27; echo "ERROR($err): md5 mismatch: /mnt/lg/lginit/lginit"; }
 	fi
 fi
 [ $err != 0 ] && exit $err
 if [ -n "$install" ]; then
 	md5chk=$(cat "$rootfs.md5") && md5cur=$(md5sum "$rootfs") &&
-		[ "${md5chk% *}" = "${md5cur% *}" ] ||
+		[ "${md5chk%% *}" = "${md5cur%% *}" ] ||
 		{ err=28; echo "ERROR($err): md5 mismatch: $rootfs"; }
 	md5chk=$(cat "$lginit.md5") && md5cur=$(md5sum "$lginit") &&
-		[ "${md5chk% *}" = "${md5cur% *}" ] ||
+		[ "${md5chk%% *}" = "${md5cur%% *}" ] ||
 		{ err=29; echo "ERROR($err): md5 mismatch: $lginit"; }
 	# LG rc.local and BCM lginit sh script
 	APP_XIP=`cat /proc/cmdline | awk -v RS='[ ]' -F= '/appxip_addr=/ { print $2 }'`
