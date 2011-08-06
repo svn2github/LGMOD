@@ -5,34 +5,52 @@ mmm4m5m & openlgtv community present LGMOD S7 v1.0.07 for LG TVs on Saturn 7 chi
 	32LD350-ZA fw v03.03.18 (old v03.03.03); 37LE5308-ZA fw v03.01.13 
 ====================================================================================
 
+WARNING: Debug and uboot are disabled after firmware v3.03.2x (approximately)
 WARNING: It is important, your firmware to have unlocked uboot! In case of troubles, you will need uboot!
 	http://openlgtv.org.ru/wiki/index.php/Bootloader_connection
-WARNING: Debug and uboot are disabled after firmware v3.03.2x (approximately)
 ====================================================================================
 
-Upgrade:
-	Extract and upload all files (using FTP or LGMOD webui: tools/upload)
-	Then start the install command (using telnet or webui: tools/run):
-		/mnt/usb1/Drive1/LG_DTV/install.sh install
+IMPORTANT: In TV menu "EZ ADJUST"/"Tool Option3" - set "DVR Ready" to "0" (default) and restart TV!!!
 
-Install:
-	Extract all files to USB drive
-	In TV menu "IN START"/"System 1" - set "Debug mode" to "DEBUG" (you can use old remote control and PC audio out)
+1.1. Upgrade LGMOD: auto extract
+	Upload "lgmod_S7_#.sh.zip" file (using FTP or LGMOD webui: tools/upload; FAT16/32 partition is good)
+	Extract files and give parameters for install.sh (using telnet or webui: tools/run):
+		sh /mnt/usb1/Drive1/LG_DTV/lgmod_S7_#.sh.zip install
+
+1.2. Upgrade LGMOD: manual extract
+	Extract and upload all files (using FTP or LGMOD webui: tools/upload)
+	Start the install command (using telnet or webui: tools/run):
+		sh /mnt/usb1/Drive1/LG_DTV/install.sh install
+
+2. Install LGMOD for the first time:
+	Extract all files to USB drive and attach the USB drive to TV. (FAT16/32 partition is good)
+	In TV menu "IN START"/"System 1" - set "Debug mode" to "DEBUG" (you can use PC audio out with ir diode from old remote control)
 	Enter debug, then press F9 and press F10 - you will see ":debugMain $" (you need RS232 serial cable)
 		More info: http://openlgtv.ru/wiki/index.php/Debug_mode_connection
 	In debug, run 'sh' command to start shell. If 'sh' command is not there, then try:
 		call debug_os_shell+0xb0
 	You will see shell prompt: "/mnt/lg/lginit #". In shell run installation script:
-		/mnt/usb1/Drive1/install.sh install
+		sh /mnt/usb1/Drive1/install.sh install
 
-Installation script does NOT write log file! Save the log from serial terminal program.
-Info for your TV is collected and saved into separate text file.
-Additional options:
-	Only info and backup: install.sh
-	For NTFS: sh install.sh install
-	Force full backup: install.sh backup
-	Dry run (skip erase/flash/write): install.sh dryrun
+Installation script does NOT write log file! Save the log from serial terminal program. (Or setup logging options of your serial terminal program)
+Info for your TV is collected and saved into separate text file. Additional options:
+	Info and backup only: "install.sh"; Force full backup: "install.sh backup"
+	Dry run (skip erase/flash/write): "install.sh nobackup noinfo install dryrun"
 
+
+Changelog 1.0.10 :
+==================
+* Auto mount netcast from /mnt/usb#/Drive#/LGMOD_S7/contents (cache folder will be auto created)
+- netcast from "7cast" archive works nice. It is not included in LGMOD zip
+* Added tmux. RELEASE/TV is started inside. You can "sendkeys" and control TV remotely (mute/unmute)
+* Shell environment (/etc/profile; home is /lg/user/root - if directory exists)
+* LGMOD services: /etc/init.d/lgmod start|stop|mount|umount|restart [all]
+* Upload limit is 16M (webui), /dev/shm is 24M (limits reduced a little, TV works more stable)
+* Additional programs are packed as "extroot" archive. It is not included in LGMOD zip.
+- Everything that does not fit in rootfs is there. More programs could be added.
+- You have to extract the archive and create symbolic link (check $PATH variable)
+- There are: ctorrent, rtorrent, mc (midnight commander), some modules (check deb packages for help/config)
+* Advanced: mount rootfs from USB drive, chroot and start LGMOD (check in rcS file)
 
 Changelog 1.0.9 :
 =================
@@ -53,9 +71,7 @@ Changelog 1.0.8 :
 Changelog 1.0.7 :
 =================
 * Port to S7 is considered as complete. Install script is finalized.
-- upload dir is /dev/shm/upload, limit 22M
-- you can: /etc/init.d/lgmod start|stop
-- /dev/shm is 33MB tmpfs (skeleton from /mnt/lg/user/lgmod/init/devshm/)
+- /dev/shm is tmpfs (skeleton from /mnt/lg/user/lgmod/devshm/)
 - logging: /dev/kmsg /dev/log. You can start syslog: 'syslogd -C16' and read it: 'logread'
 * Delay LGMOD startup - slightly improved TV startup time
 * lginit partition is modified (old versions just erase it). This helps a lot if LG FW override only rootfs

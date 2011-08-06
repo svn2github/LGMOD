@@ -3,9 +3,9 @@
 # Originally written for OpenLGTV_BCM by xeros
 # Modified for lgmod by hawkeye
 # Modified for lgmod S7 by mmm4m5m
-LGMOD_VERSION="1.0.09"
+LGMOD_VERSION="1.0.10"
 LGMOD_VERSION_EPK="30333"
-LGMOD_VERSION_ROOTFS="10009"
+LGMOD_VERSION_ROOTFS="10010"
 mkepk_bin=../pack/mkepk
 mksquashfs_bin=../pack/mksquashfs
 
@@ -27,34 +27,35 @@ cp -r --preserve=timestamps $dir squashfs-root
 cd squashfs-root
 tar xzf dev.tar.gz
 tar xzf dev-lgmod.tar.gz
-tar xvzf etc_passwd.tar.gz
-rm -f etc_passwd.tar.gz
+tar xzvf etc_passwd.tar.gz
+rm -f dev.tar.gz dev-lgmod.tar.gz etc_passwd.tar.gz
 find . -name '.svn' | xargs rm -rf
 cd ..
 
-echo $LGMOD_VERSION > ./squashfs-root/var/www/cgi-bin/version
-sed -i -e "s/ver=/S7 $LGMOD_VERSION/g" ./squashfs-root/var/www/cgi-bin/footer.inc
-sed -i -e "s/ver=/S7 $LGMOD_VERSION/g" ./squashfs-root/var/www/cgi-bin/header.inc
+echo $LGMOD_VERSION > ./squashfs-root/home/lgmod/www/cgi-bin/version
+sed -i -e "s/ver=/S7 $LGMOD_VERSION/g" ./squashfs-root/home/lgmod/www/cgi-bin/footer.inc
+sed -i -e "s/ver=/S7 $LGMOD_VERSION/g" ./squashfs-root/home/lgmod/www/cgi-bin/header.inc
 sed -i -e "s/ver=/S7 $LGMOD_VERSION/g" ./squashfs-root/etc/lgmod.sh
 sed -i -e "s/ver=/S7 $LGMOD_VERSION/g" ./squashfs-root/etc/init.d/lgmod
 
 ofile=lgmod_S7_$LGMOD_VERSION_ROOTFS
 rm -f $ofile.pak $ofile.sqfs $ofile.epk $ofile.zip
 
-$mksquashfs_bin squashfs-root $ofile.sqfs -le -all-root -noappend
+$mksquashfs_bin squashfs-root $ofile.sqfs -le -all-root -noappend -b 1048576
 md5sum $ofile.sqfs > $ofile.sqfs.md5
 osize=`wc -c $ofile.sqfs | awk '{print $1}'`
+echo "Size: $osize / $size"
 o4096=$(( $osize / 4096 * 4096 ))
 
 if [ "$osize" -gt "$size" ]
 then
-    echo "ERROR: Partition image too big for flashing."
+    echo "ERROR: Partition image too big for flashing ($osize / $size)."
     rm -f $ofile.sqfs
     rm -rf squashfs-root
     exit 1
 elif [ "$osize" != "$o4096" ]
 then
-    echo "ERROR: Partition image is not multiple of 4096."
+    echo "ERROR: Partition image is not multiple of 4096 ($osize / $o4096)."
     rm -f $ofile.sqfs
     rm -rf squashfs-root
     exit 4
@@ -66,7 +67,17 @@ then
     rm -f $ofile.pak
     mv $ofile.epk ../
 fi
-md5sum mtd4_lg-init.sqfs > mtd4_lg-init.sqfs.md5
-zip -j $ofile.zip $ofile.sqfs* mtd4_lg-init.sqfs* changelog.txt install.sh squashfs-root/bin/busybox
-rm -rf $ofile.sqfs.md5 mtd4_lg-init.sqfs.md5 squashfs-root
-mv $ofile.sqfs $ofile.zip ../
+
+oinit=mtd4_lg-init
+#rm -r squashfs-init
+#cp -r --preserve=timestamps trunk/lginit squashfs-init
+#find squashfs-init -name '.svn' | xargs rm -rf
+#$mksquashfs_bin squashfs-init $oinit.sqfs -le -all-root -noappend
+
+md5sum $oinit.sqfs > $oinit.sqfs.md5
+zip -j $ofile.zip $ofile.sqfs.md5 $ofile.sqfs $oinit.sqfs $oinit.sqfs.md5 changelog.txt install.sh
+rm -rf $ofile.sqfs.md5 $ofile.sqfs squashfs-root $oinit.sqfs.md5
+
+cat extract.sh $ofile.zip > $ofile.sh.zip
+#mv $ofile.zip ../
+rm -rf $ofile.zip; #$oinit.sqfs squashfs-init
