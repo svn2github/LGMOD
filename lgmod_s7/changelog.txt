@@ -40,15 +40,15 @@ Info for your TV is collected and saved into separate text file. Additional opti
 
 Changelog 1.0.10 :
 ==================
-* Auto mount netcast from /mnt/usb#/Drive#/LGMOD_S7/contents (cache folder will be auto created)
+* New webui pages: Services, Remote, RELEASE (INIT); Services: ssh/dropbear, syslogd
+* Auto mount netcast from /mnt/usb#/Drive#/LGMOD_S7/contents (and cache folder)
 - netcast from "7cast" archive works nice. It is not included in LGMOD zip
-* Added tmux. RELEASE/TV is started inside. You can "sendkeys" and control TV remotely (mute/unmute)
+* OPENRELEASE is included (key remap, "server" mode and more)
+* Added tmux. RELEASE/TV is started inside. You can send keys and control TV remotely
 * Shell environment (/etc/profile; home is /lg/user/root - if directory exists)
-* LGMOD services: /etc/init.d/lgmod start|stop|mount|umount|restart [all]
-* Upload limit is 16M (webui), /dev/shm is 24M (limits reduced a little, TV works more stable)
 * Additional programs are packed as "extroot" archive. It is not included in LGMOD zip.
 - Everything that does not fit in rootfs is there. More programs could be added.
-- You have to extract the archive and create symbolic link (check $PATH variable)
+- You have to extract the archive and add to PATH and LG_LIBRARY_PATH variables
 - There are: ctorrent, rtorrent, mc (midnight commander), some modules (check deb packages for help/config)
 * Advanced: mount rootfs from USB drive, chroot and start LGMOD (check in rcS file)
 
@@ -71,10 +71,9 @@ Changelog 1.0.8 :
 Changelog 1.0.7 :
 =================
 * Port to S7 is considered as complete. Install script is finalized.
-- /dev/shm is tmpfs (skeleton from /mnt/lg/user/lgmod/devshm/)
-- logging: /dev/kmsg /dev/log. You can start syslog: 'syslogd -C16' and read it: 'logread'
+- /dev/shm is tmpfs; logging: /dev/kmsg /dev/log
 * Delay LGMOD startup - slightly improved TV startup time
-* lginit partition is modified (old versions just erase it). This helps a lot if LG FW override only rootfs
+* lginit partition is modified. This helps when LG FW override only rootfs
 * Fixed unmount before reboot. Unmount before poweroff (remote control) is not solved (yet)
   (If you write to USB drive - do 'sync' or 'eject' before poweroff)
 
