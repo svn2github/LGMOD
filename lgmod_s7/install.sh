@@ -16,8 +16,8 @@ for i in "$@"; do
 	[ "$i" = chroot ] && chroot=1; [ "$i" = nochroot ] && chroot=''; done
 
 if [ "$1" = steps ]; then
-	INIT=/mnt/lg/user/lgmod/init; USB=/tmp/lgmod/chrusb
-	usb="$USB${rootfs#/mnt/usb?/Drive?}"; usb="${usb%/*}"
+	INIT=/mnt/lg/user/lgmod/init; usb=/tmp/lgmod/chrusb
+	usb="$usb${rootfs#/mnt/usb?/Drive?}"; usb="${usb%/*}"
 	echo "#
 # 0. Steps - start this script using absolute path to script file
 # 1. Prepare - replace 'sd?' with the actual device name
@@ -33,6 +33,7 @@ cd $usb; $INS <ARGUMENTS>
 # 5. Cleanup - do not forget
 rm -r $INIT
 #	"
+	exit
 fi
 
 
@@ -75,8 +76,8 @@ if [ -n "$chroot" ]; then
 		mount -t proc  installproc  "$CHR/proc" &&
 		mount -t usbfs installusbfs "$CHR/proc/bus/usb"
 	if [ -d "$CHR/proc/bus/usb" ]; then
-		for i in $MNT "$USB"; do mount -o bind "$i" "$CHR$i"; done
-		mkdir -p "$CHR$USB"; mount -o bind "$USB" "$CHR$USB"
+		for i in $MNT; do mount -o bind "$i" "$CHR$i"; done
+		mkdir -p "$CHR$USB"; mount -o bind "$DIR" "$CHR$USB"
 
 		if [ -d "$CHR$USB" ]; then
 			echo "Output directory: $INFO"; echo

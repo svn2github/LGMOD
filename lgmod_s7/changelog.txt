@@ -49,7 +49,7 @@ Changelog 1.0.10 :
 * Shell environment (/etc/profile; home is /lg/user/root - if directory exists)
 * Additional programs are packed as "extroot" archive. It is not included in LGMOD zip.
 - Everything that does not fit in rootfs is there. More programs could be added.
-- You have to extract the archive and add to PATH and LG_LIBRARY_PATH variables
+- You have to extract the archive and add to PATH and LD_LIBRARY_PATH variables
 - There are: ctorrent, rtorrent, mc (midnight commander), some modules (check deb packages for help/config)
 * Advanced: mount rootfs from USB drive, chroot and start LGMOD (check in rcS file)
 
