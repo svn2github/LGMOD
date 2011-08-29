@@ -43,7 +43,7 @@ Changelog 1.0.10 :
 * New webui pages: Services, Remote, RELEASE (INIT); Services: ssh/dropbear, syslogd
 * Auto mount netcast from /mnt/usb#/Drive#/LGMOD_S7/contents (and cache folder)
 - netcast from "7cast" archive works nice. It is not included in LGMOD zip
-* OPENRELEASE is included (key remap, "server" mode and more)
+* OPENRELEASE by rtokarev - key remap, "server" mode and more
 * Added tmux. RELEASE/TV is started inside. You can send keys and control TV remotely
 * Shell environment (/etc/profile; home is /lg/user/root - if directory exists)
 * Additional programs are packed as "extroot" archive. It is not included in LGMOD zip.
