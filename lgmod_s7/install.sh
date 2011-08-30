@@ -53,7 +53,7 @@ if [ -n "$info" ]; then
 		echo -e '\n\n$# list some files'
 		ls -lR /etc /mnt/lg/lginit /mnt/lg/user /mnt/lg/model /mnt/lg/lgapp /usr/local /mnt/lg/bt /mnt/lg/cmn_data /mnt/lg/res/lgres /mnt/lg/res/lgfont
 		ls -l /mnt/lg/ciplus/cert | sed -e 's/ [^ ]*-/ ...-/'; # private info?
-		ls -l /mnt/lg/ciplus /mnt/lg/ciplus/[^c]* /home/lgmod /mnt/lg/res/estreamer /mnt/addon /mnt/addon/* /mnt/addon/*/* /mnt/addon/*/*/*
+		ls -l /mnt/lg/ciplus /mnt/lg/ciplus/[^c]* /mnt/lg/res/estreamer /mnt/addon /mnt/addon/* /mnt/addon/*/* /mnt/addon/*/*/*
 	} >> /tmp/install-info
 	[ $err != 0 ] && echo "Error($err): Info file failed: $infofile"
 fi

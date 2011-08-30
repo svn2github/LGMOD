@@ -29,7 +29,7 @@ IMPORTANT: In TV menu "EZ ADJUST"/"Tool Option3" - set "DVR Ready" to "0" (defau
 		More info: http://openlgtv.ru/wiki/index.php/Debug_mode_connection
 	In debug, run 'sh' command to start shell. If 'sh' command is not there, then try:
 		call debug_os_shell+0xb0
-	You will see shell prompt: "/mnt/lg/lginit #". In shell run installation script:
+	You will see shell prompt: "/mnt/lg/lginit #" (or "/lgsw #"). In shell run installation script:
 		sh /mnt/usb1/Drive1/install.sh install
 
 Installation script does NOT write log file! Save the log from serial terminal program. (Or setup logging options of your serial terminal program)
