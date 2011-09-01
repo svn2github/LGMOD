@@ -1,5 +1,6 @@
-mmm4m5m & openlgtv community present LGMOD S7 v1.0.07 for LG TVs on Saturn 7 chipset. Tested on:
+mmm4m5m & openlgtv community present LGMOD S7 for LG TVs on Saturn 7 chipset. Tested on:
 	60PZ250-ZB fw v03.37.13 (and v03.33.13, debug unlocked with PowerOnly)
+	42LK430-Z? fw v04.01.22                19LELE3300-ZA fw v03.03.18 (modified)
 	32LD465-ZA fw v03.03.11 (and v03.03.32); 42LD420-ZA  fw v03.03.26
 	42LD550-ZA fw v03.01.08;                 32LE3300-ZA fw v03.03.32
 	32LD350-ZA fw v03.03.18 (old v03.03.03); 37LE5308-ZA fw v03.01.13 
