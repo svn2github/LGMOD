@@ -1,9 +1,10 @@
 mmm4m5m & openlgtv community present LGMOD S7 for LG TVs on Saturn 7 chipset. Tested on:
 	60PZ250-ZB fw v03.37.13 (and v03.33.13, debug unlocked with PowerOnly)
-	42LK430-Z? fw v04.01.22                19LELE3300-ZA fw v03.03.18 (modified)
-	32LD465-ZA fw v03.03.11 (and v03.03.32); 42LD420-ZA  fw v03.03.26
+	42LK430-Z? fw v04.01.22                  19LE3300-ZA fw v03.03.18 (modified)
+	32LD465-ZA fw v03.03.11 (and v03.03.32); 37LE4500-ZA fw v03.03.31
 	42LD550-ZA fw v03.01.08;                 32LE3300-ZA fw v03.03.32
 	32LD350-ZA fw v03.03.18 (old v03.03.03); 37LE5308-ZA fw v03.01.13 
+	42LD420-ZA fw v03.03.26
 ====================================================================================
 
 WARNING: Debug and uboot are disabled after firmware v3.03.2x (approximately)
@@ -25,7 +26,7 @@ IMPORTANT: In TV menu "EZ ADJUST"/"Tool Option3" - set "DVR Ready" to "0" (defau
 
 2. Install LGMOD for the first time:
 	Extract all files to USB drive and attach the USB drive to TV. (FAT16/32 partition is good)
-	In TV menu "IN START"/"System 1" - set "Debug mode" to "DEBUG" (you can use PC audio out with ir diode from old remote control)
+	In TV menu "IN START"/"System 1" - set "Debug status" to "EVENT"/"DEBUG" (you can use PC audio out with ir diode from old remote control)
 	Enter debug, then press F9 and press F10 - you will see ":debugMain $" (you need RS232 serial cable)
 		More info: http://openlgtv.ru/wiki/index.php/Debug_mode_connection
 	In debug, run 'sh' command to start shell. If 'sh' command is not there, then try:
@@ -41,18 +42,20 @@ Info for your TV is collected and saved into separate text file. Additional opti
 
 Changelog 1.0.10 :
 ==================
-* New webui pages: Logs, Services, Remote, RELEASE (INIT)
+* New webui pages: Logs, Services, Remote, RELEASE. Boot and RELEASE config options
+  are added to Tools page. You can extract new LGMOD version and try before install.
 * Services: ssh/dropbear, syslogd; Modules: nfs version 3 (better speed)
 * Auto mount netcast from /mnt/usb#/Drive#/LGMOD_S7/contents (and cache folder)
 - netcast from "7cast" archive works nice. It is not included in LGMOD zip
-* OPENRELEASE by rtokarev adds "server" mode, remap remote control buttons and more...
-* Added tmux. RELEASE/TV is started inside. You can send keys and control TV remotely
+* OPENRELEASE by rtokarev: telnet to RELEASE (on port 2323 - tmux is not needed now),
+  remap remote control buttons, "server" mode (soft_poweroff) and more...
+* Added tmux. RELEASE/TV could be started inside. You can send keys and control TV remotely
 * Shell environment (/etc/profile; home is /lg/user/root - if directory exists)
 * Additional programs are packed as "extroot" archive. It is not included in LGMOD zip.
 - Everything that does not fit in rootfs is there. More programs could be added.
 - You have to extract the archive and add to PATH and LD_LIBRARY_PATH variables
 - There are: ctorrent, rtorrent, mc (midnight commander), some modules (check deb packages for help/config)
-* Advanced: mount rootfs from USB drive, chroot and start LGMOD (check in rcS file)
+* Ctrl+C now will stop rcS init scripts. Added 'Press any key for shell' to lginit image.
 
 Changelog 1.0.9 :
 =================

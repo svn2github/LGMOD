@@ -10,29 +10,23 @@ rootfs=$(echo "$DIR/"lgmod_S7_*.sqfs)
 MNT='/tmp /mnt/lg/lgapp /mnt/lg/lginit /mnt/lg/user /mnt/lg/cmn_data'
 
 # command line
-info=1; chroot=1
+info=1; chroot=1; chrootonly=''
 for i in "$@"; do
-	[ "$i" = info ]   && info=1;   [ "$i" = noinfo ]   && info=''
-	[ "$i" = chroot ] && chroot=1; [ "$i" = nochroot ] && chroot=''; done
+	[ "$i" = info ]    && info=1;   [ "$i" = noinfo ]   && info=''
+	[ "$i" = chroot ]  && chroot=1; [ "$i" = nochroot ] && chroot=''
+	[ "$i" = chrootonly ] && chrootonly=1; done
 
 if [ "$1" = steps ]; then
-	INIT=/mnt/lg/user/lgmod/init; usb=/tmp/lgmod/chrusb
-	usb="$usb${rootfs#/mnt/usb?/Drive?}"; usb="${usb%/*}"
-	echo "#
-# 0. Steps - start this script using absolute path to script file
-# 1. Prepare - replace 'sd?' with the actual device name
-mount | grep /dev/sd && mkdir -p $INIT
-echo 'LGI_MENU=1' >> $INIT/lginit
-echo 'LGI_CHROOT=sd?${rootfs#/mnt/usb?/Drive?}' >> $INIT/lginit
-# 2. Install - lginit image only and then reboot (restart TV)
-install.sh lginiton <ARGUMENTS> && reboot
-# 3. Check - wait few sec. Change options and reboot
-echo 'RCS_NOREL=1' >> $INIT/rcS && reboot
-# 4. Install - rootfs
-cd $usb; $INS <ARGUMENTS>
-# 5. Cleanup - do not forget
-rm -r $INIT
-#	"
+	BOOT=/mnt/lg/user/lgmod/boot
+	echo "# Steps
+# 0. Start this script with absolute path
+# 1. Setup chroot, install lginit image only and try LGMOD
+echo 'LGI_CHROOT=sd?${rootfs#/mnt/usb?/Drive?}' >> $INIT
+$0 lginitonly && reboot
+# 2. Optional: You could disable RELEASE before install
+echo 'RCS_NOREL=1' >> $INIT && reboot
+# 3. Cleanup: rm $INIT
+		"
 	exit
 fi
 
@@ -40,20 +34,19 @@ fi
 # info
 if [ -n "$info" ]; then
 	err=0
-	{ echo -ne "\n\n#$# INFO($err): "; date
+	{ echo -ne '\n\n#$#'" INFO($err): "; date
 		echo -e '\n\n$#' df -h; df -h | grep -v '^/dev/sd' || err=12
 		echo -e '\n\n$#' busybox; busybox || err=12
 		echo -e '\n\n$#' help; help || err=10
 		echo -e '\n\n$#' dmesg; dmesg|grep ACTIVE;echo; dmesg || err=15
-		for i in /etc/version_for_lg /mnt/lg/model/* /mnt/lg/cmn_data/*exc_log_[0-9]*.txt /lgsw/* \
-			/etc/init.d/rcS /etc/rc.d/rc.* /mnt/lg/user/lgmod/init/*; do [ ! -f "$i" ] && continue
+		for i in /proc/version_for_lg /etc/version_for_lg /mnt/lg/model/* /etc/init.d/rcS \
+			/mnt/lg/user/lgmod/boot /mnt/lg/user/lgmod/release /mnt/lg/user/lgmod/init/*; do [ ! -f "$i" ] && continue
 			echo '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'
 			echo -e '\n\n$#' cat "$i"; cat "$i" || err=16
 		done; echo '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'
 		echo -e '\n\n$# list some files'
 		ls -lR /etc /mnt/lg/lginit /mnt/lg/user /mnt/lg/model /mnt/lg/lgapp /usr/local /mnt/lg/bt /mnt/lg/cmn_data /mnt/lg/res/lgres /mnt/lg/res/lgfont
-		ls -l /mnt/lg/ciplus/cert | sed -e 's/ [^ ]*-/ ...-/'; # private info?
-		ls -l /mnt/lg/ciplus /mnt/lg/ciplus/[^c]* /mnt/lg/res/estreamer /mnt/addon /mnt/addon/* /mnt/addon/*/* /mnt/addon/*/*/*
+		ls -l /mnt/lg/ciplus /mnt/lg/res/estreamer /mnt/addon /mnt/addon/* /mnt/addon/*/* /mnt/addon/*/*/*
 	} >> /tmp/install-info
 	[ $err != 0 ] && echo "Error($err): Info file failed: $infofile"
 fi
@@ -81,8 +74,15 @@ if [ -n "$chroot" ]; then
 
 		if [ -d "$CHR$USB" ]; then
 			echo "Output directory: $INFO"; echo
-			chroot "$CHR" "$INS" "$@" "workdir=$USB" busybox=/bin/busybox ||
-				{ err=$?; [ $err -gt 99 ] && exit $err; }; # keep chroot environment
+			if [ -n "$chrootonly" ]; then
+				echo "For chroot : chroot $CHR /bin/sh"
+				echo "For install: chroot $CHR $INS workdir=$USB busybox=/bin/busybox"
+				chroot "$CHR" /bin/sh
+				exit; # keep chroot environment
+			else
+				chroot "$CHR" "$INS" "$@" "workdir=$USB" busybox=/bin/busybox ||
+					{ err=$?; [ $err -gt 99 ] && exit $err; }; # keep chroot environment
+			fi
 		else err=8; echo "Error($err): Chroot failed: $CHR$USB"; fi
 
 		umount "$CHR$USB" && rm -r "$CHR$USB"
