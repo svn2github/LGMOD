@@ -437,7 +437,11 @@ mini_fo_open(inode_t *inode, file_t *file)
 			mntget(stopd(inode->i_sb)->hidden_mnt);
 			hidden_file = dentry_open(hidden_dentry,
 						  stopd(inode->i_sb)->hidden_mnt,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29)
+						  hidden_flags, file->f_cred);
+#else
 						  hidden_flags);
+#endif
 			if (IS_ERR(hidden_file)) {
 				err = PTR_ERR(hidden_file);
 				dput(hidden_dentry);
@@ -479,7 +483,11 @@ mini_fo_open(inode_t *inode, file_t *file)
 			mntget(stopd(inode->i_sb)->hidden_mnt);
 			hidden_file = dentry_open(hidden_dentry,
 						  stopd(inode->i_sb)->hidden_mnt,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29)
+						  hidden_flags, file->f_cred);
+#else
 						  hidden_flags);
+#endif
 			if (IS_ERR(hidden_file)) {
 				err = PTR_ERR(hidden_file);
 				dput(hidden_dentry);
@@ -512,7 +520,11 @@ mini_fo_open(inode_t *inode, file_t *file)
 	mntget(stopd(inode->i_sb)->hidden_mnt2);
 	hidden_sto_file = dentry_open(hidden_sto_dentry,
 				      stopd(inode->i_sb)->hidden_mnt2,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29)
+				      hidden_flags, file->f_cred);
+#else
 				      hidden_flags);
+#endif
 
 	/* dentry_open dputs the dentry if it fails */
 	if (IS_ERR(hidden_sto_file)) {

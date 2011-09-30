@@ -238,7 +238,11 @@ int mini_fo_cp_cont(dentry_t *tgt_dentry, struct vfsmount *tgt_mnt,
 	mntget(src_mnt);
 
 	/* open file write only */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29)
+	tgt_file = dentry_open(tgt_dentry, tgt_mnt, 0x1, current_cred());
+#else
 	tgt_file = dentry_open(tgt_dentry, tgt_mnt, 0x1);
+#endif
 	if(!tgt_file || IS_ERR(tgt_file)) {
 		printk(KERN_CRIT "mini_fo_cp_cont: ERROR opening target file.\n");
 		err = PTR_ERR(tgt_file);
@@ -246,7 +250,11 @@ int mini_fo_cp_cont(dentry_t *tgt_dentry, struct vfsmount *tgt_mnt,
 	}
 
 	/* open file read only */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29)
+	src_file = dentry_open(src_dentry, src_mnt, 0x0, current_cred());
+#else
 	src_file = dentry_open(src_dentry, src_mnt, 0x0);
+#endif
 	if(!src_file || IS_ERR(src_file)) {
 		printk(KERN_CRIT "mini_fo_cp_cont: ERROR opening source file.\n");
 		err = PTR_ERR(src_file);
