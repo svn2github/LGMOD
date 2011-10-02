@@ -5,7 +5,7 @@
 
 # config
 CHR=/tmp/install-root; USB=/tmp/install-usb; INS=/home/lgmod/install.sh
-DIR="${0%/*}"
+DIR=$(pwd); dir="${0%/*}"; [ -n "$dir" ] && { cd=$(pwd); cd "$dir"; DIR=$(pwd); cd "$cd"; }
 rootfs=$(echo "$DIR/"lgmod_S7_*.sqfs)
 MNT='/tmp /mnt/lg/lgapp /mnt/lg/lginit /mnt/lg/user /mnt/lg/cmn_data'
 
