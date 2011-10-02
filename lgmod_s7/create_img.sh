@@ -61,7 +61,7 @@ for i in  etc/dropbear etc/init.d etc/network etc/openrelease etc/auth.sh etc/en
 	home var dev-lgmod.tar.gz etc_passwd.tar.gz lm; do
 	d=trunk/rootfs-common/$i; dd=${d%/*}; mkdir -p $dd
 	cp -r --preserve=timestamps trunk/rootfs/$i $d; done
-for i in home/lgmod/install.sh usr/lib/gconv; do
+for i in home/lgmod/install.sh usr/lib/gconv usr/lib/libopenrelease.so.2.1.2; do
 	rm -rf trunk/rootfs-common/$i; done
 find trunk/rootfs-common -name '.svn' | xargs rm -rf
 # merge rootfs-common
