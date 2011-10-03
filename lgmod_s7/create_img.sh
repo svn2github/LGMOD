@@ -39,7 +39,7 @@ if [ -n "$S6" ]; then
 	# TODO: update svn rootfs-S6
 	(cd squashfs-root; rm -f etc/lgmod.sh etc/init.d/rcS-nvram etc/init.d/netcast
 		rm -f modules/catc.ko etc_passwd.tar.bz2; mv modules lib/modules
-		tar xjf dev.tar.bz2; rm -f dev.tar.bz2; mkdir mnt/cmn_data
+		tar xjf dev.tar.bz2; rm -f dev.tar.bz2; mkdir mnt/lg/cmn_data
 		sed -i -e 's/^ramfs/#ramfs/' etc/fstab)
 else
 	cp -r --preserve=timestamps trunk/lginit squashfs-init || exit 21
@@ -65,6 +65,7 @@ for i in home/lgmod/install.sh usr/lib/gconv usr/lib/libopenrelease.so.2.1.2; do
 	rm -rf trunk/rootfs-common/$i; done
 find trunk/rootfs-common -name '.svn' | xargs rm -rf
 # merge rootfs-common
+# TODO: cp rootfs-S6 to rootfs-common (platform specific overrides)
 cp -r --preserve=timestamps trunk/rootfs-common/* squashfs-root || exit 5
 
 
@@ -74,19 +75,19 @@ if [ -d extroot ]; then
 	rm -f extroot-img/*.tar.gz; fi
 if [ -n "$S6" ]; then
 	mkdir -p extroot-img/usr/bin
-	for i in dbclient dropbearkey; do i=usr/bin/$i
-		mv squashfs-root/$i extroot-img/$i || exit 26; done
+	for i in dbclient djmount dropbearkey; do i=usr/bin/$i
+		mv squashfs-root/$i extroot-img/$i || exit 25; done
 else
 	mkdir -p extroot-img/bin
 	for i in bin/gdbserver; do
-		mv squashfs-root/$i extroot-img/$i || exit 26; done
+		mv squashfs-root/$i extroot-img/$i || exit 25; done
 	for i in free kill pgrep pkill pmap sysctl top uptime watch; do i=bin/$i
-		mv squashfs-root/$i extroot-img/$i || exit 25
+		mv squashfs-root/$i extroot-img/$i || exit 26
 		ln -s busybox squashfs-root/$i; done
+	mkdir -p extroot-img/usr/bin
+	for i in djmount fusermount mount.fuse ulockmgr_server; do i=usr/bin/$i
+		mv squashfs-root/$i extroot-img/$i || exit 25; done
 fi
-mkdir -p extroot-img/usr/bin
-for i in usr/bin/djmount; do
-	mv squashfs-root/$i extroot-img/$i || exit 26; done
 (cd extroot-img; tar czf ../$ofext *)
 rm -rf extroot-img
 
@@ -107,7 +108,7 @@ if [ "$osize" -gt "$size" ]; then
 	echo "ERROR: Partition image too big for flashing ($osize - $size = $(( osize-size )))."; exit 3; fi
 if [ "$osize" != "$o4096" ]; then
 	echo "ERROR: Partition image is not multiple of 4096 ($osize / $o4096)."; exit 4; fi
-rm -rf squashfs-root
+[ "$1" == debug ] || rm -rf squashfs-root
 
 
 zip -j $ofile.zip changelog.txt
