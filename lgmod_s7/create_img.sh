@@ -37,9 +37,8 @@ rm -rf squashfs-init squashfs-root extroot-img $ofext $ofile.pak $ofile.epk $ofi
 if [ -n "$S6" ]; then
 	cp -r --preserve=timestamps trunk/rootfs-S6 squashfs-root || exit 11; # base rootfs-S6
 	# TODO: update svn rootfs-S6
-	(cd squashfs-root; rm -f etc/lgmod.sh etc/init.d/rcS-nvram etc/init.d/netcast
-		rm -f modules/catc.ko etc_passwd.tar.bz2; mv modules lib/modules
-		tar xjf dev.tar.bz2; rm -f dev.tar.bz2; mkdir mnt/lg/cmn_data
+	(cd squashfs-root; rm -f etc/lgmod.sh modules/catc.ko etc_passwd.tar.bz2
+		mv modules lib/modules; tar xjf dev.tar.bz2; rm -f dev.tar.bz2
 		sed -i -e 's/^ramfs/#ramfs/' etc/fstab)
 else
 	cp -r --preserve=timestamps trunk/lginit squashfs-init || exit 21
@@ -61,8 +60,10 @@ for i in  etc/dropbear etc/init.d etc/network etc/openrelease etc/auth.sh etc/en
 	home var dev-lgmod.tar.gz etc_passwd.tar.gz lm; do
 	d=trunk/rootfs-common/$i; dd=${d%/*}; mkdir -p $dd
 	cp -r --preserve=timestamps trunk/rootfs/$i $d; done
-for i in home/lgmod/install.sh usr/lib/gconv usr/lib/libopenrelease.so.2.1.2; do
+for i in etc/init.d/rcS-nvram etc/init.d/netcast home/lgmod/install.sh \
+	usr/lib/gconv usr/lib/libopenrelease.so.2.1.2; do
 	rm -rf trunk/rootfs-common/$i; done
+(cd trunk/rootfs-common; mkdir -p mnt/lg/cmn_data)
 find trunk/rootfs-common -name '.svn' | xargs rm -rf
 # merge rootfs-common
 # TODO: cp rootfs-S6 to rootfs-common (platform specific overrides)
@@ -85,7 +86,7 @@ else
 		mv squashfs-root/$i extroot-img/$i || exit 26
 		ln -s busybox squashfs-root/$i; done
 	mkdir -p extroot-img/usr/bin
-	for i in djmount fusermount mount.fuse ulockmgr_server; do i=usr/bin/$i
+	for i in dbclient dropbearkey fusermount mount.fuse ulockmgr_server; do i=usr/bin/$i
 		mv squashfs-root/$i extroot-img/$i || exit 25; done
 fi
 (cd extroot-img; tar czf ../$ofext *)
