@@ -4,7 +4,7 @@
 # Modified for lgmod by hawkeye
 # Modified for Saturn6/Saturn7 by mmm4m5m
 
-S6=''; [ "$1" = S6 ] && { shift; S6=1; }
+S6=''; [ "$1" = S6 ] && { shift; S6=1; }; [ "$1" = S7 ] && shift
 mksquashfs_bin=../pack/mksquashfs
 mkepk_bin=../pack/mkepk
 cd ${0%/*}
@@ -34,12 +34,31 @@ rm -rf squashfs-init squashfs-root extroot-img $ofext $ofile.pak $ofile.epk $ofi
 #rm -rf $oinit.sqfs $ofile.sqfs
 
 
+# TODO: update svn rootfs-common
+D=trunk/rootfs-common; rm -rf $D; mkdir $D
+for i in  etc/dropbear etc/init.d etc/mtab etc/network etc/openrelease etc/auth.sh etc/environment etc/group \
+	etc/hosts etc/inittab etc/profile etc/resolv.conf etc/securetty etc/shadow etc/termcap etc/TZ \
+	lib/terminfo usr/share home var dev-lgmod.tar.gz etc_passwd.tar.gz lm; do
+	d=$D/$i; dd=${d%/*}; mkdir -p $dd; cp -ar trunk/rootfs/$i $d; done
+(cd $D; for i in etc/init.d/rcS-nvram etc/init.d/netcast home/lgmod/install.sh usr/lib/gconv; do
+	rm -rf $i; done)
+find $D -name '.svn' | xargs rm -rf
+
+cp -r --preserve=timestamps trunk/rootfs-common squashfs-root || exit 5; # base rootfs-common
 if [ -n "$S6" ]; then
-	cp -r --preserve=timestamps trunk/rootfs-S6 squashfs-root || exit 11; # base rootfs-S6
 	# TODO: update svn rootfs-S6
-	(cd squashfs-root; rm -f etc/lgmod.sh modules/catc.ko etc_passwd.tar.bz2
-		mv modules lib/modules; tar xjf dev.tar.bz2; rm -f dev.tar.bz2
-		sed -i -e 's/^ramfs/#ramfs/' etc/fstab)
+	D=trunk/rootfs-S6; [ -d $D ] || { mkdir $D && cd $D && svn co http://svn.openlgtv.org.ru/lgmod/trunk/rootfs . || exit 99; cd ../..; }
+	(cd $D; rm -f etc/auth.sh etc/group etc/hosts etc/init.d/rcS etc/inittab etc/lgmod.sh \
+		etc/mtab etc/profile etc/resolv.conf etc/securetty etc/shadow etc/TZ etc_passwd.tar.bz2
+		[ -d modules ] && mv modules lib/modules; sed -i -e 's/^ramfs/#ramfs/' etc/fstab
+		[ -h mnt/lg/cmn_data ] || ln -s user/cmn_data mnt/lg/cmn_data
+		[ -h usr/sbin/scp ] || ln -s /mnt/lg/user/scp usr/sbin/scp)
+	for i in lib/libncurses.so.5 lib/libncurses.so.5.7 usr/bin/dbclient usr/bin/dropbearkey usr/bin/tmux \
+		usr/lib/libevent-1.4.so.2 usr/lib/libevent-1.4.so.2.1.3 usr/lib/dropbear/dropbearconvert usr/sbin/dropbear; do
+		d=$D/$i; dd=${d%/*}; mkdir -p $dd; cp -ar trunk/rootfs/$i $d; done
+	#find $D -name '.svn' | xargs rm -rf
+
+	cp -r --preserve=timestamps trunk/rootfs-S6/* squashfs-root || exit 11; # merge rootfs-S6
 else
 	cp -r --preserve=timestamps trunk/lginit squashfs-init || exit 21
 	find squashfs-init -name '.svn' | xargs rm -rf
@@ -48,26 +67,8 @@ else
 	$mksquashfs_bin squashfs-init $oinit.sqfs -le -all-root -noappend -b 524288 || exit 22
 	rm -rf squashfs-init
 
-	cp -r --preserve=timestamps trunk/rootfs squashfs-root || exit 23; # base rootfs
+	cp -r --preserve=timestamps trunk/rootfs/* squashfs-root || exit 23; # merge rootfs-S7
 fi
-
-# TODO: update svn rootfs-common
-rm -rf trunk/rootfs-common; mkdir trunk/rootfs-common
-for i in  etc/dropbear etc/init.d etc/network etc/openrelease etc/auth.sh etc/environment etc/group \
-	etc/hosts etc/inittab etc/profile etc/resolv.conf etc/securetty etc/shadow etc/termcap etc/TZ \
-	lib/modules/2.6.26 lib/modules/modules.dep lib/terminfo lib/libncurses.so.5 lib/libncurses.so.5.7 \
-	usr/bin/dbclient usr/bin/dropbearkey usr/bin/tmux usr/lib usr/sbin/dropbear usr/sbin/scp usr/share \
-	home var dev-lgmod.tar.gz etc_passwd.tar.gz lm; do
-	d=trunk/rootfs-common/$i; dd=${d%/*}; mkdir -p $dd
-	cp -r --preserve=timestamps trunk/rootfs/$i $d; done
-for i in etc/init.d/rcS-nvram etc/init.d/netcast home/lgmod/install.sh \
-	usr/lib/gconv usr/lib/libopenrelease.so.2.1.2; do
-	rm -rf trunk/rootfs-common/$i; done
-(cd trunk/rootfs-common; mkdir -p mnt/lg/cmn_data)
-find trunk/rootfs-common -name '.svn' | xargs rm -rf
-# merge rootfs-common
-# TODO: cp rootfs-S6 to rootfs-common (platform specific overrides)
-cp -r --preserve=timestamps trunk/rootfs-common/* squashfs-root || exit 5
 
 
 # split extroot
@@ -77,7 +78,10 @@ if [ -d extroot ]; then
 if [ -n "$S6" ]; then
 	mkdir -p extroot-img/usr/bin
 	for i in dbclient djmount dropbearkey; do i=usr/bin/$i
-		mv squashfs-root/$i extroot-img/$i || exit 25; done
+		mv squashfs-root/$i extroot-img/$i || exit 27; done
+	mkdir -p extroot-img/lib/modules
+	for i in catc.ko; do i=lib/modules/$i
+		mv squashfs-root/$i extroot-img/$i || exit 28; done
 else
 	mkdir -p extroot-img/bin
 	for i in bin/gdbserver; do
@@ -86,8 +90,8 @@ else
 		mv squashfs-root/$i extroot-img/$i || exit 26
 		ln -s busybox squashfs-root/$i; done
 	mkdir -p extroot-img/usr/bin
-	for i in dbclient dropbearkey fusermount mount.fuse ulockmgr_server; do i=usr/bin/$i
-		mv squashfs-root/$i extroot-img/$i || exit 25; done
+	for i in dbclient fusermount mount.fuse ulockmgr_server; do i=usr/bin/$i; #dropbearkey
+		mv squashfs-root/$i extroot-img/$i || exit 27; done
 fi
 (cd extroot-img; tar czf ../$ofext *)
 rm -rf extroot-img
@@ -95,8 +99,8 @@ rm -rf extroot-img
 
 find squashfs-root -name '.svn' | xargs rm -rf
 cd squashfs-root
-for i in dev.tar.gz dev-lgmod.tar.gz etc_passwd.tar.gz; do tar xzf $i; done
-rm -f dev.tar.gz dev-lgmod.tar.gz etc_passwd.tar.gz
+for i in dev dev-lgmod etc_passwd; do i=$i.tar; g=$i.gz; b=$i.bz2
+	[ -f $g ] && tar xzf $g; [ -f $b ] && tar xjf $b; rm -f $b $g; done
 echo $LGMOD_VER_TEXT > var/www/cgi-bin/version
 for i in etc/init.d/rcS etc/init.d/lgmod var/www/cgi-bin/footer.inc var/www/cgi-bin/header.inc; do
 	sed -i -e "s/ver=/$LGMOD_VER_TEXT/g" $i; done
@@ -109,7 +113,7 @@ if [ "$osize" -gt "$size" ]; then
 	echo "ERROR: Partition image too big for flashing ($osize - $size = $(( osize-size )))."; exit 3; fi
 if [ "$osize" != "$o4096" ]; then
 	echo "ERROR: Partition image is not multiple of 4096 ($osize / $o4096)."; exit 4; fi
-[ "$1" == debug ] || rm -rf squashfs-root
+[ "$1" == test ] || rm -rf squashfs-root
 
 
 zip -j $ofile.zip changelog.txt
