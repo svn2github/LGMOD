@@ -91,9 +91,7 @@ else
 		ln -s busybox squashfs-root/$i; done
 	mkdir -p extroot-img/usr/bin
 	for i in dbclient fusermount mount.fuse ulockmgr_server; do i=usr/bin/$i; #dropbearkey
-		[ -f squashfs-root/$i ] && {
-			mv squashfs-root/$i extroot-img/$i || exit 27
-		}; done
+		mv squashfs-root/$i extroot-img/$i || exit 27; done
 fi
 (cd extroot-img; tar czf ../$ofext *)
 rm -rf extroot-img
