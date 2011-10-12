@@ -34,16 +34,6 @@ rm -rf squashfs-init squashfs-root extroot-img $ofext $ofile.pak $ofile.epk $ofi
 #rm -rf $oinit.sqfs $ofile.sqfs
 
 
-# TODO: update svn rootfs-common
-D=trunk/rootfs-common; rm -rf $D; mkdir $D
-for i in  etc/dropbear etc/init.d etc/mtab etc/network etc/openrelease etc/auth.sh etc/environment etc/group \
-	etc/hosts etc/inittab etc/profile etc/resolv.conf etc/securetty etc/shadow etc/termcap etc/TZ \
-	lib/terminfo usr/share home var dev-lgmod.tar.gz etc_passwd.tar.gz lm; do
-	d=$D/$i; dd=${d%/*}; mkdir -p $dd; cp -ar trunk/rootfs/$i $d; done
-(cd $D; for i in etc/init.d/rcS-nvram etc/init.d/netcast home/lgmod/install.sh usr/lib/gconv; do
-	rm -rf $i; done)
-find $D -name '.svn' | xargs rm -rf
-
 cp -r --preserve=timestamps trunk/rootfs-common squashfs-root || exit 5; # base rootfs-common
 if [ -n "$S6" ]; then
 	# TODO: update svn rootfs-S6
@@ -71,27 +61,25 @@ else
 fi
 
 
-# split extroot
+# extroot
 if [ -d extroot ]; then
 	cp -r --preserve=timestamps extroot extroot-img || exit 24
 	rm -f extroot-img/*.tar.gz; fi
+
+# split extroot
 if [ -n "$S6" ]; then
-	mkdir -p extroot-img/usr/bin
-	for i in dbclient djmount dropbearkey; do i=usr/bin/$i
-		mv squashfs-root/$i extroot-img/$i || exit 27; done
-	mkdir -p extroot-img/lib/modules
-	for i in catc.ko; do i=lib/modules/$i
-		mv squashfs-root/$i extroot-img/$i || exit 28; done
+	for i in lib/modules/catc.ko \
+		usr/bin/dbclient usr/bin/djmount usr/bin/dropbearkey; do
+		mkdir -p extroot-img/${i%/*} && mv squashfs-root/$i extroot-img/$i || exit 26; done
 else
 	mkdir -p extroot-img/bin
-	for i in bin/gdbserver; do
-		mv squashfs-root/$i extroot-img/$i || exit 25; done
 	for i in free kill pgrep pkill pmap sysctl top uptime watch; do i=bin/$i
-		mv squashfs-root/$i extroot-img/$i || exit 26
+		mv squashfs-root/$i extroot-img/$i || exit 25
 		ln -s busybox squashfs-root/$i; done
-	mkdir -p extroot-img/usr/bin
-	for i in dbclient fusermount mount.fuse ulockmgr_server; do i=usr/bin/$i; #dropbearkey
-		mv squashfs-root/$i extroot-img/$i || exit 27; done
+	# usr/bin/dropbearkey ?
+	for i in bin/gdbserver \
+		usr/bin/dbclient usr/bin/fusermount usr/bin/mount.fuse usr/bin/ulockmgr_server; do
+		mkdir -p extroot-img/${i%/*} && mv squashfs-root/$i extroot-img/$i || exit 26; done
 fi
 (cd extroot-img; tar czf ../$ofext *)
 rm -rf extroot-img
