@@ -3453,7 +3453,7 @@ MODULE_DEVICE_TABLE(usb, products);
 
 static struct usb_driver asix_driver = {
 //	.owner =	THIS_MODULE,
-	.name =		"asix",
+	.name =		"asixlgmod",
 	.id_table =	products,
 	.probe =	axusbnet_probe,
 	.suspend =	ax_suspend,
