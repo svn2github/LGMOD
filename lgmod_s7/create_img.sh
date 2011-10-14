@@ -24,6 +24,7 @@ else
 	LGMOD_VERSION_ROOTFS="10010"
 	size=7340032
 	oinit=mtd4_lg-init
+	sysmap=../Saturn7/linux-2.6.26-saturn7/System.map; # for modules.dep (relative path!)
 fi
 LGMOD_VER_TEXT="$LGMOD_PLATFORM $LGMOD_VERSION"
 LGMOD_VER_FILE="${LGMOD_PLATFORM}_$LGMOD_VERSION_ROOTFS"
@@ -82,7 +83,6 @@ else
 		mkdir -p extroot-img/${i%/*} && mv squashfs-root/$i extroot-img/$i || exit 26; done
 fi
 (cd extroot-img; tar czf ../$ofext *)
-rm -rf extroot-img
 
 
 find squashfs-root -name '.svn' | xargs rm -rf
@@ -92,6 +92,13 @@ for i in dev dev-lgmod etc_passwd; do i=$i.tar; g=$i.gz; b=$i.bz2
 echo $LGMOD_VER_TEXT > var/www/cgi-bin/version
 for i in etc/init.d/rcS etc/init.d/lgmod var/www/cgi-bin/footer.inc var/www/cgi-bin/header.inc; do
 	sed -i -e "s/ver=/$LGMOD_VER_TEXT/g" $i; done
+if [ -f "../$sysmap" ]; then
+	D=tmp-depmod; d=lib/modules; v=2.6.26
+	mkdir -p $D/$d; ln -s "$(pwd)/lib/modules" $D/$d/$v
+	mv $d/$v $D/$v; ln -s "$(pwd)/../extroot-img" mnt/lg/user/extroot
+	depmod -n -e -F "../$sysmap" -C <(echo search .) -b $D $v | grep '\.ko:' > $d/modules.dep
+	mv $D/$v $d/$v; rm -rf mnt/lg/user/extroot $D
+fi
 cd ..
 $mksquashfs_bin squashfs-root $ofile.sqfs -le -all-root -noappend -b 1048576 || exit 6
 
@@ -101,7 +108,7 @@ if [ "$osize" -gt "$size" ]; then
 	echo "ERROR: Partition image too big for flashing ($osize - $size = $(( osize-size )))."; exit 3; fi
 if [ "$osize" != "$o4096" ]; then
 	echo "ERROR: Partition image is not multiple of 4096 ($osize / $o4096)."; exit 4; fi
-[ "$1" == test ] || rm -rf squashfs-root
+[ "$1" = test ] || rm -rf extroot-img squashfs-root
 
 
 zip -j $ofile.zip changelog.txt
