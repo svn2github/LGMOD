@@ -17,6 +17,7 @@ if [ -n "$S6" ]; then
 	LGMOD_VERSION_EPK="37501"
 	LGMOD_VERSION_ROOTFS="10610"
 	size=1572864
+	LGMOD_EXTROOT=`cat ./extroot.s6` # extroot for S6
 else
 	LGMOD_PLATFORM=S7
 	LGMOD_VERSION="1.0.10"
@@ -25,7 +26,7 @@ else
 	size=7340032
 	oinit=mtd4_lg-init
 	sysmap=../Saturn7/linux-2.6.26-saturn7/System.map; # for modules.dep (relative path!)
-	EXTROOT_S7=`cat ./extroot.s7`
+	LGMOD_EXTROOT=`cat ./extroot.s7` # extroot for S7
 fi
 LGMOD_VER_TEXT="$LGMOD_PLATFORM $LGMOD_VERSION"
 LGMOD_VER_FILE="${LGMOD_PLATFORM}_$LGMOD_VERSION_ROOTFS"
@@ -70,8 +71,7 @@ if [ -d extroot ]; then
 
 # split extroot
 if [ -n "$S6" ]; then
-	for i in lib/modules/catc.ko \
-		usr/bin/dbclient usr/bin/djmount usr/bin/dropbearkey; do
+	IFS=$'\n'; for i in $LGMOD_EXTROOT; do
 		mkdir -p extroot-img/${i%/*} && mv squashfs-root/$i extroot-img/$i || exit 26; done
 else
 	mkdir -p extroot-img/bin
@@ -79,7 +79,7 @@ else
 		mv squashfs-root/$i extroot-img/$i || exit 25
 		ln -s busybox squashfs-root/$i; done
 	# usr/bin/dropbearkey ?
-	IFS=$'\n'; for i in $EXTROOT_S7; do
+	IFS=$'\n'; for i in $LGMOD_EXTROOT; do
 		mkdir -p extroot-img/${i%/*} && mv squashfs-root/$i extroot-img/$i || exit 26; done
 fi
 (cd extroot-img; tar czf ../$ofext *)
