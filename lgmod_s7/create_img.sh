@@ -25,6 +25,7 @@ else
 	size=7340032
 	oinit=mtd4_lg-init
 	sysmap=../Saturn7/linux-2.6.26-saturn7/System.map; # for modules.dep (relative path!)
+	EXTROOT_S7=`cat ./extroot.s7`
 fi
 LGMOD_VER_TEXT="$LGMOD_PLATFORM $LGMOD_VERSION"
 LGMOD_VER_FILE="${LGMOD_PLATFORM}_$LGMOD_VERSION_ROOTFS"
@@ -78,8 +79,7 @@ else
 		mv squashfs-root/$i extroot-img/$i || exit 25
 		ln -s busybox squashfs-root/$i; done
 	# usr/bin/dropbearkey ?
-	for i in bin/gdbserver \
-		usr/bin/dbclient usr/bin/fusermount usr/bin/mount.fuse usr/bin/ulockmgr_server; do
+	IFS=$'\n'; for i in $EXTROOT_S7; do
 		mkdir -p extroot-img/${i%/*} && mv squashfs-root/$i extroot-img/$i || exit 26; done
 fi
 (cd extroot-img; tar czf ../$ofext *)

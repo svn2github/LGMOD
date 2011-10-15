@@ -1,0 +1,8 @@
+bin/gdbserver
+bin/strace
+usr/bin/dbclient
+usr/bin/djmount
+usr/bin/fusermount
+usr/bin/mount.fuse
+usr/bin/ulockmgr_server
+usr/bin/tmux
