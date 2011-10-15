@@ -102,7 +102,7 @@ fi
 cd ..
 $mksquashfs_bin squashfs-root $ofile.sqfs -le -all-root -noappend -b 1048576 || exit 6
 
-osize=`wc -c $ofile.sqfs | awk '{print $1}'`; o4096=$(( $osize / 4096 * 4096 ))
+osize=`stat -c%s $ofile.sqfs`; o4096=$(( $osize / 4096 * 4096 ))
 echo "Size: $osize / $size"
 if [ "$osize" -gt "$size" ]; then
 	echo "ERROR: Partition image too big for flashing ($osize - $size = $(( osize-size )))."; exit 3; fi
