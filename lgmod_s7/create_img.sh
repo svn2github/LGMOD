@@ -125,6 +125,7 @@ else
 	md5sum $oinit.sqfs > $oinit.sqfs.md5; md5sum $ofile.sqfs > $ofile.sqfs.md5
 	zip -j $ofile.zip install.sh $oinit.sqfs $oinit.sqfs.md5 $ofile.sqfs $ofile.sqfs.md5
 	rm -f $oinit.sqfs.md5 $ofile.sqfs.md5; #$oinit.sqfs $ofile.sqfs
+	[ -f lgmod_S7_uImage ] && zip -j $ofile.zip lgmod_S7_uImage
 
 	cat extract.sh $ofile.zip > $ofile.sh.zip
 	rm -f $ofile.zip
