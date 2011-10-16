@@ -2,5 +2,3 @@ lib/modules/catc.ko
 usr/bin/dbclient
 usr/bin/djmount
 usr/bin/dropbearkey
-usr/bin/wpa_supplicant
-usr/bin/wpa_cli
