@@ -97,7 +97,7 @@ if [ -f "../$sysmap" ]; then
 	mkdir -p $D/$d; ln -s "$(pwd)/lib/modules" $D/$d/$v
 	mv $d/$v $D/$v; ln -s "$(pwd)/../extroot-img" mnt/lg/user/extroot
 	depmod -n -e -F "../$sysmap" -C <(echo search .) -b $D $v | grep '\.ko:' > $d/modules.dep
-	mv $D/$v $d/$v; rm -rf mnt/lg/user/extroot $D
+	cp -ax $d/modules.dep ../; mv $D/$v $d/$v; rm -rf mnt/lg/user/extroot $D
 fi
 cd ..
 $mksquashfs_bin squashfs-root $ofile.sqfs -le -all-root -noappend -b 1048576 || exit 6
