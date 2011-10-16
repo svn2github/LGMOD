@@ -71,6 +71,7 @@ if [ -d extroot ]; then
 
 # split extroot
 if [ -n "$S6" ]; then
+	rm -rf extroot-img/lib/modules*; # TODO
 	IFS=$'\n'; for i in $LGMOD_EXTROOT; do
 		mkdir -p extroot-img/${i%/*} && mv squashfs-root/$i extroot-img/$i || exit 26; done
 else
