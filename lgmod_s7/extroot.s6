@@ -1,4 +1,27 @@
+# Hardcoded file paths in rcS/lginit scripts
+#   /lib/modules/pty.ko (openrelease, telnet, dropbear)
+#   /lib/modules/mini_fo.ko (rcS-devrw, dropbear, tmux)
+# Directories:
+#   /lib/modules/ /lib/modules/extroot
+#     /mnt/lg/user/extroot/ /mnt/lg/user/modules/ (djmount fuse; mount ext[23]/nfs/cifs)
+
+# experimental support in 2.6.26
 lib/modules/catc.ko
+
+lib/modules/ext2.ko
+lib/modules/jbd.ko
+lib/modules/ext3.ko
+lib/modules/cifs.ko
+lib/modules/sunrpc.ko
+lib/modules/lockd.ko
+lib/modules/nfs.ko
+
 usr/bin/dbclient
-usr/bin/djmount
 usr/bin/dropbearkey
+
+usr/bin/djmount
+
+# tmux
+#usr/bin/tmux
+#lib/libncurses.so*
+#usr/lib/libevent-1.4.so*

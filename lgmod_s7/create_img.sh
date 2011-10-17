@@ -17,7 +17,7 @@ if [ -n "$S6" ]; then
 	LGMOD_VERSION_EPK="37501"
 	LGMOD_VERSION_ROOTFS="10610"
 	size=1572864
-	LGMOD_EXTROOT=`cat ./extroot.s6` # extroot for S6
+	LGMOD_EXTROOT=`cat ./extroot.s6 | grep -v '^ *$\|^#'` # extroot for S6
 else
 	LGMOD_PLATFORM=S7
 	LGMOD_VERSION="1.0.10"
@@ -26,7 +26,7 @@ else
 	size=7340032
 	oinit=mtd4_lg-init
 	sysmap=../Saturn7/linux-2.6.26-saturn7/System.map; # for modules.dep (relative path!)
-	LGMOD_EXTROOT=`cat ./extroot.s7` # extroot for S7
+	LGMOD_EXTROOT=`cat ./extroot.s7 | grep -v '^ *$\|^#'` # extroot for S7
 fi
 LGMOD_VER_TEXT="$LGMOD_PLATFORM $LGMOD_VERSION"
 LGMOD_VER_FILE="${LGMOD_PLATFORM}_$LGMOD_VERSION_ROOTFS"
@@ -45,7 +45,7 @@ if [ -n "$S6" ]; then
 		etc/mtab etc/profile etc/resolv.conf etc/securetty etc/shadow etc/TZ etc_passwd.tar.bz2
 		[ -d modules ] && mv modules lib/modules; sed -i -e 's/^ramfs/#ramfs/' etc/fstab
 		[ -h mnt/lg/cmn_data ] || ln -s user/cmn_data mnt/lg/cmn_data
-		[ -h usr/sbin/scp ] || ln -s /mnt/lg/user/scp usr/sbin/scp)
+		[ -e usr/sbin/scp ] || ln -s /mnt/lg/user/scp usr/sbin/scp)
 	for i in lib/libncurses.so.5 lib/libncurses.so.5.7 usr/bin/dbclient usr/bin/dropbearkey usr/bin/tmux \
 		usr/lib/libevent-1.4.so.2 usr/lib/libevent-1.4.so.2.1.3 usr/lib/dropbear/dropbearconvert usr/sbin/dropbear; do
 		d=$D/$i; dd=${d%/*}; mkdir -p $dd; cp -ar trunk/rootfs/$i $d; done
@@ -73,15 +73,14 @@ if [ -d extroot ]; then
 if [ -n "$S6" ]; then
 	rm -rf extroot-img/lib/modules*; # TODO
 	IFS=$'\n'; for i in $LGMOD_EXTROOT; do
-		mkdir -p extroot-img/${i%/*} && mv squashfs-root/$i extroot-img/$i || exit 26; done
+		mkdir -p extroot-img/${i%/*} && mv squashfs-root/$i extroot-img/${i%/*}/ || exit 26; done
 else
 	mkdir -p extroot-img/bin
 	for i in free kill pgrep pkill pmap sysctl top uptime watch; do i=bin/$i
 		mv squashfs-root/$i extroot-img/$i || exit 25
 		ln -s busybox squashfs-root/$i; done
-	# usr/bin/dropbearkey ?
 	IFS=$'\n'; for i in $LGMOD_EXTROOT; do
-		mkdir -p extroot-img/${i%/*} && mv squashfs-root/$i extroot-img/$i || exit 26; done
+		mkdir -p extroot-img/${i%/*} && mv squashfs-root/$i extroot-img/${i%/*}/ || exit 26; done
 fi
 (cd extroot-img; tar czf ../$ofext *)
 
