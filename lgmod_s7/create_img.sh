@@ -52,7 +52,7 @@ else
 fi
 
 
-# extroot
+# extroot - TODO
 if [ -d extroot ]; then
 	cp -r --preserve=timestamps extroot extroot-img || exit 24
 	rm -f extroot-img/*.tar.gz; fi
