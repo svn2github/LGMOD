@@ -8,6 +8,10 @@
 # experimental support in 2.6.26
 lib/modules/catc.ko
 
+usr/bin/dbclient
+usr/bin/dropbearkey
+
+
 lib/modules/ext2.ko
 lib/modules/jbd.ko
 lib/modules/ext3.ko
@@ -16,12 +20,9 @@ lib/modules/sunrpc.ko
 lib/modules/lockd.ko
 lib/modules/nfs.ko
 
-usr/bin/dbclient
-usr/bin/dropbearkey
-
-usr/bin/djmount
-
 # tmux
 #usr/bin/tmux
 #lib/libncurses.so*
 #usr/lib/libevent-1.4.so*
+
+usr/bin/djmount

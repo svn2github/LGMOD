@@ -20,10 +20,10 @@ lib/modules/sunrpc.ko
 lib/modules/lockd.ko
 lib/modules/nfs.ko
 
-lib/firmware
-
-usr/bin/dbclient
-usr/bin/dropbearkey
+# tmux
+#usr/bin/tmux
+#lib/libncurses.so*
+#usr/lib/libevent-1.4.so*
 
 # djmount
 usr/bin/djmount
@@ -38,7 +38,7 @@ usr/bin/ulockmgr_server
 usr/lib/libfuse.so*
 usr/lib/libulockmgr.so*
 
-# tmux
-#usr/bin/tmux
-#lib/libncurses.so*
-#usr/lib/libevent-1.4.so*
+lib/firmware
+
+usr/bin/dbclient
+usr/bin/dropbearkey

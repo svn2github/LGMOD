@@ -39,18 +39,6 @@ rm -rf squashfs-init squashfs-root extroot-img $ofext $ofile.pak $ofile.epk $ofi
 
 cp -r --preserve=timestamps trunk/rootfs-common squashfs-root || exit 5; # base rootfs-common
 if [ -n "$S6" ]; then
-	# TODO: update svn rootfs-S6
-	D=trunk/rootfs-S6; [ -d $D ] || { mkdir $D && cd $D && svn co http://svn.openlgtv.org.ru/lgmod/trunk/rootfs . || exit 99; cd ../..; }
-	(cd $D; rm -f etc/auth.sh etc/group etc/hosts etc/init.d/rcS etc/inittab etc/lgmod.sh \
-		etc/mtab etc/profile etc/resolv.conf etc/securetty etc/shadow etc/TZ etc_passwd.tar.bz2
-		[ -d modules ] && mv modules lib/modules; sed -i -e 's/^ramfs/#ramfs/' etc/fstab
-		[ -h mnt/lg/cmn_data ] || ln -s user/cmn_data mnt/lg/cmn_data
-		[ -e usr/sbin/scp ] || ln -s /mnt/lg/user/scp usr/sbin/scp)
-	for i in lib/libncurses.so.5 lib/libncurses.so.5.7 usr/bin/dbclient usr/bin/dropbearkey usr/bin/tmux \
-		usr/lib/libevent-1.4.so.2 usr/lib/libevent-1.4.so.2.1.3 usr/lib/dropbear/dropbearconvert usr/sbin/dropbear; do
-		d=$D/$i; dd=${d%/*}; mkdir -p $dd; cp -ar trunk/rootfs/$i $d; done
-	#find $D -name '.svn' | xargs rm -rf
-
 	cp -r --preserve=timestamps trunk/rootfs-S6/* squashfs-root || exit 11; # merge rootfs-S6
 else
 	cp -r --preserve=timestamps trunk/lginit squashfs-init || exit 21
