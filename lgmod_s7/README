@@ -1,0 +1,51 @@
+
+Directory tree in your working copy:
+
+1. svn checkout http://svn.openlgtv.org.ru/lgmod_s7 lgmod_s7
+	./lgmod_s7
+
+
+2. files from extroot will be added to extroot tar archive
+	./lgmod_s7/extroot
+	./lgmod_s7/extroot-img
+	./lgmod_s7/squashfs-root
+
+Temp directories "extroot-img" and "squashfs-root" - created by create_img.sh
+
+
+Use create_img.sh to create images and installation archive, epk file
+Note: Use 'S6' command line argument for Saturn6
+
+3. create_img.sh require following files:
+	./pack
+	./pack/mksquashfs
+	./pack/mkepk
+
+
+Cross-compile scripts will download, unpack, build and install inside rootfs or extroot
+Note: Use 'S6' command line argument for Saturn6
+
+4.1. Saturn7 toolchain and kernel tree - hardcoded paths in cross-compile scripts
+	./Saturn7
+	./Saturn7/GP2_MSTAR
+	./Saturn7/GP2_M_CO_FI_2010
+	./Saturn7/src
+	./Saturn7/cross-compiler -> GP2_MSTAR/gp2-s7-mipsel-lg-gcc-4.3.2-glibc-2.9-nptl
+	./Saturn7/linux-2.6.26-saturn7 -> GP2_M_CO_FI_2010/kernel_src/kernel/linux-2.6.26-saturn7
+
+4.2. uClibc toolchain - hardcoded paths in cross-compile scripts (S6)
+	./cross-compiler-mipsel
+
+4.3. Sources packages are automatically extracted and expected in:
+	./sources
+	./sources/libupnp-1.6.6
+	./sources/djmount-large5
+	./sources/fuse-2.8.6
+	./sources/MCS780x_Linux_driver_v1.11
+	./sources/busybox-1.18.5
+	./sources/djmount-0.71
+	./sources/compat-wireless-3.0-2
+	./sources/DirectFB-LG-usr_local_lib
+	./sources/haserl-0.9.29
+	./sources/dropbear-0.53.1
+	./sources/s6_s7_modules

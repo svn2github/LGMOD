@@ -25,7 +25,7 @@ else
 	LGMOD_VERSION_ROOTFS="10010"
 	size=7340032
 	oinit=mtd4_lg-init
-	sysmap=../Saturn7/linux-2.6.26-saturn7/System.map; # for modules.dep (relative path!)
+	sysmap=../../Saturn7/linux-2.6.26-saturn7/System.map; # create modules.dep
 	LGMOD_EXTROOT=`cat ./extroot.s7 | grep -v '^ *$\|^#'` # extroot for S7
 fi
 LGMOD_VER_TEXT="$LGMOD_PLATFORM $LGMOD_VERSION"
@@ -60,16 +60,15 @@ if [ -d extroot ]; then
 # split extroot
 if [ -n "$S6" ]; then
 	rm -rf extroot-img/lib/modules*; # TODO
-	IFS=$'\n'; for i in $LGMOD_EXTROOT; do
-		mkdir -p extroot-img/${i%/*} && mv squashfs-root/$i extroot-img/${i%/*}/ || exit 26; done
 else
 	mkdir -p extroot-img/bin
 	for i in free kill pgrep pkill pmap sysctl top uptime watch; do i=bin/$i
 		mv squashfs-root/$i extroot-img/$i || exit 25
 		ln -s busybox squashfs-root/$i; done
-	IFS=$'\n'; for i in $LGMOD_EXTROOT; do
-		mkdir -p extroot-img/${i%/*} && mv squashfs-root/$i extroot-img/${i%/*}/ || exit 26; done
 fi
+IFS=$'\n'; for i in $LGMOD_EXTROOT; do
+	src="${i% *}"; dst="${i#* }"; dst="${dst%/*}/"
+	mkdir -p extroot-img/$dst && mv squashfs-root/$src extroot-img/$dst || exit 26; done
 (cd extroot-img; tar czf ../$ofext *)
 
 
@@ -80,12 +79,15 @@ for i in dev dev-lgmod etc_passwd; do i=$i.tar; g=$i.gz; b=$i.bz2
 echo $LGMOD_VER_TEXT > var/www/cgi-bin/version
 for i in etc/init.d/rcS etc/init.d/lgmod var/www/cgi-bin/footer.inc var/www/cgi-bin/header.inc; do
 	sed -i -e "s/ver=/$LGMOD_VER_TEXT/g" $i; done
-if [ -f "../$sysmap" ]; then
-	D=tmp-depmod; d=lib/modules; v=2.6.26
-	mkdir -p $D/$d; ln -s "$(pwd)/lib/modules" $D/$d/$v
-	mv $d/$v $D/$v; ln -s "$(pwd)/../extroot-img" mnt/lg/user/extroot
-	depmod -n -e -F "../$sysmap" -C <(echo search .) -b $D $v | grep '\.ko:' > $d/modules.dep
-	cp -ax $d/modules.dep ../; mv $D/$v $d/$v; rm -rf mnt/lg/user/extroot $D
+# create modules.dep (TODO: S6)
+if [ -f "$sysmap" ]; then
+	d=lib/modules; v=2.6.26; D=$d/$v
+	rm $D/extroot; ln -s ../../../../extroot-img/$d $D/extroot
+	depmod -n -e -F "$sysmap" -C <(echo search .) -b . $v > ../depmod.out
+	rm $D/extroot; ln -s /mnt/lg/user/extroot/$d $D/extroot
+	cat ../depmod.out | grep '\.ko:' > $D/modules.dep
+	if [ -n "$S6" ]; then cp $D/modules.dep ../trunk/rootfs-S6/$D/modules.dep
+	else cp $D/modules.dep ../trunk/rootfs/$D/modules.dep; fi
 fi
 cd ..
 $mksquashfs_bin squashfs-root $ofile.sqfs -le -all-root -noappend -b 1048576 || exit 6
