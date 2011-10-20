@@ -15,6 +15,7 @@ Temp directories "extroot-img" and "squashfs-root" - created by create_img.sh
 
 Use create_img.sh to create images and installation archive, epk file
 Note: Use 'S6' command line argument for Saturn6
+Note: With 'test' command line argument, temp dirs are not removed
 
 3. create_img.sh require following files:
 	./pack
