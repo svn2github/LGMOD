@@ -6,7 +6,7 @@
 #   /mnt/lg/user/modules/ /mnt/lg/user/extroot/
 
 ### experimental support in 2.6.26
-lib/modules/2.6.26/catc.ko
+#lib/modules/2.6.26/catc.ko
 
 usr/bin/dbclient
 usr/bin/dropbearkey
@@ -18,20 +18,42 @@ usr/bin/dropbearkey
 ##lib/modules/2.6.26/jbd.ko lib/modules/
 ##lib/modules/2.6.26/ext3.ko lib/modules/
 lib/modules/2.6.26/cifs.ko lib/modules/
-lib/modules/2.6.26/sunrpc.ko lib/modules/
-lib/modules/2.6.26/lockd.ko lib/modules/
-lib/modules/2.6.26/nfs.ko lib/modules/
-lib/modules/2.6.26/fuse.ko lib/modules/
+#lib/modules/2.6.26/sunrpc.ko lib/modules/
+#lib/modules/2.6.26/lockd.ko lib/modules/
+#lib/modules/2.6.26/nfs.ko lib/modules/
+#lib/modules/2.6.26/fuse.ko lib/modules/
 lib/modules/2.6.26/sr_mod.ko lib/modules/
 lib/modules/2.6.26/cdrom.ko lib/modules/
 lib/modules/2.6.26/isofs.ko lib/modules/
 lib/modules/2.6.26/usbserial.ko lib/modules/
-#lib/modules/2.6.26/ftdi_sio.ko lib/modules/
 lib/modules/2.6.26/pl2303.ko lib/modules/
 
+#lib/modules/2.6.26/mii.ko
+#lib/modules/2.6.26/asix.ko
+#lib/modules/2.6.26/usbnet.ko
+lib/modules/2.6.26/catc.ko
+lib/modules/2.6.26/cdc_ether.ko
+lib/modules/2.6.26/cdc_subset.ko
+lib/modules/2.6.26/dm9601.ko
+lib/modules/2.6.26/extroot
+lib/modules/2.6.26/gl620a.ko
+lib/modules/2.6.26/kaweth.ko
+lib/modules/2.6.26/mcs7830.ko
+lib/modules/2.6.26/mini_fo.ko
+lib/modules/2.6.26/modules.dep
+lib/modules/2.6.26/net1080.ko
+lib/modules/2.6.26/pegasus.ko
+lib/modules/2.6.26/plusb.ko
+lib/modules/2.6.26/rndis_host.ko
+lib/modules/2.6.26/rtl8150.ko
+lib/modules/2.6.26/zaurus.ko
+
 ### tmux
-#usr/bin/tmux
-#lib/libncurses.so*
-#usr/lib/libevent-1.4.so*
+usr/bin/tmux
+lib/libncurses.so*
+usr/lib/libevent-1.4.so*
+usr/bin/scp
+usr/bin/dropbear
 
 usr/bin/djmount
+usr/lib/dropbear/dropbearconvert
