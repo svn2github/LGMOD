@@ -20,9 +20,9 @@ if [ -n "$S6" ]; then
 	LGMOD_EXTROOT=`cat ./extroot.s6 | grep -v '^ *$\|^#'` # extroot for S6
 else
 	LGMOD_PLATFORM=S7
-	LGMOD_VERSION="1.0.10"
+	LGMOD_VERSION="1.0.11"
 	LGMOD_VERSION_EPK="30333"
-	LGMOD_VERSION_ROOTFS="10010"
+	LGMOD_VERSION_ROOTFS="10011"
 	size=7340032
 	oinit=mtd4_lginit
 	sysmap=../../Saturn7/linux-2.6.26-saturn7/System.map; # create modules.dep

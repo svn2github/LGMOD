@@ -18,53 +18,33 @@ for i in "$@"; do
 
 if [ "$1" = steps ]; then
 	BOOT=/mnt/lg/user/lgmod/boot
-	echo "# Steps
-# 0. Start this script with absolute path
-# 1. Setup chroot, install lginit image only and try LGMOD
-echo 'LGI_CHROOT=sd?${rootfs#/mnt/usb?/Drive?}' >> $BOOT
-$0 lginitonly && reboot
-# 2. Optional: You could disable RELEASE before reboot
-echo 'RCS_NOREL=1' >> $BOOT && reboot
-# 3. Cleanup: rm $BOOT
+	echo "# Steps - flash lginit only chroot to rootfs
+	# 0. Start this script with absolute path
+	# 1. Setup chroot, install lginit image only and try LGMOD
+	echo 'LGI_CHROOT=sd?${rootfs#/mnt/usb?/Drive?}' >> $BOOT
+	$0 lginitonly && reboot
+	# 2. Optional: You could disable RELEASE before reboot
+	echo 'RCS_NOREL=1' >> $BOOT && reboot
+	# 3. Cleanup: rm $BOOT
 		"
 	exit
 fi
-
-
-# info
-if [ -n "$info" ]; then
-	err=0
-	{ echo -ne '\n\n#$#'" INFO($err): "; date
-		echo -e '\n\n$#' df -h; df -h | grep -v '^/dev/sd' || err=12
-		echo -e '\n\n$#' busybox; busybox || err=12
-		echo -e '\n\n$#' help; help || err=10
-		echo -e '\n\n$#' dmesg; dmesg|grep ACTIVE;echo; dmesg || err=15
-		for i in /proc/version_for_lg /etc/version_for_lg /mnt/lg/model/* \
-			/mnt/lg/user/lgmod/boot /mnt/lg/user/lgmod/init/*; do [ ! -f "$i" ] && continue
-			echo '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'
-			echo -e '\n\n$#' cat "$i"; cat "$i" || err=16
-		done; echo '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'
-		echo -e '\n\n$# list some files'
-		ls -lR /etc /mnt/lg/lginit /mnt/lg/bt /mnt/lg/user /mnt/lg/cmn_data /mnt/lg/model \
-			/mnt/lg/lgapp /mnt/lg/res/lgres /mnt/lg/res/lgfont /usr/local \
-			/mnt/addon/bin /mnt/addon/lib /mnt/addon/stagecraft
-		ls -l /mnt/addon /mnt/lg/ciplus /mnt/lg/res/estreamer
-	} >> /tmp/install-info
-	[ $err != 0 ] && echo "Error($err): Info file failed: $infofile"
-fi
-
-err=0
-
 
 INFO="$DIR"; ip=''; [ -f /mnt/lg/user/lgmod/ftp ] && ! tty > /dev/null &&
 	ip=$(ifconfig eth0|grep addr|sed -e'2!d' -e's/^[^:]*://' -e's/ .*//'|grep -v 255 2>/dev/null)
 [ -n "$ip" ] && INFO="<a href='ftp://$ip/${INFO#$(cat /mnt/lg/user/lgmod/ftp)}'>$INFO</a>"
 
-mkdir -p "$CHR"; mount -t squashfs "$rootfs" "$CHR"
+err=0
+
+
+mkdir -p "$CHR"; grep " $CHR " /proc/mounts || mount -t squashfs "$rootfs" "$CHR"
 [ -f "$CHR$INS" ] || { err=7; echo "Error($err): File not found: $CHR$INS"; }
-
-
 [ $err != 0 ] && exit $err
+
+
+if [ -n "$info" ]; then
+	"$CHR/home/lgmod/info.sh" root ''; # save to /tmp - common for root and chroot
+fi
 
 if [ -n "$chroot" ]; then
 	mount -t sysfs installsysfs "$CHR/sys" &&
@@ -87,7 +67,7 @@ if [ -n "$chroot" ]; then
 			fi
 		else err=8; echo "Error($err): Chroot failed: $CHR$USB"; fi
 
-		umount "$CHR$USB" && rm -r "$CHR$USB"
+		umount "$CHR$USB" && sleep 1 && rm -r "$CHR$USB"
 		for i in $MNT; do umount "$CHR$i"; done
 	else err=9; echo "Error($err): Chroot failed: $CHR/proc/bus/usb"; fi
 	umount "$CHR/proc/bus/usb" "$CHR/proc" "$CHR/sys"
@@ -98,5 +78,5 @@ else
 fi
 
 
-umount "$CHR" && rm -r "$CHR"
+sleep 1 && umount "$CHR" && sleep 1 && rm -r "$CHR"
 exit $err

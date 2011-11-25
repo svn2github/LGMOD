@@ -4,7 +4,7 @@ mmm4m5m & openlgtv community present LGMOD S7 for LG TVs on Saturn 7 chipset. Te
 	32LD465-ZA fw v03.03.11 (and v03.03.32); 37LE4500-ZA fw v03.03.31
 	42LD550-ZA fw v03.01.08;                 32LE3300-ZA fw v03.03.32
 	32LD350-ZA fw v03.03.18 (old v03.03.03); 37LE5308-ZA fw v03.01.13 
-	42LD420-ZA fw v03.03.26
+	42LD420-ZA fw v03.03.26                  47LW4500-ZB fw v04.60.24
 ====================================================================================
 
 WARNING: Debug and uboot are disabled after firmware v3.03.2x (approximately)
@@ -40,6 +40,21 @@ Info for your TV is collected and saved into separate text file. Additional opti
 	Dry run (skip erase/flash/write): "install.sh nobackup noinfo install dryrun"
 
 
+Changelog 1.0.11 :
+==================
+* new: network config scripts, wireless modules (2.6.26), firmware (hotplug) - thanks to djpety
+* new: file manager in webui (or in web browser on TV screen) - thanks to xeros
+! new: special lginit partition for FW 3.33.xx, 3.37.xx, 4.01.2x, 4.60.xx (please ask howto)
+! fix: install.sh - full backup before first install (please check and if missing - do full backup)
+* more: djmount now with new upnp lib; modules/modprobe changes - few usb2net adapters could need re-config
+* extroot: extract archive (ext2/3 partition) and make a sym.link in /lg/user/extroot
+* auto-restore nvram if file exsts /lg/user/mtd10_nvram_auto.gz
+-  two backup files are auto saved in /lg/user and /lg/cmn_data: file name "mtd10_nvram.gz"
+-  for new/fresh backup: rename/remove old backup file(s) and restart TV using remote control
+# for adventurers: custom kernel image is ready (it works hehe) and compat-wireless modules
+# more: DFB examples (links in text mode) - check "Dfb" alias and "Extdfb" function in /etc/profile
+# and: input modules (dev.nodes, kbd_mode); SDL and examples; scummvm (lure)
+
 Changelog 1.0.10 :
 ==================
 * New webui pages: Logs, Services, Remote, RELEASE. Boot and RELEASE config options
@@ -53,7 +68,6 @@ Changelog 1.0.10 :
 * Shell environment (/etc/profile; home is /lg/user/root - if directory exists)
 * Additional programs are packed as "extroot" archive. It is not included in LGMOD zip.
 - Everything that does not fit in rootfs is there. More programs could be added.
-- You have to extract the archive and add to PATH and LD_LIBRARY_PATH variables
 - There are: ctorrent, rtorrent, mc (midnight commander), some modules (check deb packages for help/config)
 * Ctrl+C now will stop rcS init scripts. Added 'Press any key for shell' to lginit image.
 
