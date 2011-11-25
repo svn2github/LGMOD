@@ -21,11 +21,11 @@ if [ "$1" = steps ]; then
 	echo "# Steps
 # 0. Start this script with absolute path
 # 1. Setup chroot, install lginit image only and try LGMOD
-echo 'LGI_CHROOT=sd?${rootfs#/mnt/usb?/Drive?}' >> $INIT
+echo 'LGI_CHROOT=sd?${rootfs#/mnt/usb?/Drive?}' >> $BOOT
 $0 lginitonly && reboot
-# 2. Optional: You could disable RELEASE before install
-echo 'RCS_NOREL=1' >> $INIT && reboot
-# 3. Cleanup: rm $INIT
+# 2. Optional: You could disable RELEASE before reboot
+echo 'RCS_NOREL=1' >> $BOOT && reboot
+# 3. Cleanup: rm $BOOT
 		"
 	exit
 fi
@@ -39,14 +39,16 @@ if [ -n "$info" ]; then
 		echo -e '\n\n$#' busybox; busybox || err=12
 		echo -e '\n\n$#' help; help || err=10
 		echo -e '\n\n$#' dmesg; dmesg|grep ACTIVE;echo; dmesg || err=15
-		for i in /proc/version_for_lg /etc/version_for_lg /mnt/lg/model/* /etc/init.d/rcS \
-			/mnt/lg/user/lgmod/boot /mnt/lg/user/lgmod/release /mnt/lg/user/lgmod/init/*; do [ ! -f "$i" ] && continue
+		for i in /proc/version_for_lg /etc/version_for_lg /mnt/lg/model/* \
+			/mnt/lg/user/lgmod/boot /mnt/lg/user/lgmod/init/*; do [ ! -f "$i" ] && continue
 			echo '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'
 			echo -e '\n\n$#' cat "$i"; cat "$i" || err=16
 		done; echo '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'
 		echo -e '\n\n$# list some files'
-		ls -lR /etc /mnt/lg/lginit /mnt/lg/user /mnt/lg/model /mnt/lg/lgapp /usr/local /mnt/lg/bt /mnt/lg/cmn_data /mnt/lg/res/lgres /mnt/lg/res/lgfont
-		ls -l /mnt/lg/ciplus /mnt/lg/res/estreamer /mnt/addon /mnt/addon/* /mnt/addon/*/* /mnt/addon/*/*/*
+		ls -lR /etc /mnt/lg/lginit /mnt/lg/bt /mnt/lg/user /mnt/lg/cmn_data /mnt/lg/model \
+			/mnt/lg/lgapp /mnt/lg/res/lgres /mnt/lg/res/lgfont /usr/local \
+			/mnt/addon/bin /mnt/addon/lib /mnt/addon/stagecraft
+		ls -l /mnt/addon /mnt/lg/ciplus /mnt/lg/res/estreamer
 	} >> /tmp/install-info
 	[ $err != 0 ] && echo "Error($err): Info file failed: $infofile"
 fi

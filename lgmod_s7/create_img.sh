@@ -24,7 +24,7 @@ else
 	LGMOD_VERSION_EPK="30333"
 	LGMOD_VERSION_ROOTFS="10010"
 	size=7340032
-	oinit=mtd4_lg-init
+	oinit=mtd4_lginit
 	sysmap=../../Saturn7/linux-2.6.26-saturn7/System.map; # create modules.dep
 	LGMOD_EXTROOT=`cat ./extroot.s7 | grep -v '^ *$\|^#'` # extroot for S7
 fi
@@ -34,7 +34,7 @@ ofile=lgmod_$LGMOD_VER_FILE
 ofext=lgmod_${LGMOD_PLATFORM}_extroot.tar.gz
 
 rm -rf squashfs-init squashfs-root extroot-img $ofext $ofile.pak $ofile.epk $ofile.zip $ofile.sh.zip
-#rm -rf $oinit.sqfs $ofile.sqfs
+#rm -rf ${oinit}A.sqfs ${oinit}B.sqfs $ofile.sqfs
 
 
 cp -r --preserve=timestamps trunk/rootfs-common squashfs-root || exit 5; # base rootfs-common
@@ -42,10 +42,19 @@ if [ -n "$S6" ]; then
 	cp -r --preserve=timestamps trunk/rootfs-S6/* squashfs-root || exit 11; # merge rootfs-S6
 else
 	cp -r --preserve=timestamps trunk/lginit squashfs-init || exit 21
+	mv squashfs-init/lg-initA squashfs-init/lg-init; rm -f squashfs-init/lg-initB
 	find squashfs-init -name '.svn' | xargs rm -rf
 	for i in squashfs-init/lginit; do
 		sed -i -e "s/ver=/$LGMOD_VER_TEXT/g" $i; done
-	$mksquashfs_bin squashfs-init $oinit.sqfs -le -all-root -noappend -b 524288 || exit 22
+	$mksquashfs_bin squashfs-init ${oinit}A.sqfs -le -all-root -noappend -b 524288 || exit 22
+	rm -rf squashfs-init
+
+	cp -r --preserve=timestamps trunk/lginit squashfs-init || exit 21
+	rm -f squashfs-init/lg-initA; mv squashfs-init/lg-initB squashfs-init/lg-init
+	find squashfs-init -name '.svn' | xargs rm -rf
+	for i in squashfs-init/lginit; do
+		sed -i -e "s/ver=/$LGMOD_VER_TEXT/g" $i; done
+	$mksquashfs_bin squashfs-init ${oinit}B.sqfs -le -all-root -noappend -b 524288 || exit 22
 	rm -rf squashfs-init
 
 	cp -r --preserve=timestamps trunk/rootfs/* squashfs-root || exit 23; # merge rootfs-S7
@@ -111,9 +120,10 @@ else
 	#$mkepk_bin -c $ofile.pak $ofile.sqfs root DVB-SATURN 0x$LGMOD_VERSION_ROOTFS `date +%Y%m%d` RELEASE
 	#$mkepk_bin -m 0x$LGMOD_VERSION_EPK HE_DTV_GP2M_AAAAABAA $ofile.epk $ofile.pak
 
-	md5sum $oinit.sqfs > $oinit.sqfs.md5; md5sum $ofile.sqfs > $ofile.sqfs.md5
-	zip -j $ofile.zip install.sh $oinit.sqfs $oinit.sqfs.md5 $ofile.sqfs $ofile.sqfs.md5
-	rm -f $oinit.sqfs.md5 $ofile.sqfs.md5; #$oinit.sqfs $ofile.sqfs
+	for i in ${oinit}A.sqfs ${oinit}B.sqfs $ofile.sqfs; do md5sum $i > $i.md5; done
+	zip -j $ofile.zip ${oinit}A.sqfs ${oinit}A.sqfs.md5 ${oinit}B.sqfs ${oinit}B.sqfs.md5 \
+		install.sh $ofile.sqfs $ofile.sqfs.md5
+	rm -f ${oinit}A.sqfs.md5 ${oinit}B.sqfs.md5 $ofile.sqfs.md5; #${oinit}A.sqfs ${oinit}B.sqfs $ofile.sqfs
 	[ -f lgmod_S7_uImage ] && zip -j $ofile.zip lgmod_S7_uImage
 
 	cat extract.sh $ofile.zip > $ofile.sh.zip
