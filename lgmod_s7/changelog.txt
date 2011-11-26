@@ -44,6 +44,7 @@ Changelog 1.0.11 :
 ==================
 * new: network config scripts, wireless modules (2.6.26), firmware (hotplug) - thanks to djpety
 * new: file manager in webui (or in web browser on TV screen) - thanks to xeros
+* new: SYSTEM action in openrelease (TV without e-manual, can start netcast) - thanks to rtokarev
 ! new: special lginit partition for FW 3.33.xx, 3.37.xx, 4.01.2x, 4.60.xx (please ask howto)
 ! fix: install.sh - full backup before first install (please check and if missing - do full backup)
 * more: djmount now with new upnp lib; modules/modprobe changes - few usb2net adapters could need re-config
@@ -52,7 +53,7 @@ Changelog 1.0.11 :
 -  two backup files are auto saved in /lg/user and /lg/cmn_data: file name "mtd10_nvram.gz"
 -  for new/fresh backup: rename/remove old backup file(s) and restart TV using remote control
 # for adventurers: custom kernel image is ready (it works hehe) and compat-wireless modules
-# more: DFB examples (links in text mode) - check "Dfb" alias and "Extdfb" function in /etc/profile
+# more: DFB examples (dfbterm, links in text mode) - check "Dfb" alias and "Extdfb" function in /etc/profile
 # and: input modules (dev.nodes, kbd_mode); SDL and examples; scummvm (lure)
 
 Changelog 1.0.10 :
