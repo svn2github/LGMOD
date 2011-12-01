@@ -10,34 +10,50 @@ mmm4m5m & openlgtv community present LGMOD S7 for LG TVs on Saturn 7 chipset. Te
 WARNING: Debug and uboot are disabled after firmware v3.03.2x (approximately)
 WARNING: It is important, your firmware to have unlocked uboot! In case of troubles, you will need uboot!
 	http://openlgtv.org.ru/wiki/index.php/Bootloader_connection
+IMPORTANT: In TV menu "EZ ADJUST"/"Tool Option3" - set "DVR Ready" to "0" (default) and restart TV!!!
 ====================================================================================
 
-IMPORTANT: In TV menu "EZ ADJUST"/"Tool Option3" - set "DVR Ready" to "0" (default) and restart TV!!!
-
-1.1. Upgrade LGMOD: auto extract
-	Upload "lgmod_S7_#.sh.zip" file (using FTP or LGMOD webui: tools/upload; FAT16/32 partition is good)
-	Extract files and give parameters for install.sh (using telnet or webui: tools/run):
-		sh /mnt/usb1/Drive1/LG_DTV/lgmod_S7_#.sh.zip install
-
-1.2. Upgrade LGMOD: manual extract
-	Extract and upload all files (using FTP or LGMOD webui: tools/upload)
-	Start the install command (using telnet or webui: tools/run):
-		sh /mnt/usb1/Drive1/LG_DTV/install.sh install
-
-2. Install LGMOD for the first time:
-	Extract all files to USB drive and attach the USB drive to TV. (FAT16/32 partition is good)
+1. Install for the first time - prepare TV:
 	In TV menu "IN START"/"System 1" - set "Debug status" to "EVENT"/"DEBUG" (you can use PC audio out with ir diode from old remote control)
-	Enter debug, then press F9 and press F10 - you will see ":debugMain $" (you need RS232 serial cable)
+		More info: http://openlgtv.org.ru/wiki/index.php/Access_hidden_service_menus_/_modes
+	In serial terminal (putty) press F9 and press F10 - you will see ":debugMain $" (you need RS232 serial cable)
 		More info: http://openlgtv.ru/wiki/index.php/Debug_mode_connection
-	In debug, run 'sh' command to start shell. If 'sh' command is not there, then try:
+	In debug, run 'sh' command to start shell. If 'sh' command is missing, then try:
 		call debug_os_shell+0xb0
-	You will see shell prompt: "/mnt/lg/lginit #" (or "/lgsw #"). In shell run installation script:
-		sh /mnt/usb1/Drive1/install.sh install
+	You will see linux shell prompt: "/mnt/lg/lginit #" (or "/lgsw #").
 
-Installation script does NOT write log file! Save the log from serial terminal program. (Or setup logging options of your serial terminal program)
-Info for your TV is collected and saved into separate text file. Additional options:
-	Info and backup only: "install.sh"; Force full backup: "install.sh backup"
-	Dry run (skip erase/flash/write): "install.sh nobackup noinfo install dryrun"
+2. Prepare dedicated USB drive:
+	You need one FAT32 partition with min free space ~160 MB.
+	When started for first time, installation script will backup all TV partitions.
+	Extroot archive have programs which does not fit in TV root partition.
+	You need second partition with min size ~160 MB (EXT2/EXT3 because FAT/NTFS does not support sym.links).
+
+Note: Installation script does NOT write log file! Save the log from serial terminal program (or setup logging to file).
+
+3. Install/Upgrade LGMOD:
+	Copy lgmod_S7_#.sh.zip and lgmod_S7_extroot.tar.gz to USB drive - FAT32 partition
+	Attach the USB drive to TV and extract lgmod_S7_#.sh.zip archive:
+		sh lgmod_S7_#.sh.zip
+	Backup all TV partitions and then install - in TV linux shell run:
+		sh /mnt/usb1/Drive1/install.sh
+		sh /mnt/usb1/Drive1/install.sh noinfo nobackup install
+	You have to restart TV after install.
+	To copy and verify your backup - use TV remote control and <eject> USB drive.
+		sh /mnt/usb1/Drive1/install.sh noinfo nobackup install
+
+4. Upgrade LGMOD:
+	Once LGMOD is installed, you can upload files using ftp, scp or webui.
+	You can run above commands in telnet (recommended) or webui "tools/run".
+		Note: extroot setup script is interractive - do _not_ run it from webui.
+	To force full backup run: install.sh noinfo backup
+
+5. Extroot: format EXT2/EXT3, extract and setup:
+	You could prepare in advance EXT2/EXT3 partition and extract extroot archive to '/extroot'.
+	In TV linux shell run: /home/lgmod/extroot.sh /mnt/usb1/Drive1/lgmod_S7_extroot.tar.gz
+	Be careful, script will ask you: to format EXT2/EXT3 partition; to delete old extroot directory
+	Finally, script will update extroot config file (/mnt/lg/user/lgmod/extroot)
+	You can try it - upload info file to pastebin.com using wget from extroot:
+		/home/lgmod/info.sh pastebin
 
 
 Changelog 1.0.11 :
