@@ -34,7 +34,7 @@ Note: Installation script does NOT write log file! Save the log from serial term
 	Copy lgmod_S7_#.sh.zip and lgmod_S7_extroot.tar.gz to USB drive - FAT32 partition
 	Attach the USB drive to TV and extract lgmod_S7_#.sh.zip archive:
 		sh lgmod_S7_#.sh.zip
-	Backup all TV partitions and then install - in TV linux shell run:
+	Backup all TV partitions and info file. Then install. In TV linux shell run:
 		sh /mnt/usb1/Drive1/install.sh
 		sh /mnt/usb1/Drive1/install.sh noinfo nobackup install
 	You have to restart TV after install.
@@ -52,8 +52,8 @@ Note: Installation script does NOT write log file! Save the log from serial term
 	In TV linux shell run: /home/lgmod/extroot.sh /mnt/usb1/Drive1/lgmod_S7_extroot.tar.gz
 	Be careful, script will ask you: to format EXT2/EXT3 partition; to delete old extroot directory
 	Finally, script will update extroot config file (/mnt/lg/user/lgmod/extroot)
-	You can try it - upload info file to pastebin.com using wget from extroot:
-		/home/lgmod/info.sh pastebin
+	You can try it - upload the info file to pastebin.com using wget from extroot:
+		/home/lgmod/info.sh paste
 
 
 Changelog 1.0.11 :
