@@ -48,7 +48,7 @@ Note: Installation script does NOT write log file! Save the log from serial term
 	To force full backup run: install.sh noinfo backup
 
 5. Extroot: format EXT2/EXT3, extract and setup:
-	You could prepare in advance EXT2/EXT3 partition and extract extroot archive to '/extroot'.
+	If you like, prepare manually EXT2/EXT3 partition and extract extroot archive to '/extroot'.
 	In TV linux shell run: /home/lgmod/extroot.sh /mnt/usb1/Drive1/lgmod_S7_extroot.tar.gz
 	Be careful, script will ask you: to format EXT2/EXT3 partition; to delete old extroot directory
 	Finally, script will update extroot config file (/mnt/lg/user/lgmod/extroot)
