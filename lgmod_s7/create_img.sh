@@ -67,20 +67,25 @@ else
 fi
 
 
-# extroot - TODO
-if [ -d extroot ]; then
-	cp -r --preserve=timestamps extroot extroot-img || exit 24
-	rm -f extroot-img/*.tar.gz; fi
-
-# split extroot
 if [ -n "$S6" ]; then
-	rm -rf extroot-img/lib/modules*; # TODO
+	# extroot - base
+	if [ -d extroot-S6 ]; then
+		cp -r --preserve=timestamps extroot-S6 extroot-img || exit 24
+		rm -f extroot-img/*.tgz; fi
 else
+	# extroot - base
+	if [ -d extroot ]; then
+		cp -r --preserve=timestamps extroot extroot-img || exit 24
+		rm -f extroot-img/*.tgz; fi
+
+	# split extroot
 	mkdir -p extroot-img/bin
 	for i in free kill pgrep pkill pmap sysctl top uptime watch; do i=bin/$i
 		mv squashfs-root/$i extroot-img/$i || exit 25
 		ln -s busybox squashfs-root/$i; done
 fi
+
+# split extroot
 IFS=$'\n'; for i in $LGMOD_EXTROOT; do
 	src="${i% *}"; dst="${i#* }"; dst="${dst%/*}/"
 	mkdir -p extroot-img/$dst && mv squashfs-root/$src extroot-img/$dst || exit 26; done
@@ -97,11 +102,11 @@ for i in etc/init.d/rcS etc/init.d/lgmod var/www/cgi-bin/footer.inc var/www/cgi-
 	sed -i -e "s/ver=/$LGMOD_VER_TEXT/g" $i; done
 # create modules.dep (TODO: S6)
 if [ -f "$sysmap" ]; then
-	d=lib/modules; v=2.6.26; D=$d/$v
-	rm $D/extroot; ln -s ../../../../extroot-img/$d $D/extroot
+	d=lib/modules; v=2.6.26; D=$d/$v; E=$D/extroot; [ -n "$S6" ] && E=$E-S6
+	rm $E; ln -s ../../../../extroot-img/$d $E
 	depmod -n -e -F "$sysmap" -C <(echo search . extroot extroot/wireless extroot/compat) -b . $v | \
 		LANG=C sort > ../depmod.out
-	rm $D/extroot; ln -s /mnt/lg/user/extroot/$d $D/extroot
+	rm $E; ln -s /mnt/lg/user/extroot/$d $E
 	cat ../depmod.out | grep '\.ko:' > $D/modules.dep
 	if [ -n "$S6" ]; then cp $D/modules.dep ../trunk/rootfs-S6/$D/modules.dep
 	else cp $D/modules.dep ../trunk/rootfs/$D/modules.dep; fi

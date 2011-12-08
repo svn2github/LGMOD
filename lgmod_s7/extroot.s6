@@ -28,25 +28,25 @@ lib/modules/2.6.26/isofs.ko lib/modules/
 lib/modules/2.6.26/usbserial.ko lib/modules/
 lib/modules/2.6.26/pl2303.ko lib/modules/
 
-#lib/modules/2.6.26/mii.ko
-#lib/modules/2.6.26/asix.ko
-#lib/modules/2.6.26/usbnet.ko
-lib/modules/2.6.26/catc.ko
-lib/modules/2.6.26/cdc_ether.ko
-lib/modules/2.6.26/cdc_subset.ko
-lib/modules/2.6.26/dm9601.ko
-lib/modules/2.6.26/extroot
-lib/modules/2.6.26/gl620a.ko
-lib/modules/2.6.26/kaweth.ko
-lib/modules/2.6.26/mcs7830.ko
-lib/modules/2.6.26/mini_fo.ko
-lib/modules/2.6.26/modules.dep
-lib/modules/2.6.26/net1080.ko
-lib/modules/2.6.26/pegasus.ko
-lib/modules/2.6.26/plusb.ko
-lib/modules/2.6.26/rndis_host.ko
-lib/modules/2.6.26/rtl8150.ko
-lib/modules/2.6.26/zaurus.ko
+#lib/modules/2.6.26/mii.ko lib/modules/
+#lib/modules/2.6.26/asix.ko lib/modules/
+#lib/modules/2.6.26/usbnet.ko lib/modules/
+lib/modules/2.6.26/catc.ko lib/modules/
+lib/modules/2.6.26/cdc_ether.ko lib/modules/
+lib/modules/2.6.26/cdc_subset.ko lib/modules/
+lib/modules/2.6.26/dm9601.ko lib/modules/
+lib/modules/2.6.26/extroot lib/modules/
+lib/modules/2.6.26/gl620a.ko lib/modules/
+lib/modules/2.6.26/kaweth.ko lib/modules/
+lib/modules/2.6.26/mcs7830.ko lib/modules/
+lib/modules/2.6.26/mini_fo.ko lib/modules/
+lib/modules/2.6.26/modules.dep lib/modules/
+lib/modules/2.6.26/net1080.ko lib/modules/
+lib/modules/2.6.26/pegasus.ko lib/modules/
+lib/modules/2.6.26/plusb.ko lib/modules/
+lib/modules/2.6.26/rndis_host.ko lib/modules/
+lib/modules/2.6.26/rtl8150.ko lib/modules/
+lib/modules/2.6.26/zaurus.ko lib/modules/
 
 ### tmux
 usr/bin/tmux
