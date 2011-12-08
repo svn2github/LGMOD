@@ -4,6 +4,11 @@
 # Modified for lgmod by hawkeye
 # Modified for Saturn6/Saturn7 by mmm4m5m
 
+[ "`id -u`" != 0 ] && echo "NOTE: Usage: fakeroot $0" && exit 1
+[ "`id -u`" = 0 ] && [ "$USER" = root ] &&
+	echo "NOTE: Consider not using root user: fakeroot $0" &&
+	read -p 'Press <Ctrl+C> to stop, press <Enter> to continue? '
+
 S6=''; [ "$1" = S6 ] && { shift; S6=1; }; [ "$1" = S7 ] && shift
 mksquashfs_bin=../pack/mksquashfs
 mkepk_bin=../pack/mkepk
@@ -38,6 +43,7 @@ rm -rf squashfs-init squashfs-root extroot-img $ofext $ofile.pak $ofile.epk $ofi
 
 
 cp -r --preserve=timestamps trunk/rootfs-common squashfs-root || exit 5; # base rootfs-common
+find squashfs-root -name '.svn' | xargs rm -rf
 if [ -n "$S6" ]; then
 	cp -r --preserve=timestamps trunk/rootfs-S6/* squashfs-root || exit 11; # merge rootfs-S6
 else
@@ -83,8 +89,9 @@ IFS=$'\n'; for i in $LGMOD_EXTROOT; do
 
 find squashfs-root -name '.svn' | xargs rm -rf
 cd squashfs-root
-for i in dev dev-lgmod etc_passwd; do i=$i.tar; g=$i.gz; b=$i.bz2
-	[ -f $g ] && tar xzf $g; [ -f $b ] && tar xjf $b; rm -f $b $g; done
+for i in dev dev-lgmod etc_passwd; do
+	i=$i.tar; g=$i.gz; [ -f $i ] && o=z || g=$i.bz2; [ -f $i ] && o=j || continue
+	tar x${o}f $g && rm -f $b $g || exit 7; done
 echo $LGMOD_VER_TEXT > var/www/cgi-bin/version
 for i in etc/init.d/rcS etc/init.d/lgmod var/www/cgi-bin/footer.inc var/www/cgi-bin/header.inc; do
 	sed -i -e "s/ver=/$LGMOD_VER_TEXT/g" $i; done
@@ -92,7 +99,8 @@ for i in etc/init.d/rcS etc/init.d/lgmod var/www/cgi-bin/footer.inc var/www/cgi-
 if [ -f "$sysmap" ]; then
 	d=lib/modules; v=2.6.26; D=$d/$v
 	rm $D/extroot; ln -s ../../../../extroot-img/$d $D/extroot
-	depmod -n -e -F "$sysmap" -C <(echo search .) -b . $v > ../depmod.out
+	depmod -n -e -F "$sysmap" -C <(echo search . extroot extroot/wireless extroot/compat) -b . $v | \
+		LANG=C sort > ../depmod.out
 	rm $D/extroot; ln -s /mnt/lg/user/extroot/$d $D/extroot
 	cat ../depmod.out | grep '\.ko:' > $D/modules.dep
 	if [ -n "$S6" ]; then cp $D/modules.dep ../trunk/rootfs-S6/$D/modules.dep
