@@ -8,9 +8,9 @@
 ### experimental support in 2.6.26
 #lib/modules/2.6.26/catc.ko
 
-usr/bin/dbclient
-usr/bin/dropbearkey
-
+usr/bin/dropbear
+usr/bin/scp
+usr/lib/dropbear/dropbearconvert
 
 ### fix modules.dep and kernel/cross-compile.sh (TODO: not ready for S6)
 ### mount script search in /mnt/lg/user/modules and /mnt/lg/user/extroot/ (could be a sym.link to FAT partition)
@@ -52,8 +52,8 @@ lib/modules/2.6.26/zaurus.ko lib/modules/
 usr/bin/tmux
 lib/libncurses.so*
 usr/lib/libevent-1.4.so*
-usr/bin/scp
-usr/bin/dropbear
 
 usr/bin/djmount
-usr/lib/dropbear/dropbearconvert
+
+usr/bin/dbclient
+usr/bin/dropbearkey
