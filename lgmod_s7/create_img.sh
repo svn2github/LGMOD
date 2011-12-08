@@ -90,7 +90,7 @@ IFS=$'\n'; for i in $LGMOD_EXTROOT; do
 find squashfs-root -name '.svn' | xargs rm -rf
 cd squashfs-root
 for i in dev dev-lgmod etc_passwd; do
-	i=$i.tar; g=$i.gz; [ -f $i ] && o=z || g=$i.bz2; [ -f $i ] && o=j || continue
+	i=$i.tar; g=$i.gz; o=z; [ -f $g ] || { g=$i.bz2; o=j; }; [ -f $g ] || continue
 	tar x${o}f $g && rm -f $b $g || exit 7; done
 echo $LGMOD_VER_TEXT > var/www/cgi-bin/version
 for i in etc/init.d/rcS etc/init.d/lgmod var/www/cgi-bin/footer.inc var/www/cgi-bin/header.inc; do
