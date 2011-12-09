@@ -1,19 +1,22 @@
 ### Comments and empty lines are allowed. First column - [*?] are allowed. Second column - destination.
 # Hardcoded module paths in rcS/lginit scripts
-#   /lib/modules/2.6.26/pty.ko (openrelease/telnet, telnet, dropbear)
+#   /lib/modules/2.6.26/pty.ko (openrelease/telnet, telnet, dropbear, install.sh)
 #   /lib/modules/2.6.26/mini_fo.ko (openrelease/tmux, dropbear)
 # Hardcoded paths for ext2/3 modules (mount, release-mount):
-#   /mnt/lg/user/modules/ /mnt/lg/user/extroot/
+#   /mnt/lg/user/modules/
 
 ### experimental support in 2.6.26
 #lib/modules/2.6.26/catc.ko
 
+### recommended for rootfs (?)
 usr/bin/dropbear
 usr/bin/scp
 usr/lib/dropbear/dropbearconvert
+lib/modules/2.6.26/modules.dep lib/modules/
+lib/modules/2.6.26/mini_fo.ko lib/modules/
 
-### fix modules.dep and kernel/cross-compile.sh (TODO: not ready for S6)
-### mount script search in /mnt/lg/user/modules and /mnt/lg/user/extroot/ (could be a sym.link to FAT partition)
+### modules.dep is not updated automatically - TODO: fix create_img.sh for S6
+### mount script search in /mnt/lg/user/modules (could be a sym.link to FAT partition)
 ##lib/modules/2.6.26/ext2.ko lib/modules/
 ##lib/modules/2.6.26/jbd.ko lib/modules/
 ##lib/modules/2.6.26/ext3.ko lib/modules/
@@ -39,8 +42,6 @@ lib/modules/2.6.26/extroot lib/modules/
 lib/modules/2.6.26/gl620a.ko lib/modules/
 lib/modules/2.6.26/kaweth.ko lib/modules/
 lib/modules/2.6.26/mcs7830.ko lib/modules/
-lib/modules/2.6.26/mini_fo.ko lib/modules/
-lib/modules/2.6.26/modules.dep lib/modules/
 lib/modules/2.6.26/net1080.ko lib/modules/
 lib/modules/2.6.26/pegasus.ko lib/modules/
 lib/modules/2.6.26/plusb.ko lib/modules/
