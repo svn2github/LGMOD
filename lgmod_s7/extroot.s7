@@ -13,6 +13,7 @@ bin/strace
 lib/libcifsclient.so
 
 
+
 #lib/modules/2.6.26/ftdi_sio.ko lib/modules/
 
 ### modules.dep is not updated automatically - TODO: fix create_img.sh for S6

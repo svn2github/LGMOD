@@ -12,6 +12,7 @@
 usr/bin/dropbear
 usr/bin/scp
 usr/lib/dropbear/dropbearconvert
+lib/libcrypt-0.9.30.1.so
 lib/modules/2.6.26/modules.dep lib/modules/
 lib/modules/2.6.26/mini_fo.ko lib/modules/
 
