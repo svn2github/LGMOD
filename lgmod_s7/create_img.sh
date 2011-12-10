@@ -20,7 +20,7 @@ if [ -n "$S6" ]; then
 	LGMOD_PLATFORM=S6
 	LGMOD_VERSION="1.7.11"
 	LGMOD_VERSION_EPK="37501"
-	LGMOD_VERSION_ROOTFS="10610"
+	LGMOD_VERSION_ROOTFS="10711"
 	size=1572864
 	LGMOD_EXTROOT=`cat ./extroot.s6 | grep -v '^ *$\|^#'` # extroot for S6
 else
