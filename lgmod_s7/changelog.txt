@@ -23,8 +23,7 @@ IMPORTANT: In TV menu "EZ ADJUST"/"Tool Option3" - set "DVR Ready" to "0" (defau
 	You will see linux shell prompt: "/mnt/lg/lginit #" (or "/lgsw #").
 
 2. Prepare dedicated USB drive:
-	You need one FAT32 partition with min free space ~160 MB.
-	When started for first time, installation script will backup all 25 TV partitions.
+	You need one FAT32 partition with min free space ~160 MB - full backup of all 25 TV partitions.
 	Extroot archive have programs which does not fit in TV root partition.
 	You need second partition with min size ~160 MB (EXT2/EXT3 because FAT/NTFS does not support sym.links).
 
@@ -34,9 +33,10 @@ Note: Installation script does NOT write log file! Save the log from serial term
 	Copy lgmod_S7_#.sh.zip and lgmod_S7_extroot.tar.gz to USB drive - FAT32 partition
 	Attach the USB drive to TV and extract lgmod_S7_#.sh.zip archive:
 		sh lgmod_S7_#.sh.zip
-	Backup all TV partitions and info file. Then install. In TV linux shell run:
-		sh /mnt/usb1/Drive1/install.sh
-		sh /mnt/usb1/Drive1/install.sh noinfo nobackup install
+	If installing LGMOD for first time - create full backup. In TV linux shell run:
+		sh /mnt/usb1/Drive1/install.sh backup
+	Install LGMOD - new lginit and new rootfs images. In TV linux shell run:
+		sh /mnt/usb1/Drive1/install.sh install
 	You have to restart TV after install.
 	To copy and verify your backup - use TV remote control and safely <eject> USB drive.
 
