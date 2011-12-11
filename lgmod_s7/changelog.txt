@@ -35,7 +35,7 @@ Note: Installation script does NOT write log file! Save the log from serial term
 		sh lgmod_S7_#.sh.zip
 	If installing LGMOD for first time - create full backup. In TV linux shell run:
 		sh /mnt/usb1/Drive1/install.sh backup
-	Install LGMOD - new lginit and new rootfs images. In TV linux shell run:
+	Install LGMOD - flash lginit and rootfs partitions. In TV linux shell run:
 		sh /mnt/usb1/Drive1/install.sh install
 	You have to restart TV after install.
 	To copy and verify your backup - use TV remote control and safely <eject> USB drive.

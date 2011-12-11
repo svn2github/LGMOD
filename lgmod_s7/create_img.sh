@@ -55,40 +55,40 @@ else
 	$mksquashfs_bin squashfs-init ${oinit}A.sqfs -le -all-root -noappend -b 524288 || exit 22
 	rm -rf squashfs-init
 
-	cp -r --preserve=timestamps trunk/lginit squashfs-init || exit 21
+	cp -r --preserve=timestamps trunk/lginit squashfs-init || exit 23
 	rm -f squashfs-init/lg-initA; mv squashfs-init/lg-initB squashfs-init/lg-init
 	find squashfs-init -name '.svn' | xargs rm -rf
 	for i in squashfs-init/lginit; do
 		sed -i -e "s/ver=/$LGMOD_VER_TEXT/g" $i; done
-	$mksquashfs_bin squashfs-init ${oinit}B.sqfs -le -all-root -noappend -b 524288 || exit 22
+	$mksquashfs_bin squashfs-init ${oinit}B.sqfs -le -all-root -noappend -b 524288 || exit 24
 	rm -rf squashfs-init
 
-	cp -r --preserve=timestamps trunk/rootfs/* squashfs-root || exit 23; # merge rootfs-S7
+	cp -r --preserve=timestamps trunk/rootfs/* squashfs-root || exit 25; # merge rootfs-S7
 fi
 
 
 if [ -n "$S6" ]; then
 	# extroot - base
 	if [ -d extroot-S6 ]; then
-		cp -r --preserve=timestamps extroot-S6 extroot-img || exit 24
+		cp -r --preserve=timestamps extroot-S6 extroot-img || exit 31
 		rm -f extroot-img/*.tgz; fi
 else
 	# extroot - base
 	if [ -d extroot ]; then
-		cp -r --preserve=timestamps extroot extroot-img || exit 24
+		cp -r --preserve=timestamps extroot extroot-img || exit 31
 		rm -f extroot-img/*.tgz; fi
 
 	# split extroot
 	mkdir -p extroot-img/bin
 	for i in free kill pgrep pkill pmap sysctl top uptime watch; do i=bin/$i
-		mv squashfs-root/$i extroot-img/$i || exit 25
+		mv squashfs-root/$i extroot-img/$i || exit 32
 		ln -s busybox squashfs-root/$i; done
 fi
 
 # split extroot
 IFS=$'\n'; for i in $LGMOD_EXTROOT; do
 	src="${i% *}"; dst="${i#* }"; dst="${dst%/*}/"
-	mkdir -p extroot-img/$dst && mv squashfs-root/$src extroot-img/$dst || exit 26; done
+	mkdir -p extroot-img/$dst && mv squashfs-root/$src extroot-img/$dst || exit 33; done
 (cd extroot-img; tar czf ../$ofext *)
 
 
@@ -103,7 +103,7 @@ for i in etc/init.d/rcS etc/init.d/lgmod var/www/cgi-bin/footer.inc var/www/cgi-
 # create modules.dep (TODO: S6)
 if [ -f "$sysmap" ]; then
 	d=lib/modules; v=2.6.26; D=$d/$v; E=$D/extroot; [ -n "$S6" ] && E=$E-S6
-	rm $E; ln -s ../../../../extroot-img/$d $E
+	rm $E; ln -s ../../../../extroot-img/$d $E; which depmod || exit 8
 	depmod -n -e -F "$sysmap" -C <(echo search . extroot extroot/wireless extroot/compat) -b . $v | \
 		LANG=C sort > ../depmod.out
 	rm $E; ln -s /mnt/lg/user/extroot/$d $E
