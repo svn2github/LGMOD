@@ -39,7 +39,7 @@ ofile=lgmod_$LGMOD_VER_FILE
 ofext=lgmod_${LGMOD_PLATFORM}_extroot.tar.gz
 
 rm -rf squashfs-init squashfs-root extroot-img $ofext $ofile.pak $ofile.epk $ofile.zip $ofile.sh.zip
-#rm -rf ${oinit}A.sqfs ${oinit}B.sqfs $ofile.sqfs
+#rm -rf ${oinit}?.sqfs $ofile.sqfs
 
 
 cp -r --preserve=timestamps trunk/rootfs-common squashfs-root || exit 5; # base rootfs-common
@@ -47,21 +47,15 @@ find squashfs-root -name '.svn' | xargs rm -rf
 if [ -n "$S6" ]; then
 	cp -r --preserve=timestamps trunk/rootfs-S6/* squashfs-root || exit 11; # merge rootfs-S6
 else
-	cp -r --preserve=timestamps trunk/lginit squashfs-init || exit 21
-	mv squashfs-init/lg-initA squashfs-init/lg-init; rm -f squashfs-init/lg-initB
-	find squashfs-init -name '.svn' | xargs rm -rf
-	for i in squashfs-init/lginit; do
-		sed -i -e "s/ver=/$LGMOD_VER_TEXT/g" $i; done
-	$mksquashfs_bin squashfs-init ${oinit}A.sqfs -le -all-root -noappend -b 524288 || exit 22
-	rm -rf squashfs-init
-
-	cp -r --preserve=timestamps trunk/lginit squashfs-init || exit 23
-	rm -f squashfs-init/lg-initA; mv squashfs-init/lg-initB squashfs-init/lg-init
-	find squashfs-init -name '.svn' | xargs rm -rf
-	for i in squashfs-init/lginit; do
-		sed -i -e "s/ver=/$LGMOD_VER_TEXT/g" $i; done
-	$mksquashfs_bin squashfs-init ${oinit}B.sqfs -le -all-root -noappend -b 524288 || exit 24
-	rm -rf squashfs-init
+	for I in A B C Z; do # A=common S7; B=FW 4.01.xx 4.60.xx; C=US S7 model; Z=without lginit binary
+		cp -r --preserve=timestamps trunk/lginit squashfs-init || exit 21
+		f=squashfs-init/lg-init; [ -f $f$I ] && mv $f$I $f; rm -f $f?
+		find squashfs-init -name '.svn' | xargs rm -rf
+		for i in squashfs-init/lginit; do
+			sed -i -e "s/ver=/$LGMOD_VER_TEXT/g" $i; done
+		$mksquashfs_bin squashfs-init ${oinit}$I.sqfs -le -all-root -noappend -b 524288 || exit 22
+		rm -rf squashfs-init
+	done
 
 	cp -r --preserve=timestamps trunk/rootfs/* squashfs-root || exit 25; # merge rootfs-S7
 fi
@@ -133,10 +127,9 @@ else
 	#$mkepk_bin -c $ofile.pak $ofile.sqfs root DVB-SATURN 0x$LGMOD_VERSION_ROOTFS `date +%Y%m%d` RELEASE
 	#$mkepk_bin -m 0x$LGMOD_VERSION_EPK HE_DTV_GP2M_AAAAABAA $ofile.epk $ofile.pak
 
-	for i in ${oinit}A.sqfs ${oinit}B.sqfs $ofile.sqfs; do md5sum $i > $i.md5; done
-	zip -j $ofile.zip ${oinit}A.sqfs ${oinit}A.sqfs.md5 ${oinit}B.sqfs ${oinit}B.sqfs.md5 \
-		install.sh $ofile.sqfs $ofile.sqfs.md5
-	rm -f ${oinit}A.sqfs.md5 ${oinit}B.sqfs.md5 $ofile.sqfs.md5; #${oinit}A.sqfs ${oinit}B.sqfs $ofile.sqfs
+	for i in ${oinit}?.sqfs $ofile.sqfs; do md5sum $i > $i.md5; done
+	zip -j $ofile.zip ${oinit}?.sqfs ${oinit}?.sqfs.md5 install.sh $ofile.sqfs $ofile.sqfs.md5
+	rm -f ${oinit}?.sqfs.md5 $ofile.sqfs.md5; #${oinit}?.sqfs $ofile.sqfs
 	[ -f lgmod_S7_uImage ] && zip -j $ofile.zip lgmod_S7_uImage
 
 	cat extract.sh $ofile.zip > $ofile.sh.zip
