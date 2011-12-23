@@ -98,7 +98,7 @@ for i in etc/init.d/rcS etc/init.d/lgmod var/www/cgi-bin/footer.inc var/www/cgi-
 if [ -f "$sysmap" ]; then
 	d=lib/modules; v=2.6.26; D=$d/$v; E=$D/extroot; [ -n "$S6" ] && E=$E-S6
 	rm $E; ln -s ../../../../extroot-img/$d $E; which depmod || exit 8
-	depmod -n -e -F "$sysmap" -C <(echo search . extroot extroot/wireless extroot/compat) -b . $v | \
+	depmod -n -e -F "$sysmap" -C <(echo search . wireless extroot extroot/compat) -b . $v | \
 		LANG=C sort > ../depmod.out
 	rm $E; ln -s /mnt/lg/user/extroot/$d $E
 	cat ../depmod.out | grep '\.ko:' > $D/modules.dep
