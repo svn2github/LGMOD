@@ -47,7 +47,7 @@ find squashfs-root -name '.svn' | xargs rm -rf
 if [ -n "$S6" ]; then
 	cp -r --preserve=timestamps trunk/rootfs-S6/* squashfs-root || exit 11; # merge rootfs-S6
 else
-	for I in A B C Z; do # A=common S7; B=FW 4.01.xx 4.60.xx; C=US S7 model; Z=without lginit binary
+	for I in A B C D Z; do # A=common S7; B=FW 4.01.xx 4.60.xx; C=US S7 model; Z=without lginit binary
 		cp -r --preserve=timestamps trunk/lginit squashfs-init || exit 21
 		f=squashfs-init/lg-init; [ -f $f$I ] && mv $f$I $f; rm -f $f?
 		find squashfs-init -name '.svn' | xargs rm -rf
