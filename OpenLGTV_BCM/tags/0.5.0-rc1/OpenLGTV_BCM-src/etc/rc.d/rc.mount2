@@ -1,0 +1,214 @@
+#!/bin/sh
+# OpenLGTV BCM script rc.mount2
+# MTD Partitions Mounting Script for LG Broadcom platform based TVs by xeros
+# Source code released under GPL License
+
+echo "OpenLGTV_BCM-INFO: mtd mounts..."
+
+# partitions names to mtd numbers assignment
+grep -v erasesize /proc/mtd | sed -e 's/://g' -e 's/\"//g' -e 's/^mtd//g' | awk '{print "mtd_" $4 "=" $1}' | tac > /tmp/partitions.list
+source /tmp/partitions.list
+
+echo "OpenLGTV_BCM-INFO: mtdblock partitions mounts..."
+echo "OpenLGTV_BCM-INFO: model      - mtdblock$mtd_model in /mnt/lg/model"
+mount -t squashfs /dev/mtdblock$mtd_model /mnt/lg/model
+echo "OpenLGTV_BCM-INFO: lgres      - mtdblock$mtd_lgres in /mnt/lg/res/lgres"
+mount -t squashfs /dev/mtdblock$mtd_lgres /mnt/lg/res/lgres
+
+if [ -n "$mtd_estreamer" ]
+then
+    echo "OpenLGTV_BCM-INFO: estreamer  - mtdblock$mtd_estreamer in /mnt/lg/res/estreamer"
+    mount -t squashfs /dev/mtdblock$mtd_estreamer /mnt/lg/res/estreamer
+else
+    echo "OpenLGTV_BCM-INFO: estream    - mtdblock$mtd_estream in /mnt/lg/res/estreamer"
+    mount -t squashfs /dev/mtdblock$mtd_estream /mnt/lg/res/estreamer
+fi
+
+echo "OpenLGTV_BCM-INFO: opensrc    - mtdblock$mtd_opensrc in /usr/local"
+mount -t squashfs /dev/mtdblock$mtd_opensrc /usr/local
+echo "OpenLGTV_BCM-INFO: tmpfs      - /usr/local/etc"
+mount -t tmpfs tmpfs /usr/local/etc -o size=1M
+
+if [ -n "$mtd_base" -a -n "$mtd_patch" ]
+then
+    echo "OpenLGTV_BCM-INFO: base       - mtdblock$mtd_base in /mnt/nsu/base"
+    mount -t squashfs /dev/mtdblock$mtd_base /mnt/nsu/base
+    echo "OpenLGTV_BCM-INFO: patch      - mtdblock$mtd_patch in /mnt/nsu/patch"
+    mount -t squashfs /dev/mtdblock$mtd_patch /mnt/nsu/patch
+    echo "OpenLGTV_BCM-INFO: unionfs    - none ro,dirs=/mnt/nsu/patch:/mnt/nsu/base=ro in /mnt/nsu/union"
+    mount -t unionfs none /mnt/nsu/union -o ro,dirs=/mnt/nsu/patch:/mnt/nsu/base=ro
+    echo "OpenLGTV_BCM-INFO: mount-bind - /mnt/nsu/union/res/lglib in /mnt/lg/res/lglib"
+    mount --bind /mnt/nsu/union/res/lglib /mnt/lg/res/lglib
+    echo "OpenLGTV_BCM-INFO: mount-bind - /mnt/nsu/union/res/ezcal in /mnt/lg/res/ezcal"
+    mount --bind /mnt/nsu/union/res/ezcal /mnt/lg/res/ezcal
+    echo "OpenLGTV_BCM-INFO: mount-bind - /mnt/nsu/union/addon in /mnt/addon"
+    mount --bind /mnt/nsu/union/addon /mnt/addon
+    echo "OpenLGTV_BCM-INFO: mount-bind - /mnt/nsu/union/res/cert in /mnt/lg/res/cert"
+    mount --bind /mnt/nsu/union/res/cert /mnt/lg/res/cert
+else
+    echo "OpenLGTV_BCM-INFO: addon      - mtdblock$mtd_addon in /mnt/addon"
+    mount -t squashfs /dev/mtdblock$mtd_addon /mnt/addon
+    echo "OpenLGTV_BCM-INFO: ezcal      - mtdblock$mtd_ezcal in /mnt/lg/res/ezcal"
+    mount -t squashfs /dev/mtdblock$mtd_ezcal /mnt/lg/res/ezcal
+fi
+
+if [ -n "$mtd_cert" ]
+then
+    echo "OpenLGTV_BCM-INFO: cert       - mtdblock$mtd_cert in /mnt/lg/ciplus/cert (ignore error)"
+    mount -t squashfs /dev/mtdblock$mtd_cert /mnt/lg/ciplus/cert
+fi
+if [ -n "$mtd_authcxt" ]
+then
+    echo "OpenLGTV_BCM-INFO: authcxt    - mtdblock$mtd_authcxt in /mnt/lg/ciplus/authcxt"
+    mount -t yaffs2 /dev/mtdblock$mtd_authcxt /mnt/lg/ciplus/authcxt
+fi
+
+if [ -n "$mtd_data" ]
+then
+    echo "OpenLGTV_BCM-INFO: data       - mtdblock$mtd_data in /mnt/lg/cmn_data"
+    mount -t yaffs2 /dev/mtdblock$mtd_data /mnt/lg/cmn_data -o noatime
+    # v- /home partition is rather important so it shouldn't be erased
+    #if [ "$?" -ne "0" ]
+    #then
+    #	echo "OpenLGTV_BCM-WARNING: problem mounting /dev/mtd$mtd_data - trying to erase it and mount again..."
+    #	flash_eraseall /dev/mtd$mtd_data
+    #	sync
+    #	mount -t yaffs2 /dev/mtdblock$mtd_data /mnt/lg/cmn_data -o noatime
+    #fi
+    if [ -z "$mtd_user" ]
+    then
+	echo "OpenLGTV_BCM-INFO: mount-bind - /mnt/lg/cmn_data /mnt/user"
+	mount --bind /mnt/lg/cmn_data /mnt/user
+    fi
+fi
+
+echo "OpenLGTV_BCM-INFO: mount-bind - /mnt/lg/cmn_data /mnt/flash/data"
+mount --bind /mnt/lg/cmn_data /mnt/flash/data
+
+if [ -n "$mtd_user" ]
+then
+    echo "OpenLGTV_BCM-INFO: user       - mtdblock$mtd_user in /mnt/user"
+    mount -t jffs2 /dev/mtdblock$mtd_user /mnt/user
+else
+    echo "OpenLGTV_BCM-INFO: mount-bind - /mnt/lg/cmn_data /mnt/user"
+    mount --bind /mnt/lg/cmn_data /mnt/user
+fi
+
+if [ -n "$mtd_widevine" ]
+then
+    echo "OpenLGTV_BCM-INFO: widevine   - mtdblock$mtd_widevine in /mnt/lg/widevine"
+    mount -t squashfs /dev/mtdblock$mtd_widevine /mnt/lg/widevine
+fi
+
+if [ -n "$mtd_pqldb" ]
+then
+    echo "OpenLGTV_BCM-INFO: pqldb      - mtdblock$mtd_pqldb in /mnt/pqldb"
+    mount -t squashfs /dev/mtdblock$mtd_pqldb /mnt/pqldb
+fi
+
+if [ -n "$mtd_tplist" ]
+then
+    echo "OpenLGTV_BCM-INFO: tplist     - mtdblock$mtd_tplist in /mnt/tplist"
+    mount -t squashfs /dev/mtdblock$mtd_tplist /mnt/tplist
+fi
+
+if [ -n "$mtd_idfile" ]
+then
+    echo "OpenLGTV_BCM-INFO: idfile     - mtdblock$mtd_idfile in /mnt/idfile (ignore error)"
+    mount -t squashfs /dev/mtdblock$mtd_idfile /mnt/idfile  # empty on EU fw, but lginit still tries to mount it
+fi
+
+if [ -n "$mtd_game" ]
+then
+    echo "OpenLGTV_BCM-INFO: game       - mtdblock$mtd_game in /mnt/game"
+    mount -t squashfs /dev/mtdblock$mtd_game /mnt/game
+fi
+
+if [ -n "$mtd_fladata" ]
+then
+    echo "OpenLGTV_BCM-INFO: fladata    - mtdblock$mtd_fladata in /mnt/cache/flash"
+    mount -t yaffs2 /dev/mtdblock$mtd_fladata /mnt/cache/flash -o noatime
+    if [ "$?" -ne "0" ]
+    then
+	echo "OpenLGTV_BCM-WARNING: problem mounting /dev/mtd$mtd_fladata - trying to erase it and mount again..."
+	flash_eraseall /dev/mtd$mtd_fladata
+	sync
+	mount -t yaffs2 /dev/mtdblock$mtd_fladata /mnt/cache/flash -o noatime 2>&1
+    fi
+fi
+
+if [ -n "$mtd_sdpdata" ]
+then
+    echo "OpenLGTV_BCM-INFO: sdpdata    - mtdblock$mtd_sdpdata in /mnt/cache/sdp"
+    mount -t yaffs2 /dev/mtdblock$mtd_sdpdata /mnt/cache/sdp -o noatime
+    if [ -d "/mnt/cache/sdp/pkgs" ]
+    then
+	echo "OpenLGTV_BCM-INFO: tmpfs      - /mnt/cache/sdp/pkgs"
+	mount -t tmpfs tmpfs /mnt/cache/sdp/pkgs
+    fi
+fi
+
+if [ -n "$mtd_browser" ]
+then
+    echo "OpenLGTV_BCM-INFO: browser    - mtdblock$mtd_browser in /mnt/browser"
+    mount -t squashfs /dev/mtdblock$mtd_browser /mnt/browser
+fi
+
+if [ -e "/mnt/addon/krbrowser/run3556" -a ! -e "/mnt/browser/run3556" ]
+then
+    export KRBROWSER=/mnt/addon/krbrowser
+    export MEMORY_CACHE_SIZE_FORCED=10485760
+    echo "OpenLGTV_BCM-INFO: mount-bind - /mnt/addon/krbrowser /mnt/browser"
+    mount --bind /mnt/addon/krbrowser /mnt/browser
+fi
+
+if [ -n "$mtd_brodata" ]
+then
+    echo "OpenLGTV_BCM-INFO: brodata    - mtdblock$mtd_brodata in /mnt/cache/browser"
+    mount -t yaffs2 /dev/mtdblock$mtd_brodata /mnt/cache/browser
+    if [ "$?" -ne "0" ]
+    then
+	echo "OpenLGTV_BCM-WARNING: problem mounting /dev/mtd$mtd_brodata - trying to erase it and mount again..."
+	flash_eraseall /dev/mtd$mtd_brodata
+	sync
+	mount -t yaffs2 /dev/mtdblock$mtd_brodata /mnt/cache/browser
+    fi
+    echo "OpenLGTV_BCM-INFO: mount-bind - /mnt/cache/browser /home"
+    mount --bind /mnt/cache/browser /home
+    if [ -d "/mnt/browser/.mozilla" -a ! -e "/mnt/cache/browser/.mozilla" ]
+    then
+	ln -sf /mnt/browser/.mozilla /mnt/cache/browser/.mozilla
+    fi
+    if [ -f "/mnt/cache/browser/browser_application.txt" ]
+    then
+	echo "OpenLGTV_BCM-INFO: found /mnt/cache/browser/browser_application.txt file, copying from /mnt/browser/ ..."
+	rm -f /mnt/cache/browser/browser_application.txt
+	cp /mnt/browser/browser_application.txt /mnt/cache/browser/ #shouldnt be addon instead of browser? but thats from the lginit code (lginit bug?)
+    fi
+fi
+
+if [ -n "$mtd_netflix" ]
+then
+    echo "OpenLGTV_BCM-INFO: netflix    - mtdblock$mtd_netflix in /mnt/addon/netflix"
+    mount -t squashfs /dev/mtdblock$mtd_netflix /mnt/addon/netflix
+fi
+
+if [ -n "$mtd_ywedata" ]
+then
+    echo "OpenLGTV_BCM-INFO: ywedata    - mtdblock$mtd_ywedata in /mnt/widget.data"
+    mount -t yaffs2 /dev/mtdblock$mtd_ywedata /mnt/widget.data # US fw lginit does not handle erasing ywedata if it's not mountable
+    echo "OpenLGTV_BCM-INFO: mount-bind - /mnt/widget.data /home"
+    mount --bind /mnt/widget.data /home # US models do not have /home mounted, lets use ywedata as /home instead
+    echo "OpenLGTV_BCM-INFO: mount-bind - /mnt/widget.data /mnt/cache/browser"
+    mount --bind /mnt/widget.data /mnt/cache/browser # US models do not have /mnt/cache/browser mounted, lets use ywedata as /mnt/cache/browser instead
+fi
+
+if [ -n "$mtd_preloaded" -a -n "$mtd_kids" -a -n "$mtd_story" ]
+then
+    echo "OpenLGTV_BCM-INFO: preloaded  - mtdblock$mtd_preloaded in /mnt/preloaded"
+    mount -t squashfs /dev/mtdblock$mtd_preloaded /mnt/preloaded
+    echo "OpenLGTV_BCM-INFO: kids       - mtdblock$mtd_kids in /mnt/preloaded/kids"
+    mount -t squashfs /dev/mtdblock$mtd_kids /mnt/preloaded/kids
+    echo "OpenLGTV_BCM-INFO: story      - mtdblock$mtd_story in /mnt/preloaded/story"
+    mount -t squashfs /dev/mtdblock$mtd_story /mnt/preloaded/kids/story
+fi

@@ -1,0 +1,462 @@
+<HTML><BODY><PRE>
+
+OpenLGTV BCM Changelog
+Not resolved (yet) issues: (status as for 0.5.0-beta4):
+    * NetPlayer alternative (rss.cgi) can be slow on bigger RSS/XML links or slow sites,
+    * some TS/M2TS (or other malformed videos) files can crash RELEASE when played through FileManager,
+    * YWE is not being enabled in other North American countries than US - but can be enabled with netcast_enable_all WebUI option,
+    * iPtak service needs extroot to show movie covers (non-JFIF JPEGs are not supported without conversion through jpegtrans from extroot),
+    * some packages from OpenWRT repositories don't work (mostly because of differences in uClibc libs),
+    * YWE needs to be run from USB stick/disk on non-US models,
+    * there was no space for real e2fsck, so full error checks on ext3 partitions should be done on disk/stick connected to PC or use extroot (e2fsck landed there), but basic (journal) recovery at mount time is being performed
+    * when heavy disk I/O operations where previously performed (like manually done full backup) and then installer gets run there might be not enough memory to perform installation (reboot or switch off/on is required)
+    * Flash elements on Internet sites can meaningfully drop performance in Internet Browser
+    * Flash elements written for Flash 9 and up don't work at all or don't work properly
+    * new 'YouTube in TV' interace is a bit sluggish (but videos are being played at the right framerate, including 1080p videos), starts slowly and exit takes around 10 seconds,
+    * 'YouTube in TV' interace sometimes can crash addon_mgr when trying to exit by too many back/exit/other combo button presses
+    * Some USB mouses or keyboard+mouse combo need to copy additional kernel modules - most modules binaries are in addons in SVN and are supported
+    * USB keyboards are not supported in web browser
+    * Bluetooth HID devices are not supported
+    * SmartTV (GP3B) builds were not tested
+
+TODO (not everything to be done for 0.5.0):
+    * FileManager: add subtitles loading and audio tracks change possibility in played videos (?)
+    * FileManager: add check mark to select multiple files/dirs and handle that in copy/move/delete/play (?)
+    * FileManager: add command line or command window (?)
+    * insert characters in cursor position in WebUI, Internet Browser and FileManager dialogs, not always at the end of string
+    * udpxy integration for udp:// and rtp:// links
+    * update and test scripts chrooted on SmartTV models
+    * enable YWE in North American models outside of USA (Canada, Mexico)
+    * find a way for OPENRELEASE configs upgrade when currently used ones were already customized
+    * add some more steaming media services(?)
+    * add support for Debian running from USB storage
+    * compile gpgme, add public key, prepare some useful (signed) packages (any propositions?) in repository and disable OpenWRT repository by default
+    * package repository outside of SVN tree
+    * storage for Yahoo Widgets in some NAND flash partitions? some backup partitions?
+    * bring back real e2fsck to rootfs?
+    * upgrade uClibc?
+    * ?
+
+0.5.0-beta4 [NOT RELEASED YET]:
+    * FIX: FileManager: copy/move/erase actions when mouse was used for file/dir navigation
+    * FIX: FileManager: better handling of dirs with special characters
+    * FIX: FileManager: get rid of 'awk' in free/total space counting and proper handle 'df' multiline output for space info
+    * FIX: FileManager: crop full path if it doesn't fit panel width
+    * FIX: FileManager: update free/total space in different JavaScript context to let proper panels scale even when no free/total space info is available yet
+    * FIX: FileManager: text files viewer improved
+    * FIX: FileManager: attempt to preload next image into web browser cache in slideshow mode to make image change smoother
+    * FIX: FileManager: prevent from few times running the same copy/move operation when previous one is not yet completed - also workaround for refreshing page
+    * FIX: FileManager: fix images/photos slideshow/preview that sometimes tries to open path without image
+    * FIX: FileManager: handle filenames with '@' (internal field delimiter set as '@@' now)
+    * FIX: FileManager: prevent JS error when last selected item in panel would disappear after deleting or moving
+    * FIX: FileManager: select previously selected file/dir after end of playback/copy/move/remove actions
+    * FIX: fallback with NTFS partitions remounting as read-only when remounting read-write wont succeed (problems with filesystem)
+    * FIX: process /etc/profile in chrooted installer
+    * FIX: missing /var/spool symlink for working crontab
+    * FIX: prevent from OPENRELEASE executing from shell when (OPEN)RELEASE is already running
+    * FIX: don't mark that first backup on install was done when there happened errors during backup
+    * FIX: few partition mounts on SmartTV models
+    * FIX: rc.usb make actions on hotplug concurrently on each partitions when multiple partitions get found
+    * FIX: file not found (404) error web page to handle possible problems when file accessed on network share is not achievable (common from not enough permissions)
+    * FIX: improve 'run' command in WebUI - make it fit the screen, even when output is big, enable scrolling with channel up/down buttons
+    * FIX: navigation to handle up to 10 network shares settings WebUI
+    * FIX: follow symlinks when searching for executable scripts in /mnt/user/etc/init.d/
+    * FIX: handling USB storage devices without any partitions
+    * FIX: M3U parser now supports both local (absolute and related) paths and network links
+    * FIX: WebUI -> 'Network Shares' -> 'Add Share' doesn't fill fields with previous item
+    * FIX: NetPlayer alternative better start page and improved parser (performance, visibility and compatibility)
+    * FIX: better handling Channel(Page) Up/Down and arrows in VOD services
+    * FIX: fixes in web proxy that should load any web pages now (including tunnelled connecttions via SSL/TLS (https://))
+    * FIX: ability to break boot process on serial connection with CTRL+C
+    * FIX: return after command execussion in Remote Control on stock web browser in old Symbian based smartphones
+    * FIX: finding place for relative paths mount when OpenLGTV_BCM dir doesn't exist or there are two USB storage devices connected
+    * FIX: ESC key handling in WebUI and FileManager
+    * FIX: once per around 10-15 times TV boot without (OPEN)RELEASE
+    * ADD: FileManager: image zooming/resizing using 'OK' button (or Enter on PC)
+    * ADD: FileManager: button to view last status of copy/move action after action was detached to background
+    * ADD: FileManager: color dir names when they are not local mount points (mounted USB storage partitions or NFS/CIFS network shares)
+    * ADD: FileManager: remaining time counter for copy/move progress status
+    * ADD: FileManager: support for FLV and F4V files on Korean models
+    * ADD: FileManager: restore last panel paths and selection with type=restore_last option in URL
+    * ADD: FileManager: IMDB MovieInfo option on 'INFO' button (alternative is '1' button)
+    * ADD: FileManager: M3U and PLS playlist can be viewed (with track selection) through M3U parser with 'OK' button or played continuosly with 'Play' button
+    * ADD: FileManager: handle pause/resume and backward/forward actions for (image) slideshow
+    * ADD: FileManager: 'Upload' buttons for remote file uploads possibility
+    * ADD: FileManager: 'Download' button in text files viewer to download files as binary
+    * ADD: FileManager: possibility to download any directories (recursively, archived with tar) or files with file/dir image buttons
+    * ADD: /mnt/usb{1,2}/Drive{7,8} and /mnt/usb{1,2}/NetShare mount points
+    * ADD: continous playback feature to Yavido alternative
+    * ADD: /mnt/lg/widevine and /mnt/lg/res/cert mount points from SmartTV models to make successful chrooting of installer image on SmartTV models
+    * ADD: /usr/libexec/sftp-server (might get removed or moved to extroot if more space will be needed in the future)
+    * ADD: extroot.tar.gz archive with additional tools for use on NTFS/EXT3/JFS formated partition
+    * ADD: experimental opkg packages support on extroot (with default OpenWRT Kamikaze 8.09.2 packages repository until we'll make our own repository)
+    * ADD: get back previously removed tools + few more added (curl, ltrace, strace, tcpdump, top, opkg, msdl, e2fsck, ntfsprogs) into extroot dir in addons
+    * ADD: one more field into ndrvtab/Network Shares config - how many ARP pings should be sent/received before trying to mount NFS/CIFS share
+    * ADD: support for OpenLGTV_BCM/etc/poweroff.d (on USB), /tmp/extroot/etc/poweroff.d, /mnt/user/etc/poweroff.d and /etc/poweroff.d dirs with scripts to execute at poweroff
+    * ADD: support for etc/init.d and etc/poweroff.d dirs on extroot with scripts to be executed at init and poweroff
+    * ADD: support for extroot on NFS and CIFS shares - just need to use /tmp/extroot as mountpoint
+    * ADD: support for web content on extroot via /var/www/extroot symlink to /tmp/extroot/var/www
+    * ADD: imdb.sh script to generate image with movie info based on IMDB data
+    * ADD: send_key.sh script to pass button key codes to (OPEN)RELEASE, with support for key combinations
+    * ADD: hid-sunplus.ko kernel module for some USB wireless keyboard+mouse combo devices
+    * ADD: updxy to handle udp:// streams in extroot
+    * ADD: upper/lower case switch in WebUI, Internet Browser and FileManager on Pause button press
+    * ADD: Internet Browser accessed remotely now calls builtin web browser to show search results, written URL or choosen bookmark on TV screen together with web browser running remotely
+    * ADD: poweroff scripts to 1. kill all processes that are using USB storage devices, 2. unmount/remount read-only USB storage devices with all used mountpoints, 3. ...
+    * ADD: support for gzipped kernel modules
+    * ADD: support for custom kernel modules list and additional modules to be loaded from extroot or USB storage
+    * ADD: additional NetCast services and updated links
+    * ADD: improvements to vod services
+    * ADD: 'Options' field in WebUI -> Network Shares to tune performance/compatibility
+    * ADD: OPENRELEASE crash detection - it will get disabled on next boot (after upgrade or enabling it) if unclean shutdown will be detected
+    * ADD: 'YouTube in TV' (Leanback v3) interface - with channels, playlists, friends, voting, etc support and HD playback
+    * ADD: web tools: jpeg.sh (support for unsuported by web browser non-JFIF JPEGs) and msdl.sh (support for additional streamed media protocols) - both need extroot
+    * ADD: free space for backup check in installer
+    * ADD: simple network services menu example for customization
+    * ADD: switchable flashblock type parser in proxy to filter most flash content in proxied Internet Browser
+    * ADD: ffmpeg 0.10.2 in extroot
+    * UPDATE: OPENRELEASE upgrade to version 2.1.2-16-g5414057
+    * UPDATE: ntfs-3g upgrade to version 2012.1.15
+    * UPDATE: tmux upgrade from 1.5 to 1.6
+    * UPDATE: dropbear SSH server upgrade from 0.53.1 to 2012.55, with scp progress bar compiled in, updated paths, lowered unauth retries for DoS prevention, and security fix for CVE-2012-0920
+    * UPDATE: busybox upgrade from 1.19.3 to 1.20.0
+    * CHANGE: FileManager: last_played.info file is now stored in /tmp instead of played dir location - no need to have write access to mounted shares for slideshow/dir playback
+    * CHANGE: FileManager: separate file/dir icons from filenames in table to make better vertical allignment
+    * CHANGE: FileManager: coloured (brown) non-local mount points (ie. mounted USB storage partitions, NFS/CIFS network shares)
+    * CHANGE: FileManager: more user friendly metrics for measurements on copy/move progress for size (bytes/KB/MB/GB) and time (hours/minutes/seconds)
+    * CHANGE: FileManager: show last _running_ (not yet completed) processes status on 'status' option call - esier to find if there are _any_ copy/move operation still remaining if there were few operations running at the same time
+    * CHANGE: move haserl from /bin to /usr/bin for better CGI portability (compatibility with LGMOD S7)
+    * CHANGE: mount options for VFAT/NTFS/EXT3/EXT4 got changed to use at least 'noatime' to make less writes to USB storage and keep permissions on NTFS
+    * CHANGE: automount supported by kernel but not RELEASE filesystems on USB storage devices into /mnt/usb{1,2}/Drive{5-8} dirs only to make them visible in media player
+    * CHANGE: split part of rcS code into rc.userdirs, rc.passwd and rc.ssh as preparation for chrooted services usability for installer
+    * CHANGE: replace ntfs-3g binary with lowntfs-3g with FUSE low-level interface instructions
+    * CHANGE: rc.mount-netshare is called now as early as network and telnet/ssh got started - it now try to get ARP reply first via arping before it try to mount CIFS/NFS share
+    * CHANGE: /mnt/user/init.d is moved to /mnt/user/etc/init.d now
+    * CHANGE: mounted shares are now highlighted on Network Shares list in WebUI
+    * CHANGE: remove 'nounix' parameter from CIFS mount command to handle symlinks and permissions
+    * CHANGE: make hostname/IP to MAC resolving in Ether Wake in WebUI after pressing Save button if MAC was not specified
+    * CHANGE: change Pause button action to Stop button in Internet Browser for NetCast links
+    * CHANGE: modules.custom file name has changed to modules.list now
+    * CHANGE: NetPlayer alternative is now renamed to RSS parser with support for more RSS-like formats
+    * CHANGE: use ntpclient instead of ntpd again with timeset.sh script to attempt to adjust time forever, until fist successful set
+    * CHANGE: make nanddump backup (with OOB data) for 'total' partition by default
+    * CHANGE: reduce Remote Control size but increase buttons size to better fit smartphones/tablets, both with and without touch screens
+    * CHANGE: replace lsof binary with new lsof busybox applet
+    * REMOVE: mtdinfo.sh for space reason - it's code is in info.sh already
+    * REMOVE: chrt and chat binaries from SmartTV image for space reason - use BusyBox applets instead
+    * REMOVE: libmagic.so as it wasn't used now since 'file' was removed
+
+0.5.0-beta3 [2011.12.24]:
+
+    * FIX: boot if any of netcast_config_add_* options was disabled and NetCast config.xml is too big to parse
+    * FIX: udhcpc script now sets default IP address before making requests instead of 0.0.0.0 when configuration set to DHCP but no DHCP servers around
+    * FIX: FileManager link in WebUI
+    * FIX: back from playback in FileManager had mixed paths
+    * ADD: TFTP server service for early boot recovery (3 stages) - uploads need to be authenticated by TV serial number
+    * ADD: text files and images viewer in FileManager that's usable with remote control
+    * ADD: /mnt/usb{1,2}/Drive{5,6} mount points
+    * ADD: support for EXT3, JFS, [ EXT4 via additional kernel modules ], other supported filesystems by kernel automounting on hotplug
+    * ADD: support for OpenLGTV_BCM dir, Yahoo Widgets, etc. on JFS, EXT3/[4],... formated partitions
+    * ADD: support for storage devices connected to USB HUBs (but playback possibility from them is via FileManager only)
+    * ADD: add directory, M3U and PLS playlists automated playback for local files in FileManager
+    * ADD: customizable refresh/load time for next files from the list/dir in FileManager using numbered buttons on remote control
+    * ADD: OPENRELEASE bound key actions in Remote Control web interface
+    * UPDATE: improve Yavido alternative with bigger font, arrows navigation and shorter refresh time
+
+0.5.0-beta2:
+
+    * FIX: DLNA servers/shares visibility
+    * FIX: OpenLGTV BCM, WWW, Yahoo Widgets icons removal when disabled in WebUI
+    * ADD: VOB, MPEG, DAT, ASF, MTS file extensions for FileManager playback
+    * ADD: support for both lower and uppercase file extensions for FileManager playback (but mixed case extensions are not supported)
+    * ADD: precache parameter for Network Shares to cache directories list (workaround for invisible dirs on some NFS shares)
+    * ADD: posibility to use custom msdl and web browser certificates from /mnt/user/netcast/opt dir
+    * ADD: PIN authorization for local (on-screen) WebUI access - something like parental lock, authorization cgi can be used to PIN-lock any web page
+    * ADD: EtherWake WebUI submenu with possibility to add/edit/delete devices to wake (via 'Wake' button or to wake on boot)
+    * ADD: unified for all platforms info.sh script by mmm4m5m from LGMOD S7
+    * ADD: support for future OpenLGTV_BCM/extroot.tar.gz package and OpenLGTV_BCM/extroot dir on USB storage partititions (should be NTFS formated)
+    * UPDATE: updated BusyBox from 1.19.2 to 1.19.3 and get rid of busybox2 symlink
+    * CHANGE: time for USB mouse detection on boot raised from 18 to 19 seconds - less probability to get mouse not detected
+    * CHANGE: Network Shares Mount and Ether-Wake performance improvements in both WebUI and boot scripts
+    * CHANGE: rc.firewall behavior change to drop routes instead of binding local interface IPs
+
+0.5.0-beta1:
+
+    * FIX: ywe first time configuration
+    * FIX: abc.net.au link fix
+    * FIX: /home was not writable on US and KR 2010 BCM models
+    * FIX: netcast_config_regenerator.sh should use all country groups now for 'enable_all' option
+    * FIX: support for Yahoo Widgets Engine running from other usb ports and other partitions
+    * FIX: new Internet Browser page by nicola_12345 + his JavaScript code in proxy fixes for frames switching and other button bindings
+    * FIX: two mouse pointers issue when switching between NetCast services and USB mouse was used
+    * ADD: experimental support for SmartTV models [DO NOT FLASH IT ON THOSE MODELS!!!]
+    * ADD: build and installation scripts can now handle 2011 BCM model images
+    * ADD: support for Korean 2010 BCM models
+    * ADD: /scripts/readspeedtest.sh script from mmm4m5m for read transfer rate measurement (thanks lprot for measurement hint)
+    * ADD: storing rootfs and lginit backups at installation into /home/backup/{rootfs,lginit}.bck files
+    * ADD: web proxy script for JavaScript code injection to improve Internet Browser - settings for start at boot (disabled by default)
+    * ADD: get_RELEASE_info.sh script for getting LG firmware version
+    * ADD: NetCast links icons preloading at boot - much quicker links.html page load time
+    * ADD: mtdinfo.sh script for getting info about mtd partitions by mmm4m5m
+    * ADD: yavido service alternate player (prototype for now)
+    * ADD: rc.fwinfo to get info about TV model and LG firmware logged at boot
+    * ADD: nvram-edit commandline tool to get info from NVRAM dump and change some locked values
+    * ADD: libncurses.so.5.7 and recompiled top binary to use the lib
+    * ADD: lua, luac, liblua.so.5.1.4
+    * ADD: libSDL-1.2.so.0.11.3 with DirectFB access for additional SDL apps that can now use TV screen
+    * ADD: OPENRELEASE 2.1.2-7-g5dd1fe0 by rtokarev with possibility to bind scripts/executables actions to remote keys
+    * ADD: CGI web page for remote control by mihaifireball under http://ip_of_tv/remote/
+    * ADD: possibility to remove all OpenLGTV BCM configs or just NetCast configs for recreating defaults at next boot using WebUI
+    * ADD: bootlog is copied at each boot with usb stick/disk plugged in to OpenLGTV_BCM/OpenLGTV_BCM.log file or OpenLGTV_BCM/OpenLGTV_BCM-firstboot.log when it's first boot
+    * ADD: very early prototype of M3U IPTV lists parser (needs to bookmark 'http://127.0.0.1:88/vod/m3u.cgi?url=http://yours_url_to/file.m3u' in Internet Browser)
+    * ADD: support for customised /mnt/user/www/links.html file with NetCast links
+    * ADD: some useful device files - input/event devices increased from 5 to 10, pts devices from 5 to 10, /dev/cdrom,dvd,sg..., /dev/uinput, /dev/rfcomm0-49, /dev/vhci
+    * ADD: netcast_config_check.sh script to verify which NetCast config versions are used
+    * ADD: support for both old and new NetCast configs and NetCast upgrade/downgrade handling
+    * ADD: uinput kernel driver
+    * ADD: hotplug wrapper to handle /lib/firmware/* loading when needed in future and USB storage/hid handling so from now on USB stick/disk does not need to be connected at boot
+    * ADD: with new hotplug-capable scripts Yahoo Widgets Engine/Data from USB storage devices is hotpluggable also - on connect YWE gots prepared and on umount from remote it gets stopped
+    * ADD: 'upgrade mode' - when there are LG firmware upgrade EPK files on USB stick in LG_DTV dir then some services get stopped and caches cleaned when needed - depends on file size to ensure no out-of-mem LG upgrade fail
+    * ADD: hotplugging of USB HID devices (shows/hides mouse pointer also)
+    * ADD: two-panel onscreen web-based FileManager with recursive copy, move, mkdir, delete, playback/view support via remote control or mouse (and keyboard keys remotely)
+    * ADD: support for permanent crontabs storage on user partition
+    * ADD: possibility to disable telnet service and use alternative SSH port (2222) instead of default (22) through WebUI settings
+    * ADD: Yahoo Widgets Engine respects now 'region' set in YWE UI instead of using forced US
+    * ADD: possiblity to change 'region', 'language' and 'yweversion' of Yahoo Widgets Engine via /mnt/user/ywe/{region,lang,version} without need to change YWE UI configuration/restart
+    * ADD: support for multiple NFS/CIFS Network Shares (even nested one inside each other) - WebUI should handle about 9-10 shares configuration
+    * ADD: "disable_LG_network_upgrades" option (set as defautl) in WebUI Settings to be able to stop LG firmware network upgrades
+    * ADD: "enable_firewall" option (disable by default) for custom firewall (work in progress, filter by IP, not much useful yet)
+    * ADD: support for waking up ethernet WakeOnLan capable devices on boot via rc.ether-wake script (and /mnt/user/cfg/ethwaketab config file) - althrough no WebUI option to edit it yet
+    * UPDATE: tmux upgraded from 1.4 to 1.5 with use dynamic libncurses library instead of staticly linked code
+    * UPDATE: busybox upgraded from 1.18.4(+passwd patch) to 1.19.2(+crond patch) with additional setserial, ubi*, users, groups, whois, pstree, pwdx,.. applets
+    * CHANGE: /etc/rc.d/rc.mount rewrite for more flexible partitions handling
+    * CHANGE: improved cramfs xip partitions check before mounting - to prevent kernel crash in case of corrupted lgapp partition (RELEASE)
+    * CHANGE: partition mounting based on partition names instead of static mtd numbers - this should improve compatibility even with unknown models
+    * CHANGE: settings separated from rcS into /etc/rc.d/rc.settings
+    * CHANGE: Internet Browser can be separated from WebUI (and proxied) with it's own NetCast icon in WebUI settings
+    * CHANGE: increase Bluetooth transfer storage from 10MB to 50MB
+    * CHANGE: support for OpenLGTV_BCM dir on any partition number on any of two USB ports in TV
+    * CHANGE: installation is now being done via single installation file - OpenLGTV_BCM-vX.Y.Z.tar.sh and need to be executed by: "/path/to/OpenLGTV_BCM-v0.5.0.tar.sh install"
+    * CHANGE: for safety reasons installation is now being done in chrooted virtual environment to ensure rootfs stability while flashing procedure
+    * CHANGE: use konfabulator-exec.sh even for US models to give ability to run custom ywe from USB storage device
+    * CHANGE: squashfs image is now being build with 256KB block size for better compression of partition image
+    * CHANGE: bootlogd is now used for boot logging instead of ugly 'tee' redirections and 'date' timestamps
+    * CHANGE: NetCast links are now organized in 6x6 grid instead of 4x6 as before and channel up/down arrows besides scrolling change focus now also
+    * CHANGE: NetCast links icons are now being downloaded at upgrade
+    * CHANGE: NetCast configs detection now manages if configs should get cleaned on NetCast upgrade/downgrade (makes backup copy of netcast dir)
+    * CHANGE: performance improvements in most web components: WebUI, Internet Browser, YWE translation, VOD services,...
+    * CHANGE: minor visual improvements to WebUI and VOD services
+    * CHANGE: settings cleanup - "confirmations rebooting netcast_kill_browser netcast_keyboard_mouse_support use_samsung_ywe_instead_of_lg force_copy_config_netcast force_copy_config_ywe" are now removed (netcast_keyboard_mouse_support is renamed to netcast_mouse_support)
+    * CHANGE: WebUI can be now properly navigated using arrows instead of 'red'/'green' buttons
+    * CHANGE: 'netcast_enable_all' switch works now like other settings - can be enabled/disabled
+    * REMOVE: 'tcpdump' binary for space reasons
+    * REMOVE: 'top' binary - use busybox applet instead
+    * REMOVE: 'empty' binary - not used at all
+    * REMOVE: 'file' binary - useless without magic info
+
+0.4.3:
+    * FIX: proper US firmware check
+    * FIX: got rid bookmarks file caching (thanks gra3l)
+    * FIX: install.sh could not make reboot TV after proper flashing on pure TVs giving garbage on console instead
+    * FIX: install.sh mem requirements lowered for 3D TVs where's less available mem
+    * FIX: install.sh kill konfabulator before installation to get more free memory
+    * ADD: new NetCast web browser based links (from SmartTV NetCast 2.0) in Internet Browser page - 132 links currently compared to 68 before (by nicola_12345)
+
+0.4.2:
+    * FIX: installation log file handling - raised errors that can't make backup because couldn't save logs
+
+0.4.1:
+
+    * FIX: ipla.cgi is now more tolerant for minor communication protocol changes
+    * FIX: better place for vod apps logs/communication files: /tmp/vod/{ipla,tvp,netplayer}/
+
+0.4.0:
+
+    * FIX: netcast_config_enable_all option updated that now the output config.xml contains only items which have their NetCast icons
+    * FIX: netcast_config_enable_all option can be used now multiple times
+    * FIX: ywe libs fixing on 0-sized files now works properly
+    * FIX: using NTFS for ywedata should make ywe work more stable, reliable and a bit better performance than using ywedata EXT3 fs image on FAT fs
+    * FIX: install.sh improvements - now checks if the current path is /tmp and if files to be flashed do not exist in script dir then checks current dir
+    * ADD: static list of kernel modules loading support from /lib/modules, /home/modules, /mnt/user/modules
+    * ADD: kernel modules included in /lib/modules: cifs.ko, evdev.ko, fuse.ko, hid.ko, input-core.ko, usbhid.ko
+    * ADD: keyboard (only partial yet) and mouse support in built-in web browser - WebUI switchable option, not enabled by default
+    * ADD: install.sh script makes now firmware backup if the OpenLGTV BCM installation is run for the first time
+    * ADD: editable 25 bookmarks feature to Internet Browser WebUI option (work by nicola_12345)
+    * ADD: support for reset OpenLGTV_BCM settings back to default - if OpenLGTV_BCM/reset_config file exists on USB storage device then move /mnt/user/* to OpenLGTV_BCM/config_backup/ and reboot (idea from LGMOD by lprot)
+    * ADD: boot scripts execution time measurement
+    * ADD: NTFS partitions are now remounted with read/write support at boot
+    * ADD: support for OpenLGTV_BCM on NTFS formated USB storage devices
+    * ADD: ipla.tv alternative player - Polish VOD service
+    * ADD: tvp.pl alternative player - Polish VOD service
+    * ADD: upgrade from zip file on USB storage device is now supported - just put OpenLGTV_BCM-v*.zip file into OpenLGTV_BCM/upgrade/ dir and boot with device plugged in
+    * ADD: OpenLGTV BCM upgrade from zip file and LG firmware upgrade from epk file upload via WebUI support (the file is being uploaded to proper dirs of USB storage device)
+    * ADD: ywe.tar.gz file support as Yahoo Widgets Engine - when this file exist in OpenLGTV_BCM dir on USB storage device it gets unpacked before ywe setup
+    * ADD: red button in Internet Browser binded to NetCast web-based links page
+    * ADD: now there's on upgrade install.sh script used that's provided with upgrade (if exist), not the one that's already in running firmware
+    * ADD: NetPlayer alternative via cgi script
+    * UPDATE: haserl updated to 0.9.29
+    * CHANGE: sstripped binaries for reduce image size (only busybox and uClibc libs left, yet)
+    * CHANGE: BusyBox is now dynamic linked instead of static (more free space for other things)
+    * CHANGE: MTD partitions mounting has been separated from rcS to rc.mount script
+    * REMOVE: removed strace and ltrace binaries
+    * REMOVE: libz.so.1.2.3 - libz.so* libs are now linked to /usr/local/lib/libz.so*
+
+0.3.0:
+
+    * FIX: Updated BusyBox binary with 'passwd' patch
+    * FIX: NVRAM dump on US models
+    * FIX: fixes for nonexistent links for YWE on USB storage device
+    * FIX: run DHCP client in background to not delay boot process in case of lack DHCP server connection
+    * FIX: memory check problem on install or upgrade - now there's counted memory taken by buffers, too
+    * FIX: do not run upgrade when there are not flashable files in upgrade dir
+    * FIX: Yahoo Widgets Engine vs Web Browser resolution incompatibility is now fixed
+    * FIX: check for proper NetCast config.xml format before doing any NetCast configuration
+    * FIX: network setup if WLAN dongle is configured and no ethernet connection - set default IP to ethernet interface instead trying to use DHCP continuosly on it
+    * ADD: Changelog file to SVN
+    * ADD: update time at boot using NTP servers pool
+    * ADD: create /mnt/user/www dir if it does not exist
+    * ADD: autoupgrade from USB storage device from /mnt/usb1/Drive1/OpenLGTV_BCM/upgrade/ dir at boot
+    * ADD: automatic backup to USB storage device if /mnt/usb1/Drive1/OpenLGTV_BCM/make_backup file exists
+    * ADD: executing scripts from USB storage device from /mnt/usb1/Drive1/OpenLGTV_BCM/autorun/ dir at boot
+    * ADD: auto mount-binding /mnt/user/modules/wl.ko to /mnt/lg/res/lgres/wl.ko, so if you have new/modified driver for wireless card you can just put in /mnt/user/modules/ and it will be used at start
+    * ADD: erase lginit partitions at boot if not erased
+    * ADD: support for Yahoo Widgets (both Engine and Data) mounting from /mnt/usb1/Drive1/OpenLGTV_BCM/{ywe,ywedata}
+    * ADD: support for Yahoo Widgets Data used as ramdisk (set to max 80MB) if ywedata partition is not available in both NAND flash or USB storage device
+    * ADD: support for Samsung Yahoo Widgets (by default drop support for LG Yahoo Widgets - Samsung offer all the LG has and it's newer platform and a lot more widgets)
+    * ADD: adding Yahoo Widgets NetCast item by default for EU models
+    * ADD: if there's no 'ywe' dir on 'addon' partition then set Yahoo Widgets Engine dir to /mnt/usb1/Drive1/OpenLGTV_BCM/ywe
+    * ADD: RELEASE is started now in tmux, so it's possible to control RELEASE over telnet or SSH, too
+    * ADD: /mnt/user/cfg/settings file with configuration variables for OpenLGTV BCM scripts
+    * ADD: possibility to enable all available NetCast services (disabled by default, be careful as it sorts all of them alphabetically and some do not have it's icons)
+    * ADD: add OpenLGTV BCM WebUI NetCast option as first service - WebUI is still Work in Progress [some features are already working]
+    * ADD: add support for ~/.ssh dir (linked to /mnt/user/.ssh) - for example for autorised_keys file to be able to login via SSH using public key authorisation, even without password
+    * ADD: support for /mnt/user/cfg/settings file updates after version upgrades
+    * ADD: at first time installation make backup of writable partitions - useful for Yahoo Widgets backup before changing to Samsung platform
+    * ADD: development versions (devel, alpha, beta) are taking more logs and info from current firmware and hardware at first time installation procedure, give there to us for making better support of yours model
+    * ADD: support for OpenLGTV_BCM dir on both USB1 and USB2 ports (just needs to be on it's first partition (/mnt/usb[1|2]/Drive1/OpenLGTV_BCM)
+    * ADD: support for ywedata as ext3 partition image file: ywedata.ext3.img on USB storage devices (done this because of found problems with ywedata dir storage on FAT partitions, thanks sirius for testing)
+    * ADD: ywedata.ext3.img image file on USB storage devices is created if it does not exist and ywedata is not populated yet
+    * ADD: support for modified addon and browser partitions in NetCast configs modifications
+    * ADD: NFS/CIFS Network Share mounting on boot and WebUI configuration features, this needs FAT formated USB stick plugged in as mount point, CIFS needs additional kernel driver module (cifs.ko)
+    * ADD: WebUI is capable of saving changed settings file (be careful changing settings, not all of them have been tested enough)
+    * ADD: WebUI settings - default values are presented in green color, changed from defaults are red, description of settings, save info on bottom of page
+    * ADD: WebUI is available without password on 127.0.0.1:88 and with root password authentication and user: openlgtv on 0.0.0.0:80 (accepting authenticated connections on LAN/WLAN)
+    * ADD: making copy of boot log /var/log/OpenLGTV_BCM.log to USB storage device in OpenLGTV_BCM dir if it does not exist there - usally it should be first boot log
+    * ADD: making default settings file /mnt/user/cfg/settings.default with comments
+    * ADD: WebUI - full browser option [work in progress] by nicola_12345
+    * ADD: WebUI menu in horizontal view, so it can have more items without using limited vertical space
+    * ADD: WebUI available on US TV models (althrough only remotely, not in TV itself - these models lack of built-in web browser)
+    * ADD: WebUI has now execute command and change passwords options (change password changes password to telnet, SSH and WebUI - all in one)
+    * ADD: more safety checks if TV model is supported in both installation and boot scripts
+    * ADD: /etc/TZ link to /mnt/user/etc/TZ for TimeZone settings - will be scritpted to set it via WebUI later
+    * ADD: making versioning of configs on 'user' partition structure for better supporting configs update in next versions
+    * ADD: mount/unmount button in WebUI Network Share Mounts option to be able to mount/unmount at run time without reboot
+    * ADD: /var/www/usb{1,2} symlinks to /mnt/usb{1,2}/OpenLGTV_BCM/www for using custom web code from USB storage devices
+    * ADD: support for WebUI development without need to flash firmware after web code changes - by linking /mnt/usb{1,2}/OpenLGTV_BCM/WebUI-devel to /var/www if the first dir exists
+    * ADD: support for browser executable script modifications
+    * ADD: /var/www/samples/keypress.html file for getting remote or keyboard key codes in web browser (not linked anywhere)
+    * ADD: /scripts/tmp_www.sh which copies /var/www to /tmp/www, links the /tmp/www to /var/www back and restarts both http server processes
+    * ADD: support for /mnt/user/{bin,lib} dirs for custom binaries and libs
+    * UPDATE: haserl binary updated to version 0.9.28, compiled without LUA and BashExtensions support
+    * CHANGE: update install.sh and create_img.sh scripts to support autoupgrade
+    * CHANGE: use better names for backups with information which is rootfs and which lginit backups before autoupgrade/install
+    * CHANGE: move backup, flashed file and logs to 'flashed' subdir after successful flash
+    * CHANGE: shorten USB storage check time to minimal with info how much time has it took
+    * WARN: from now on, install.sh makes installation automaticaly and reboots TV after successful flash, without confirmation
+    * WARN: from this release there's already default password set for telnet, SSH and web server - "openlgtv"
+
+0.2.0a (quick fix release):
+
+    * FIX: nonexistent (in original firmware) md5sum change to sha1sum
+    * FIX: revert termcap data to original
+    * FIX: update create_img.sh and install.sh to use sha1sum instead of md5sum 
+
+0.2.0b (quick fix2 release):
+
+    * FIX: workaround to enable password for users with password set (BusyBox 'passwd' command haven't done it while changing password) - passwords are enabled at next boot
+
+0.2.0:
+
+    * ADD: support for both EU and US models (not KR or others, yet)
+    * ADD: 'tcpdump' binary
+    * ADD: /mnt/Network path as might be related to DLNA/CIFS in RELEASE (?)
+    * ADD: add 'screen', 'putty' and 'xterm' terminals support in /etc/termcap (/bin/top would make use of it)
+    * ADD: TERMINFO_DIR path variable set to /usr/share/terminfo for broken apps with hardcoded paths (like /bin/top)
+    * FIX: fix 'scp' client in TV by making link /usr/bin/dbclient
+    * CHANGE: changed hostname to 'OpenLGTV_BCM'
+    * CHANGE: install script sets date from NTP servers before flashing (useful for logging)
+    * CHANGE: symlink /root dir to /tmp to be able to store termporarly configs, shell logs (like for example .ash_history)
+    * 124kb free space 
+
+0.1.1:
+
+    * UPDATE: update BusyBox to static binary 1.18.4 compiled with more applets (almost all) as replacement for BB 1.2.1
+    * ADD: dirs for new BusyBox applets,
+    * ADD: make install.sh script check if lginit partition is already erased and not erase it again
+    * ADD: udhcpc default.script
+    * REMOVE: remove dynamic BB 1.18.0,
+    * FIX: lastlog file creation,
+    * CHANGE: replace native binaries using BusyBox applets: mountpoint, runlevel, sulogin, last, mesg, flash_eraseall
+    * 216kb free space 
+
+0.1.0:
+
+    * CHANGE: /mnt/user/netcast/ dir is used for browser_addon.txt, config.xml and addon_mgr.bat files instead of /mnt/user/{addon,browser,contents}/ dirs 
+
+0.0.5:
+
+    * FIX: fixed /etc/fstab to properly mount partitions even in different 'auto' modes from CFE (lgapp mounted from NFS must be in /share/global_platform/bcm35xx share)
+    * FIX: fixed 'swapon' and 'swapoff' links - busybox released by LG does not have these tools compiled in (LG bug) - tested, swap on USB hdd works
+    * ADD: starting from version 0.0.5 there's 'install.sh' script provided that takes care of flashing procedure and md5 checksum of the file to flash 
+
+no need to use the procedure for erasing and flashing, just run /mnt/usb1/Drive1/install.sh it would used as autoflash script later after more testing - it should take care about easy upgrades in the future
+
+    * ADD: 'ldd' tool
+    * ADD: wireless connection manging tools (taken from real OpenLGTV): 'iwconfig', 'iwgetid', 'iwlist', 'iwpriv', 'iwspy' - to be able to setup WLAN network on different WLAN cards (kernel modules needed)
+    * ADD: NVRAM dump to /tmp/nvram file - RELEASE erases the mtd21 (nvram) partition after it reads data from it, so it's hard to get dump of it with RELEASE running
+    * ADD: auto mount-binding /mnt/user/modules/btusb.ko to /mnt/lg/res/lgres/btusb.ko, so if you have new/modified driver for bluetooth dongle you can just put in /mnt/user/modules/ and it will be used at start
+    * ADD: copy from original places and bind-mount browser_application.txt, config.xml, addon_mgr.bat from /mnt/user/{browser,contents,addon} dirs if the 'addon' and 'browser' partitions are not modifed so the files can be changed without making modifications to those partitions (if all of those files are links already they wont be touched)
+    * REMOVE: 'wall', 'badblocks', 'utmpdump', 'logsave', 'mklost+found' tools (none of them were on original rootfs and are more likely not to be used, they might come back after we'll make use of 'remain' partition for our tools storage. 
+
+0.0.4:
+
+    * FIX: fixed error messages from creating dirs on not writable /var dir, now /var/log and /var/run are symlinks to /tmp/log and /tmp/run dirs
+    * FIX: fixed 'file' depenency on libmagic.so.1
+    * FIX: fixed /sbin PATH search with adding environment variables from rcS to /etc/profile
+    * FIX: fixed 'awk' as linking it to new busybox binary (LG busybox awk tool had problems with some scripts)
+    * ADD: added 'strace' tool ver. 4.6 (now we can get strace logs from RELEASE at it's first start (might be useful to see what it does to USB, too) - this need a script to start straced RELEASE in /mnt/user/init.d/)
+    * ADD: added 'ltrace' tool compiled from GIT (2011-03-25)
+    * ADD: added 'libelf.so*' lib as needed by 'ltrace'
+    * ADD: added some useful (at least for me) aliases in /etc/profile (vim, screen, src, unmount (tries to umount all the USB devices from /mnt/usb1&2/...), reboot (unmounts USB, syncs and reboots))
+    * ADD: added check for /mnt/user being writable, just in case of not mounted or broken partition, it should still start and setup users and passwords in tmpfs instead
+    * CHANGE: motd is now being regenerated as a copy in /tmp/ with new version number of OpenLGTV BCM if it finds it's 'welcome' header
+    * CHANGE: rcS script does now some logging at start to both rs232 console and to /var/log/OpenLGTV_BCM.log file (which is cleaned after reboot)
+    * CHANGE: telnet server is started before dropbear SSH server, just in case to be able to login if SSH server would be broken and stops boot process
+    * CHANGE: strip more libs and tools for getting more space
+    * REMOVE: removed gettext libs/tools as they were not useful as gettext didn't fit to partition image
+    * REMOVE: removed some unused tools, like 'blkid', 'uuidgen', 'uuidd'
+    * INFO: partition image size grow by 80KB again compared to 0.0.3a, up to max size of the partition
+    * INFO: I'm thinking about publishing this project soon, so this is release candidate for version 0.1.0 
+
+0.0.3a:
+
+    * FIX: fixed 'dropbear' starting command ('-E' parameter not supported by 'dropbear' compiled without syslog support, thanks DeadMan) 
+
+0.0.3:
+
+    * FIX: fixed 'tmux' compilation and 'terminfo' dirs
+    * FIX: recompiled 'dropbear' ssh as multi-binary, fixed 'scp'
+    * FIX: after exit from RELEASE there's running busybox shell on rs232 console
+    * UPDATE: updated 'dropbear' from 0.52 to 0.53.1
+    * UPDATE: updated 'tmux' from 1.3 to 1.4
+    * INFO: short image size by 80kB 
+
+0.0.2:
+
+    * FIX: checking of /proc/cmdline after mounting /proc filesystem so all the commands in init rcS script can be executed 
+
+0.0.1:
+
+    * initial release, had problems running init rcS script 
+
+</PRE></BODY></HTML>

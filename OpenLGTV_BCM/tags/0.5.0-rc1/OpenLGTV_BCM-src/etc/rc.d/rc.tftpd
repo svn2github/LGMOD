@@ -1,0 +1,38 @@
+#!/bin/sh
+# OpenLGTV BCM script rc.tftpd
+# TFTP service setup script by xeros
+# Source code released under GPL License
+
+# TODO: limit space? more actions?
+
+MODEL=`echo /mnt/lg/user/model.*`
+SERIAL=`echo /mnt/lg/user/serial.*`
+[ -f "$MODEL"  ] && MODEL="${MODEL#*model.}"    || MODEL=''
+[ -f "$SERIAL" ] && SERIAL="${SERIAL#*serial.}" || SERIAL=''
+export tftproot=/tmp/tftproot
+tdir="$SERIAL"
+[ -z "$tdir"   ] && tdir="$MODEL"
+[ -z "$tdir"   ] && tdir=opnlgtv
+export tdirfull="$tftproot/$tdir"
+[ "$tdir" = "$SERIAL" ] && tdir="#TV_SERIAL_NUMBER#"
+
+for i in 1 2 3
+do
+    mkdir -p "$tdirfull/stage${i}"
+done
+mkdir -p "$tdirfull/upgrade"
+#chown -R nobody "$tdirfull"
+chown -R 99 "$tdirfull" # /etc/passwd is not yet available to resolve 'nobody' username
+
+echo "OpenLGTV_BCM-INFO: starting TFTP service listening on port 6069, accepting uploads into \"$tdir\" dir only"
+# tftpd doesn't accept UID as user parameter but it does reject connections if username is not resolved so client keeps retrying connections
+udpsvd -vc2 0.0.0.0 6069 tftpd -u nobody -c "$tftproot" &
+
+# examples for uploads:
+# atftp -p -l /path/to/local/file.sh -r tv_serial_number/stage1/remote_file.sh --tftp-timeout 1 192.168.0.2 6069
+
+# tftp 192.168.x.x 6069
+# > binary
+# > rexmt 1
+# > timeout 60
+# > put tv_serial_number/stage1/remote_file.sh

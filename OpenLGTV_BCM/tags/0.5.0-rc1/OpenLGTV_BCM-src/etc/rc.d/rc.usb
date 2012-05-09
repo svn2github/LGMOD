@@ -1,0 +1,249 @@
+#!/bin/sh
+# OpenLGTV BCM script rc.usb
+# USB Storage Usage Script for LG Broadcom platform based TVs by xeros
+# Source code released under GPL License
+
+device="sd"
+usbport=usb1
+[ -n "$2" ] && device="$2"
+[ -n "$4" ] && usbport="$4"
+USB1_DIR=/mnt/usb1/Drive1
+USB2_DIR=/mnt/usb2/Drive1
+LOCKDIR="/var/run/rc.usb.lock.$device"
+k=0;
+
+if [ "$1" != "hotplug" ]
+then
+    echo "OpenLGTV_BCM-INFO: setting hotplug wrapper..."
+    echo /scripts/hotplug-wrapper.sh > /proc/sys/kernel/hotplug
+fi
+
+if ! mkdir "$LOCKDIR" 2>/dev/null
+then
+    echo "OpenLGTV_BCM-WARN: another rc.usb script instance is already handling action, exiting..."
+    exit 0
+fi
+
+/etc/rc.d/rc.variables
+
+echo "OpenLGTV_BCM-INFO: rc.usb: LOCKDIR: $LOCKDIR created"
+
+if [ "$3" = "remove" ]
+then
+    echo "OpenLGTV_BCM-INFO: device is $2 removed, unmounting fs..."
+    for mountpoint in `grep ^/dev/${device} /proc/mounts | cut -d" " -f2 | tac`
+    do
+	echo "OpenLGTV_BCM-INFO: processing mountpoint: $mountpoint ..."
+	##fuser -k ${mountpoint}
+	#for pid in `fuser ${mountpoint}`
+	#do
+	    # do sth here?
+	    # filter out RELEASE PIDs just in case
+	#done
+	umount -f ${mountpoint}
+    done
+    echo "OpenLGTV_BCM-INFO: rc.usb removing LOCKDIR: $LOCKDIR..."
+    rmdir "$LOCKDIR"
+    exit 0
+fi
+
+sleep 1
+
+while [ -z "`grep -m 1 ^/dev/$device /proc/mounts`" ]
+do
+    sleep 1
+    k=$(($k+1))
+    if [ $k -gt 10 ]; then break; fi
+done
+for jj in 1 2 3 4
+do
+    for ii in 1 2
+    do
+	LGDTV_USB="/mnt/usb$ii/Drive$jj/LG_DTV"
+	if [ -d "$LGDTV_USB" ]
+	then
+	    export LGDTV_USB
+	    epaks="`ls $LGDTV_USB/*.epk 2>/dev/null`"
+	    if [ -n "$epaks" ]
+	    then
+		LGDTV_upgrade=1
+		echo "OpenLGTV_BCM-WARN: rc.usb: Found LG firmware upgrade epaks: $epaks"
+		echo "OpenLGTV_BCM-WARN: rc.usb: Running in firmware upgrade mode - killing some services to free memory for upgrade"
+		KILL='konfabulator lb4wk GtkLauncher httpd nc udhcpc ntpd tcpsvd ls wget unzip zip djmount msdl'
+		echo 'OpenLGTV_BCM-WARN: rc.usb: Freeing memory (killing daemons) ...'
+		for prc in $KILL; do pkill $prc && echo "OpenLGTV_BCM-WARN: rc.usb: Stopping $prc ..."; killall $prc 2> /dev/null; done
+		sleep 2
+		# check free ram
+		addfreemem=20480
+		currfreemem=`free | grep -m 1 Mem | awk '{print $4}'`
+		currbuffmem=`free | grep -m 1 Mem | awk '{print $6}'`
+		curravailmem=$(($currfreemem + $currbuffmem))
+		# expect size needed for epk in MB
+		freemem_for_epak=$((($currfreemem - $addfreemem)/1024))
+		#reqavailmem=$((2*$reqfreemem))
+		echo "OpenLGTV_BCM-WARN: rc.usb: Free memory: ${currfreemem}, buffers: ${currbuffmem}, total available: ${curravailmem}"
+		for epak in $epaks
+		do
+		    epk_size="`ls -lh $epak | awk '{print $5}' | sed -e 's/M//g' -e 's/\..*//g'`"
+		    echo "OpenLGTV_BCM-WARN: rc.usb: epak: ${epak}, size: ${epk_size}M"
+		    if [ "$freemem_for_epak" -lt "$epk_size" ]
+		    then
+			echo "OpenLGTV_BCM-WARN: rc.usb: not enough free mem for epak: ${epak}, epak size: ${epk_size}MB, mem available (with 20MB space reserved): ${freemem_for_epak}MB, freeing more memory by dropping caches..."
+			echo 3 > /proc/sys/vm/drop_caches
+			sleep 1
+			echo "OpenLGTV_BCM-WARN: rc.usb: free memory after dropped caches: $((`free | grep -m 1 Mem | awk '{print $4}'`/1024))"
+		    fi
+		done
+	    fi
+	fi
+    done
+done
+
+if [ "$LGDTV_upgrade" = "1" ]
+then
+    echo "OpenLGTV_BCM-WARN: rc.usb: Finish USB actions without later checks to prevent of possible problems with LG upgrade."
+    exit 0
+fi
+
+source /etc/rc.d/rc.usb-remount
+
+for jj in 1 2 3 4 5 6
+do
+    for ii in 1 2
+    do
+	OpenLGTV_BCM_USB="/mnt/usb$ii/Drive$jj/OpenLGTV_BCM"
+	USB_DIR="/mnt/usb$ii/Drive$jj"
+	[ -d "$OpenLGTV_BCM_USB" ] && break 2
+    done
+done
+export OpenLGTV_BCM_USB USB_DIR                                                 # /mnt/usb1/Drive1/OpenLGTV_BCM /mnt/usb1/Drive1
+export USB_FULLDEV="`grep -m 1 \" $USB_DIR \" /proc/mounts | cut -d\" \" -f 1`" # /dev/sda1
+export USB_DEV="${USB_FULLDEV:5:3}"                                             # sda
+export USB_DIR_FS="`grep -m 1 \" $USB_DIR \" /proc/mounts | cut -d\" \" -f 3`"  # ntfs
+
+#echo "rc.usb: parameters called: $@"
+#echo "rc.usb: OpenLGTV_BCM_USB=$OpenLGTV_BCM_USB USB_DIR=$USB_DIR device=$device USB_DEV=$USB_DEV USB_DIR_FS=$USB_DIR_FS"
+
+if [ -d "$OpenLGTV_BCM_USB" -a "$USB_DEV" = "$device" ]
+then
+    echo "OpenLGTV_BCM-INFO: found OpenLGTV_BCM dir: $OpenLGTV_BCM_USB on mounted USB storage device in $k seconds..."
+    echo "$USB_DIR" > /tmp/usbdir
+    cur_dir=`pwd`
+    if [ -d "$OpenLGTV_BCM_USB/upgrade" ]
+    then
+	[ -z "$platform" -a -f "/mnt/user/etc/vars" ] && source /mnt/user/etc/vars
+	echo "OpenLGTV_BCM-INFO: found $OpenLGTV_BCM_USB/upgrade/ dir - trying to run OpenLGTV BCM $platform upgrade..."
+	sqf_file_count=`ls -al $OpenLGTV_BCM_USB/upgrade/OpenLGTV_BCM-$platform-v*.sqf 2>/dev/null | wc -l`
+	tarsh_file_count=`ls -al $OpenLGTV_BCM_USB/upgrade/OpenLGTV_BCM-$platform-v*.tar.sh 2>/dev/null | wc -l`
+	if [ "$sqf_file_count" -gt 1 -o "$tarsh_file_count" -gt 1 ]
+	then
+	    echo "OpenLGTV_BCM-WARN: theres too much OpenLGTV BCM upgrade (.sqf or .tar.sh) files in $OpenLGTV_BCM_USB/upgrade/, refusing to autoupgrade"
+	else
+	    if [ "$tarsh_file_count" -eq "1" ]
+	    then
+		tarsh_upgrade_file=`ls $OpenLGTV_BCM_USB/upgrade/OpenLGTV_BCM-$platform-v*.tar.sh`
+		echo "OpenLGTV_BCM-INFO: found $tarsh_upgrade_file file - trying use it for OpenLGTV BCM upgrade..."
+		curr_dir=`pwd`
+		cd $OpenLGTV_BCM_USB/upgrade/
+		$tarsh_upgrade_file autoupgrade
+		exit 0
+	    fi
+	    if [ "$tarsh_file_count" -lt "1" -a "$sqf_file_count" -lt "1" ]
+	    then
+		echo "OpenLGTV_BCM-INFO: there are no OpenLGTV BCM upgrade (.tar.sh or .sqf) files in $OpenLGTV_BCM_USB/upgrade/, nothing to upgrade"
+	    else
+		if [ "$sqf_file_count" -eq "1" ]
+		then
+		    sqf_upgrade_file=`ls $OpenLGTV_BCM_USB/upgrade/OpenLGTV_BCM-$platform-v*.sqf`
+		    if [ -f "$OpenLGTV_BCM_USB/upgrade/install.sh" ]
+		    then
+			echo "OpenLGTV_BCM-INFO: found $OpenLGTV_BCM_USB/upgrade/install.sh script, using it instead of builtin one"
+			$OpenLGTV_BCM_USB/upgrade/install.sh image=$sqf_upgrade_file autoupgrade
+		    else
+			/scripts/install.sh image=$sqf_upgrade_file autoupgrade
+		    fi
+		    exit 0
+		fi
+	    fi
+	fi
+    fi
+    if [ -f "$OpenLGTV_BCM_USB/make_backup" ]
+    then
+        echo "OpenLGTV_BCM-INFO: found $OpenLGTV_BCM_USB/make_backup file, starting backup to USB storage device..."
+        /scripts/backup.sh $OpenLGTV_BCM_USB/backup
+        mv -f $OpenLGTV_BCM_USB/make_backup $OpenLGTV_BCM_USB/make_backup.used
+    fi
+    if [ -f "$OpenLGTV_BCM_USB/reset_config" ]
+    then
+	/scripts/reset_configs.sh
+	exit 0
+    fi
+    if [ -d "$OpenLGTV_BCM_USB/ywedata" -o -d "$OpenLGTV_BCM_USB/ywe" -o -f "$OpenLGTV_BCM_USB/ywe.tar.gz" ]
+    then
+        echo "OpenLGTV_BCM-INFO: found ywe or ywedata dirs or ywe.tar.gz file in $OpenLGTV_BCM_USB/ - executing Yahoo Widgets configs setup again"
+        source /etc/rc.d/rc.ywe
+    fi
+    if [ -f "$OpenLGTV_BCM_USB/extroot.tar.gz" ]
+    then
+        echo "OpenLGTV_BCM-INFO: found extroot package in $OpenLGTV_BCM_USB/extroot.tar.gz - extracting it"
+        tar xzvf "$OpenLGTV_BCM_USB/extroot.tar.gz" -C "$OpenLGTV_BCM_USB"
+        if [ "$?" -ne "0" ]
+	then
+	    echo "OpenLGTV_BCM-WARN: unpacking of $OpenLGTV_BCM_USB/extroot.tar.gz haven't succeed"
+	else
+	    echo "OpenLGTV_BCM-INFO: unpacking of $OpenLGTV_BCM_USB/extroot.tar.gz completed, removing archive file"
+	    rm -f "$OpenLGTV_BCM_USB/extroot.tar.gz"
+	fi
+    fi
+    if [ -d "$OpenLGTV_BCM_USB/extroot" ]
+    then
+        echo "OpenLGTV_BCM-INFO: found extroot dir in $OpenLGTV_BCM_USB/extroot - mounting it to /tmp/extroot"
+        mkdir -p /tmp/extroot
+        mount --bind "$OpenLGTV_BCM_USB/extroot" /tmp/extroot
+    fi
+    if [ -d "$OpenLGTV_BCM_USB/autorun" ]
+    then
+        echo "OpenLGTV_BCM-INFO: executing custom autorun scripts from $OpenLGTV_BCM_USB/autorun/"
+	for scr_autorun in $OpenLGTV_BCM_USB/autorun/*
+	do
+	    [ ! -f "$scr_autorun" ] && continue
+	    echo "OpenLGTV_BCM-INFO: executing $scr_autorun ..."
+	    $scr_autorun
+	done
+    fi
+    if [ -f "$OpenLGTV_BCM_USB/modules/modules.list" -o -f "/tmp/extroot/modules/modules.list" ]
+    then
+        echo "OpenLGTV_BCM-INFO: loading custom kernel modules from $OpenLGTV_BCM_USB/modules/"
+        /etc/rc.d/rc.modules
+        modules_loaded=1
+    fi
+    if [ -d "$OpenLGTV_BCM_USB/WebUI-devel" ]
+    then
+        echo "OpenLGTV_BCM-INFO: found $OpenLGTV_BCM_USB/WebUI-devel dir, mount-binding it to /var/www and restarting web servers..."
+	mount --bind "$OpenLGTV_BCM_USB/WebUI-devel" /var/www
+	/etc/rc.d/rc.httpd restart &
+    fi
+fi
+/etc/rc.d/rc.mount-netshare
+if [ -d "/tmp/extroot/etc/opkg" ]
+then
+    echo "OpenLGTV_BCM-INFO: found opkg config dir in /tmp/extroot/etc/opkg - overmounting it to /etc/opkg"
+    mount --bind /tmp/extroot/etc/opkg /etc/opkg
+fi
+# /tmp/extroot might have been mounted from netshare so check modules again
+[ -z "$modules_loaded" ] && [ -f "/tmp/extroot/modules/modules.list" ] && /etc/rc.d/rc.modules
+if [ -d "$OpenLGTV_BCM_USB" ]
+then
+    if [ ! -f "$OpenLGTV_BCM_USB/OpenLGTV_BCM-firstboot.log" ]
+    then
+	echo "OpenLGTV_BCM-INFO: making copy of firstboot $bootlogf log file to $OpenLGTV_BCM_USB/"
+	cp -f $bootlogf $OpenLGTV_BCM_USB/OpenLGTV_BCM-firstboot.log
+    fi
+    echo "OpenLGTV_BCM-INFO: making copy of $bootlogf log file to $OpenLGTV_BCM_USB/"
+    cp -f $bootlogf $OpenLGTV_BCM_USB/
+else
+    echo "OpenLGTV_BCM-INFO: there is no OpenLGTV_BCM dir on USB storage device"
+fi
+
+echo "OpenLGTV_BCM-INFO: rc.usb removing LOCKDIR: $LOCKDIR..."
+rmdir "$LOCKDIR"

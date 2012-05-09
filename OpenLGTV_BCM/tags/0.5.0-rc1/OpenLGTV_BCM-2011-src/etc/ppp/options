@@ -1,0 +1,77 @@
+# /etc/ppp/options
+# 
+# Originally created by Jim Knoble <jmknoble@mercury.interpath.net>
+# Modified for Debian by alvar Bray <alvar@meiko.co.uk>
+# Modified for PPP Server setup by Christoph Lameter <clameter@debian.org>
+#
+# ms-dns 192.168.1.1
+# ms-dns 192.168.1.2
+# ms-wins 192.168.1.50
+# ms-wins 192.168.1.51
+#disconnect "chat -- \d+++\d\c OK ath0 OK"
+asyncmap 0
+#auth
+noauth
+crtscts
+#xonxoff
+#escape 11,13,ff
+#local
+lock
+hide-password
+#show-password
+modem
+#mru 542
+#netmask 255.255.255.0
+#noipdefault
+#passive
+#silent
+#-all
+#-ac
+#-am
+#-detach
+#-ip
+#noip
+#-mn
+#-mru
+#-pc
+#+pap
+#-pap
+#+chap
+#-chap
+#-vj
+#debug
+#domain <d>
+#kdebug n
+#mtu <n>
+#name <n>
+#usehostname
+#remotename <n>
+proxyarp
+# login
+lcp-echo-interval 30
+lcp-echo-failure 4
+#lcp-restart <n>
+#lcp-max-terminate <n>
+#lcp-max-configure <n>
+#lcp-max-failure <n>
+#ipcp-restart <n>
+#ipcp-max-terminate <n>
+#ipcp-max-configure <n>
+#ipcp-max-failure <n>
+#pap-restart <n>
+#pap-max-authreq <n>
+#pap-timeout <n>
+#chap-restart <n>
+#chap-max-challenge
+#chap-interval <n>
+#ipcp-accept-local
+#ipcp-accept-remote
+noipx
+#nopersist
+#persist
+#maxfail <n>
+#demand
+#idle <n>
+#holdoff <n>
+#connect-delay <n>
+#active-filter <filter-expression>

@@ -1,0 +1,212 @@
+#!/bin/sh
+# OpenLGTV BCM script rc.netcast
+# NetCast setup script for LG Broadcom platform based TVs by xeros
+# Source code released under GPL License
+
+export addon_config_xml="/mnt/addon/contents/config.xml"
+export user_config_xml="/mnt/user/netcast/config.xml"
+export addon_browser_application_txt="/mnt/addon/browser/browser_application.txt"
+export browser_browser_application_txt="/mnt/browser/browser_application.txt"
+export user_browser_application_txt="/mnt/user/netcast/browser_application.txt"
+export user_run3556="/mnt/user/netcast/run3556"
+export browser_run3556="/mnt/browser/run3556"
+export addon_addon_mgr_bat="/mnt/addon/bin/addon_mgr.bat"
+export user_addon_mgr_bat="/mnt/user/netcast/addon_mgr.bat"
+export addon_extra_conf="/mnt/addon/browser/extra_conf"
+export user_extra_conf="/mnt/user/netcast/extra_conf"
+export user_opt="/mnt/user/netcast/opt"
+export addon_opt="/mnt/addon/browser/opt"
+export netcast_config_ok=1
+
+# Check for proper NetCast configs structure (might need to be extended in future)
+if [ ! -f "$user_config_xml" ]
+then
+    echo "OpenLGTV_BCM-INFO: first run NetCast configs preparation..."
+    if [ -f "$addon_config_xml" ]
+    then
+	echo "OpenLGTV_BCM-INFO: checking if $addon_config_xml file has supported format..."
+	cfg_xml="$addon_config_xml"; source /scripts/netcast_config_check.sh
+	#TODO: change default, add check and support for config_ver=3 (SmartTV)
+    else
+	echo "OpenLGTV_BCM-ERROR: $addon_config_xml file does not exist - stopping NetCast preparation..."
+	export config_ver=0
+	export netcast_config_ok=0
+    fi
+else
+    #TODO: improve netcast_config_check.sh performance to make use of it for all checks instead of those simple greps
+    cfg_xml="$addon_config_xml"; source /scripts/netcast_config_check.sh
+    if [ "$config_ver" = "1" ]
+    then
+	if [ -z "`grep -m 1 '<url_exec>' \"$user_config_xml\"`" ]
+	then
+	    echo "OpenLGTV_BCM-WARN: possible LG firmware NetCast upgrade detected: $addon_config_xml file has DIFFERENT format than $user_config_xml, renaming /mnt/user/netcast dir to /mnt/user/netcast.pre${config_ver}..."
+	    mv /mnt/user/netcast /mnt/user/netcast.pre${config_ver}
+	    if [ -d "/home/netcast_icons" ]
+	    then
+		echo "OpenLGTV_BCM-WARN: removing /home/netcast_icons to prepare new icons..."
+		rm -rf /home/netcast_icons
+	    fi
+	fi
+    else
+	if [ "$config_ver" = "2" ]
+	then
+	    if [ -z "`grep -m 1 '<exec_engine>' \"$user_config_xml\"`" ]
+	    then
+		echo "OpenLGTV_BCM-WARN: possible LG firmware NetCast downgrade detected: $addon_config_xml file has DIFFERENT format than $user_config_xml, renaming /mnt/user/netcast dir to /mnt/user/netcast.pre${config_ver}..."
+		mv /mnt/user/netcast /mnt/user/netcast.pre${config_ver}
+		if [ -d "/home/netcast_icons" ]
+		then
+		    echo "OpenLGTV_BCM-WARN: removing /home/netcast_icons to prepare new icons..."
+		    rm -rf /home/netcast_icons
+		fi
+	    fi
+	fi
+    fi
+fi
+
+if [ ! -d "/mnt/user/netcast" -a "$netcast_config_ok" = "1" ]
+then
+    echo "OpenLGTV_BCM-INFO: creating /mnt/user/netcast dir for NetCast configs copy..."
+    mkdir -p /mnt/user/netcast
+fi
+if [ ! -d "/mnt/user/ywe/samsung" -a "$netcast_config_ok" = "1" ]
+then
+    echo "OpenLGTV_BCM-INFO: creating /mnt/user/ywe and /mnt/user/ywe/samsung dirs for Yahoo Widgets Engine configs copy..."
+    mkdir -p /mnt/user/ywe/samsung
+fi
+if [ -d "/mnt/addon/contents/netcast" -a "$netcast_config_ok" = "1" ]
+then
+    if [ ! -d "/home/netcast_icons" ]
+    then
+	echo "OpenLGTV_BCM-INFO: creating /home/netcast_icons dir for NetCast icons copy..."
+	mkdir -p /home/netcast_icons
+	if [ -d "/home/netcast_icons" -a -d "/mnt/addon/contents/netcast" ]
+	then
+	    echo "OpenLGTV_BCM-INFO: making copy of NetCast icons from /mnt/addon/contents/netcast to /home/netcast_icons dir..."
+	    cp -f /mnt/addon/contents/netcast/* /home/netcast_icons/
+	fi
+    else
+	for icon in /mnt/addon/contents/netcast/*.swf
+	do 
+	    if [ ! -f "/home/netcast_icons/${icon:28}" ]
+	    then
+		echo "OpenLGTV_BCM-INFO: making copy of new NetCast icon: $icon to /home/netcast_icons dir..."
+		cp -f "$icon" /home/netcast_icons/
+	    fi
+	done
+    fi
+    if [ ! -f "/home/netcast_icons/icon_openlgtv.swf" ]
+    then
+	echo "OpenLGTV_BCM-INFO: making copy of OpenLGTV BCM NetCast icon from /var/icons/openlgtv.swf to /home/netcast_icons/icon_openlgtv.swf..."
+	cp /var/icons/openlgtv.swf /home/netcast_icons/icon_openlgtv.swf
+    fi
+    if [ ! -f "/home/netcast_icons/icon_www.swf" ]
+    then
+	echo "OpenLGTV_BCM-INFO: making copy of OpenLGTV BCM Internet Browser icon from /var/icons/www.swf to /home/netcast_icons/icon_www.swf..."
+	cp /var/icons/www.swf /home/netcast_icons/icon_www.swf
+    fi
+    if [ ! -f "/home/netcast_icons/icon_yahoo.swf" ]
+    then
+	echo "OpenLGTV_BCM-INFO: making copy of Yahoo Widgets icon from /var/icons/y.swf to /home/netcast_icons/icon_yahoo.swf..."
+	cp /var/icons/y.swf /home/netcast_icons/icon_yahoo.swf
+    fi
+    if [ -f "/home/netcast_icons/icon_openlgtv.swf" -a "/mnt/addon/contents/netcast" ]
+    then
+	echo "OpenLGTV_BCM-INFO: found NetCast icons copy in /home/netcast_icons dir - linking it to /mnt/addon/contents/netcast dir..."
+	mount --bind /home/netcast_icons /mnt/addon/contents/netcast
+    fi
+fi
+if [ -f "$addon_browser_application_txt" -a -f "$browser_browser_application_txt" -a -f "$addon_config_xml" -a -f "$addon_addon_mgr_bat" -a -f "$browser_run3556" ]
+then
+    if [ "$netcast_config_ok" = "1" ]
+    then
+	if [ ! -f "$user_browser_application_txt" -a -f "$addon_browser_application_txt" ]
+	then
+	    echo "OpenLGTV_BCM-INFO: making browser config copy - $addon_browser_application_txt..."
+	    cat "$addon_browser_application_txt" > "$user_browser_application_txt"
+	    chmod 644 "$user_browser_application_txt"
+	fi
+	if [ ! -f "$user_run3556" -a -f "$browser_run3556" ]
+	then
+	    echo "OpenLGTV_BCM-INFO: making browser startup script copy - $browser_run3556..."
+	    cat "$browser_run3556" > "$user_run3556"
+	    chmod 775 "$user_run3556"
+	fi
+	if [ ! -f "$user_extra_conf" -a -f "$addon_extra_conf" ]
+	then
+	    echo "OpenLGTV_BCM-INFO: making additional settings file for browser copy - $addon_extra_conf..."
+	    cat "$addon_extra_conf" > "$user_extra_conf"
+	    chmod 775 "$user_extra_conf"
+	fi
+	if [ ! -f "$user_config_xml" -a -f "$addon_config_xml" ]
+	then
+	    echo "OpenLGTV_BCM-INFO: making StageCraft config copy - $addon_config_xml..."
+	    cat "$addon_config_xml" >> "$user_config_xml"
+	    chmod 644 "$user_config_xml"
+	fi
+	if [ ! -f "$user_addon_mgr_bat" -a -f "$addon_addon_mgr_bat" ]
+	then
+	    echo "OpenLGTV_BCM-INFO: making Addon_Mgr config copy - $addon_addon_mgr_bat..."
+	    cat "$addon_addon_mgr_bat" >> "$user_addon_mgr_bat"
+	    chmod 644 "$user_addon_mgr_bat"
+	fi
+	source /etc/rc.d/rc.netcast-modify
+	if [ -f "$user_config_xml" -a -f "$user_addon_mgr_bat" ]
+	then
+	    echo "OpenLGTV_BCM-INFO: using links to NetCast configs on addon partition..."
+	    mount --bind "$user_config_xml"    "$addon_config_xml"
+	    mount --bind "$user_addon_mgr_bat" "$addon_addon_mgr_bat"
+	fi
+	if [ -f "$user_browser_application_txt" ]
+	then
+	    echo "OpenLGTV_BCM-INFO: using links to NetCast browser configs on browser and addon partitions..."
+	    mount --bind "$user_browser_application_txt" "$addon_browser_application_txt"
+	    mount --bind "$user_browser_application_txt" "$browser_browser_application_txt"
+	fi
+	if [ -f "$user_extra_conf" ]
+	then
+	    echo "OpenLGTV_BCM-INFO: using link to NetCast browser additional settings config on addon partition..."
+	    mount --bind "$user_extra_conf" "$addon_extra_conf"
+	fi
+	if [ -f "$user_run3556" ]
+	then
+	    echo "OpenLGTV_BCM-INFO: using links to NetCast browser startup script on browser partition..."
+	    mount --bind "$user_run3556"    "$browser_run3556"
+	fi
+    fi
+fi
+
+if [ ! -d "/mnt/user/www" ]
+then
+    echo "OpenLGTV_BCM-INFO: creating /mnt/user/www dir for builtin web server..."
+    mkdir -p /mnt/user/www
+fi
+
+if [ ! -f "/mnt/user/www/bookmarks.inc" ]
+then
+    echo "OpenLGTV_BCM-INFO: web browser bookmarks file not found, creating default from template in: /mnt/user/www/bookmarks.inc..."
+    cp /var/www/browser/templates/bookmarks.inc /mnt/user/www/
+fi
+
+if [ -f "/mnt/user/www/links.html" ]
+then
+    echo "OpenLGTV_BCM-INFO: using customised /mnt/user/www/links.html as Internet Browser NetCast links page..."
+    mount --bind /mnt/user/www/links.html /var/www/browser/links.html
+fi
+
+if [ -d "$user_opt" ]
+then
+    for opt_file in ${user_opt}/*
+    do
+	opt_file_name="${opt_file##*/}"
+	opt_file_dst="${addon_opt}/${opt_file_name}"
+	if [ -f "$opt_file_dst" ]
+	then
+	    echo "OpenLGTV_BCM-INFO: using custom $opt_file as $opt_file_dst ..."
+	    mount --bind "$opt_file" "$opt_file_dst"
+	fi
+    done
+fi
+
+echo "OpenLGTV_BCM-INFO: running NetCast links icons preloading script with 10s delay ..."
+(sleep 10; /scripts/icons_download.sh) &

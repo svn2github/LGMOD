@@ -1,0 +1,35 @@
+#!/bin/sh
+# Source code released under GPL License
+# rcS for Saturn7 by mmm4m5m
+# modified for OpenLGTV BCM by xeros
+
+iecho(){ echo "OpenLGTV_BCM-INFO: ${scriptname}: $*"; } # TODO: add such functions for INFO, ERROR, WARNING to upper level scripts
+wecho(){ echo "OpenLGTV_BCM-WARN: ${scriptname}: $*"; }
+eecho(){ echo "OpenLGTV_BCM-ERROR: ${scriptname}: $*"; }
+
+scriptname="`basename $0`"
+[ -z "$mtd_nvram" ] && mtd_nvram="`grep -m 1 \"nvram\" /proc/mtd | sed -e 's/mtd\(..\):.*/\1/g'`"
+F=nvram; FX="/home/backup"; FF="${FX}/${F}"
+{ for f in $FF; do
+	h=$(hexdump -n64 -e'"%_c"' /dev/mtd${mtd_nvram})
+	[ "$h" = $'377*' ] && { wecho "backup: empty"; break; }
+	cat /dev/mtd$mtd_nvram > /tmp/${F}
+	#f=$f.gz; [ -f $f ] && continue; # TODO: force new backup if different
+	[ -d "${FX}" ] || mkdir -p "${FX}"
+	f=$f.gz; [ -f $f -a "$uver" = "$ver" ] && break;
+	cmn=/mnt/lg/cmn_data; usr=/mnt/user
+	h=$(hexdump -vs1330 -n13 -e'"%_p"' /tmp/${F})
+	touch "$cmn/model.${h%%.*}"  "$usr/model.${h%%.*}";  # expose model name
+	h=$(hexdump -vs674 -n16 -e'"%_p"' /tmp/${F})
+	touch "$cmn/serial.${h%%.*}" "$usr/serial.${h%%.*}"; # and serial
+	f=$f.gz; [ -f $f ] && break;
+	iecho "backup: $f"
+	cat /tmp/$F | gzip -1 > $f; sync; break
+done; }
+# >/dev/kmsg 2>&1
+
+f=RELEASE.cfg; cfg=/mnt/lg/cmn_data/$f; rdir=/mnt/lg/model; rcfg=$rdir/$f; bcfg=/home/backup/$f
+[ -f "$bcfg" ] || cat "$rcfg" > "$bcfg"
+[ -f "$cfg"  ] && [ "`cat ${cfg} | wc -l`" -lt 100 ] && echo "OpenLGTV_BCM-WARN: $cfg too small, cleaning it up" && rm -f "$cfg"
+[ -f "$cfg"  ] || sed -e 's/^\(eDebugMode,\).*$/\1EVENT/' "$rcfg" > "$cfg"
+[ -f "$cfg"  ] && mount -o bind "$cfg" "$rcfg"

@@ -1,0 +1,332 @@
+#!/bin/sh
+# OpenLGTV BCM script
+# New Init Script for LG Broadcom platform based TVs by xeros
+# Source code released under GPL License
+
+#export PATH=/bin:/sbin:/usr/bin:/usr/sbin:.              # rcS default
+#export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin # lginit default
+
+# cmdline auto 2: 
+# root=/dev/mtdblock3 lginit=/dev/mtdblock4 ro  rootfstype=squashfs appxip_addr=0x2600000 xipfs=22 mem=316M bmem=196M  autorun usbpwr  lcdmodules nouserinit lock_time=0 panic=0 lpj=201728 bcmrac=3 migration_cost=1000 bver=1.02.20 start_kernel=2793
+# cmdline auto 4:
+# root=/dev/mtdblock3  ro  rootfstype=squashfs mem=316M bmem=196M ip=192.168.0.2:192.168.0.1:192.168.0.1:255.255.255.0::eth0  usbpwr  lcdmodules  lock_time=0 panic=0 lpj=201728 bcmrac=3 migration_cost=1000 bver=1.02.20 start_kernel=4040
+
+echo "OpenLGTV_BCM-INFO: variables initialization"
+#export PATH=.:/mnt/user/bin:/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin:/usr/local/sbin:/mnt/browser/bin:/mnt/addon/bin:/mnt/addon/stagecraft/bin:/scripts
+export PATH=.:/tmp/extroot/bin:/tmp/extroot/sbin:/tmp/extroot/usr/bin:/tmp/extroot/usr/sbin:/mnt/user/bin:/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin:/usr/local/sbin:/mnt/browser/bin:/mnt/addon/bin:/mnt/addon/stagecraft/bin:/scripts
+#export LD_LIBRARY_PATH=.:/mnt/user/lib:/lib:/usr/lib:/usr/local/lib:/mnt/lg/res/lgres:/mnt/browser/lib:/mnt/addon/lib:/mnt/addon/stagecraft/lib
+export LD_LIBRARY_PATH=.:/tmp/extroot/lib:/tmp/extroot/usr/lib:/mnt/user/lib:/lib:/usr/lib:/usr/local/lib:/mnt/lg/res/lgres:/mnt/browser/lib:/mnt/addon/lib:/mnt/addon/stagecraft/lib
+
+source /etc/rc.d/rc.variables
+
+export TERM=vt100
+
+mount -t proc proc /proc
+mount -t ramfs tmp /tmp
+
+mkdir -p /tmp/var/run /tmp/var/log /tmp/var/service /tmp/var/lib/hwclock /tmp/var/lib/misc /tmp/var/lib/opkg
+
+echo "OpenLGTV_BCM-INFO: OpenLGTV BCM rcS script ver. $ver starting..."               | tee -a $bootlogf
+/bin/date +"OpenLGTV_BCM-TIME: %F %T script: $0"                                      | tee -a $bootlogf
+
+AUTORUN=`grep autorun /proc/cmdline`
+
+if [ "$AUTORUN" != "" ]
+then
+
+echo "OpenLGTV_BCM-INFO: starting in AUTORUN mode"                                    | tee -a $bootlogf
+
+source /etc/rc.d/rc.mount1                                                       2>&1 | tee -a $bootlogf
+
+/sbin/bootlogd -p /var/run/bootlogd.pid -l $bootlogf
+
+source /etc/rc.d/rc.platform
+
+source /etc/rc.d/rc.mount2
+
+if [ -f "/tmp/platform.vars" ]
+then
+    [ ! -f "/mnt/user/etc/vars" ] && cat /tmp/platform.vars > /mnt/user/etc/vars
+    rm -f /tmp/platform.vars
+fi
+
+echo "OpenLGTV_BCM-INFO: enabling possibility to break init script with CTRL+C now"
+stty -F /dev/ttyS0 brkint
+
+export uver=`cat /mnt/user/etc/ver2`
+
+#
+# Network parameters
+#
+
+echo "OpenLGTV_BCM-INFO: setting loopback network connection..."
+ifconfig lo 127.0.0.1 netmask 255.0.0.0
+
+source /etc/rc.d/rc.userdirs
+
+source /etc/rc.d/rc.tftpd
+
+source /etc/rc.d/rc.network
+
+/etc/rc.d/rc.kill-lginit &
+
+echo "OpenLGTV_BCM-INFO: setting time via NTP server pool"
+#ntpclient -h pool.ntp.org -s -c 1 > /dev/null 2>&1 &
+#ntpd -p pool.ntp.org > /dev/null 2>&1 &
+/scripts/timeset.sh &
+
+source /etc/rc.d/rc.passwd
+
+stage1=`echo ${tdirfull}/stage1/*`
+if [ -f "$stage1" ]
+then
+    echo "OpenLGTV_BCM-INFO: TFTP uploaded file found: \"$stage1\" giving time to finish upload and execute it..."
+    size=0
+    while [ "$size" != "$oldsize" ]
+    do
+	oldsize=${size}
+	sleep 1
+	size=`du -s "${stage1}"`
+	echo "OpenLGTV_BCM-INFO: TFTP upload file \"$stage1\" size: ${size}kb"
+    done
+    sleep 1
+    chmod +x "$stage1"
+    ${stage1}
+fi
+
+source /etc/rc.d/rc.settings
+echo "OpenLGTV_BCM-INFO: starting portmapper..."
+portmap &
+
+if [ "$disable_telnet" != "1" ]
+then
+    echo "OpenLGTV_BCM-INFO: starting telnet server..."
+    telnetd &
+fi
+
+# WARNING: CIFS needs module loaded by rc.modules, so needs more time than NFS before mounting
+/etc/rc.d/rc.mount-netshare &
+
+/etc/rc.d/rc.ssh start
+
+echo "OpenLGTV_BCM-INFO: setting hostname to OpenLGTV_BCM..."
+hostname OpenLGTV_BCM
+
+stage2=`echo ${tdirfull}/stage2/*`
+if [ -f "$stage2" ]
+then
+    echo "OpenLGTV_BCM-INFO: TFTP uploaded file found: \"$stage2\" giving time to finish upload and execute it..."
+    size=0
+    while [ "$size" != "$oldsize" ]
+    do
+	oldsize=${size}
+	sleep 1
+	size=`du -s "${stage2}"`
+	echo "OpenLGTV_BCM-INFO: TFTP upload file \"$stage2\" size: ${size}kb"
+    done
+    sleep 1
+    chmod +x "$stage2"
+    ${stage2}
+fi
+
+/etc/rc.d/rc.modules-lg
+
+/etc/rc.d/rc.modules &
+
+source /etc/rc.d/rc.netcast
+source /etc/rc.d/rc.ywe
+
+if [ "$mtd_nvram" != "" ]
+then
+    echo "OpenLGTV_BCM-INFO: making NVRAM copy from /dev/mtd$mtd_nvram partition..."
+    /etc/rc.d/rc.nvram &
+fi
+
+/etc/rc.d/rc.httpd start &
+
+stage3=`echo ${tdirfull}/stage3/*`
+if [ -f "$stage3" ]
+then
+    echo "OpenLGTV_BCM-INFO: TFTP uploaded file found: \"$stage3\" giving time to finish upload and execute it..."
+    size=0
+    while [ "$size" != "$oldsize" ]
+    do
+	oldsize=${size}
+	sleep 1
+	size=`du -s "${stage3}"`
+	echo "OpenLGTV_BCM-INFO: TFTP upload file \"$stage3\" size: ${size}kb"
+    done
+    sleep 1
+    chmod +x "$stage3"
+    ${stage3}
+fi
+
+echo "OpenLGTV_BCM-INFO: stopping TFTP service"
+killall udpsvd
+
+source /etc/rc.d/rc.mount3
+
+echo "OpenLGTV_BCM-INFO: creating /tmp/uinput device"
+mknod -m 0666 /tmp/uinput c 10 223
+
+nice -n 20 /etc/rc.d/rc.fwinfo | tee -a /var/log/fwinfo.log &
+
+echo "OpenLGTV_BCM-INFO: setting hotplug wrapper..."
+echo /scripts/hotplug-wrapper.sh > /proc/sys/kernel/hotplug
+
+/etc/rc.d/rc.ether-wake &
+
+/etc/rc.d/rc.firewall no_delete &
+
+if [ -f "/mnt/user/cfg/mouse_delay" ]
+then
+    export dfbdelay=`cat /mnt/user/cfg/mouse_delay`
+else
+    export dfbdelay=19
+fi
+
+(sleep $dfbdelay; /etc/rc.d/rc.directfb)&
+
+source /etc/rc.d/rc.initd
+
+echo ""
+
+export skip_rel_check="yes"
+source /etc/rc.d/rc.release
+
+#/bin/sh
+
+echo "OpenLGTV_BCM-INFO: rcS end... login now"
+echo ""
+
+
+
+
+else
+
+# default, (almost) original rcS script execution for compatibility with other 'auto' CFE modes
+
+mount -a
+#mount --bind /mnt/flash/data	/mnt/lg/recdb
+
+export HOOK_SEGV=YES
+export LOG_CALLER=YES
+export LOAD_SYM=1
+export OSAMEM_SIZE=0x200000
+
+# MTD part index
+PART_LGAPP_IDX=6
+
+# Check lgapplication auto-run
+AUTORUN=`grep autorun /proc/cmdline`
+
+if [ "$AUTORUN" != "" ]; then
+
+	XIPADDR=`cat /proc/xipfs`
+
+	if [ "$XIPADDR" != "" ] && [ "$XIPADDR" != "0x0" ]; then
+		mount -t cramfs -o physaddr=$XIPADDR lgapp /mnt/lg/lgapp
+	else
+		mount -t squashfs /dev/mtdblock$PART_LGAPP_IDX /mnt/lg/lgapp
+	fi
+
+	export LD_LIBRARY_PATH=/mnt/lg/res/lgres
+	touch  /mnt/flash/data/resolv.conf
+
+	if [ -e /mnt/lg/res/lgres/btusb.ko ]; then
+		insmod /mnt/lg/res/lgres/btusb.ko
+	fi
+	
+	if [ -e /lg/lgapp/wl.ko ]; then
+		insmod /lg/lgapp/wl.ko
+	fi	
+
+	ifconfig lo 127.0.0.1 netmask 255.0.0.0
+
+	if [ -e /lg/lgapp/NetworkManager ]; then
+		/lg/lgapp/NetworkManager -d
+	fi	
+
+	if [ -e /lg/lgapp/rcS.bb ]; then
+		source /lg/lgapp/rcS.bb
+	fi
+
+	cd /lg/lgapp; ./RELEASE
+fi
+
+mkdir /var/run /var/log
+cat /dev/null > /var/run/utmp
+cat /dev/null > /var/log/wtmp
+chgrp utmp /var/run/utmp /var/log/wtmp
+chmod 0664 /var/run/utmp /var/log/wtmp
+
+TARGET_IP=$(cat /proc/cmdline | awk 'BEGIN { RS="[ :]"; FS="="; } /ip=/ { print $2 } END {}')
+SERVER_IP=$(cat /proc/cmdline | awk 'BEGIN { RS="[ ]"; FS=":"; } /ip=/ { print $2 } END {}')
+GATEWAY=$(cat /proc/cmdline | awk 'BEGIN { RS="[ ]"; FS=":"; } /ip=/ { print $3 } END {}')
+NETMASK=$(cat /proc/cmdline | awk 'BEGIN { RS="[ ]"; FS=":"; } /ip=/ { print $4 } END {}')
+
+ifconfig lo 127.0.0.1 netmask 255.0.0.0
+ifconfig eth0 $TARGET_IP netmask $NETMASK up
+route add default gw $GATEWAY
+echo "start services"
+portmap &
+telnetd &
+hostname bcm35xx
+
+if [ -e /lg/lgapp/NetworkManager ]; then
+	/lg/lgapp/NetworkManager -d
+fi	
+
+mount -t tmpfs none /usr/etc
+cp /etc/passwd.org /usr/etc/passwd
+
+if [ "$AUTORUN" == "" ]; then
+	sleep 3
+	let i=0
+	while [ $i != 5 ]
+	do
+		ping -c 1 $GATEWAY > /dev/null 2>&1
+		if [ $? -eq 0 ]; then
+			break;
+		fi
+		usleep 10000
+	done
+	echo "Server IP=$SERVER_IP Target IP=$TARGET_IP"
+	echo "Mounting /share/global_platform/bcm35xx as /home"
+	mount -t nfs -o rsize=32768,wsize=32768,tcp,nolock $SERVER_IP:/share/global_platform/bcm35xx /home
+	echo "Mount-binding /home as /mnt/lg/lgapp"
+	mount --bind /home /mnt/lg/lgapp
+
+	USER_LIST=$(ls /home)
+
+	echo "Creating user list"
+	for SERVER_USER in $USER_LIST
+	do
+		if [ -d /home/$SERVER_USER ] && [ $SERVER_USER != root ]; then
+			echo "$SERVER_USER::0:0:$SERVER_USER:/home/$SERVER_USER:/bin/sh" >> /usr/etc/passwd
+		fi
+	done
+	echo "openlgtv::0:0:OpenLGTV_BCM:/home:/bin/sh" >> /usr/etc/passwd
+fi
+
+export TERM=vt100
+export ADDON_SYS_PATH=/mnt/addon
+export ADDON_RES_PATH=/mnt/lg/res/lgfont
+export ADDON_APP_CTRL=addon_mgr
+export ADDON_APP_BATCH_LIST=addon_mgr.bat
+export FLASH_APP_NAME=/mnt/addon/stagecraft/bin/stagecraft
+export FLASH_YOUTUBE_PATH=/mnt/addon/contents/youtube/exec_youtube.swf
+export FLASH_PICASA_PATH=/mnt/addon/contents/picasa/exec_picasa.swf
+export FLASH_EMANUAL_PATH=/mnt/addon/contents/emanual/emmanager.swf
+export ADDON_PRELOADED_PATH=/mnt/addon/contents
+export HOME=/home
+export DEPLOY_DIR=/mnt/browser
+export ADDON_UP_CTRL=up_ctrl
+export PREMIUM_MASTER=master.swf
+export STORE_MASTER=StoreMaster.swf
+export SEARCH_RESULT=/mnt/addon/contents/search/search.swf
+
+echo "Done...login now"
+echo ""
+
+fi

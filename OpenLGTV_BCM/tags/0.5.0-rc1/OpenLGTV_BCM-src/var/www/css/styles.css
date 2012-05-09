@@ -1,0 +1,142 @@
+body{
+	font-family:"TiresiasScreenfont";
+	background-color:black;
+	overflow:hidden;
+	overflow-y:hidden;
+	overflow-x:hidden;
+}
+
+.container{
+	width:1280px;
+	height:720px;
+	overflow:hidden;
+	position:absolute;
+	top:0px;
+	left:0px;
+}
+
+.footer, .footer2{
+	background:rgb(42,42,42);
+	position:absolute;
+	bottom:0;
+	left:0;
+	height:50px;
+	overflow:hidden;
+	width:100%;
+}
+
+.footer2{
+	bottom:50px;
+	width:66%;
+}
+
+.footer li span, .footer2 li span{
+	width:46px;
+	height:30px;
+	margin:8px;
+	float:left;
+}
+
+.footer li, .footer2 li{
+	width:208px;
+	height:45px;
+	line-height:47px;
+	font-size:24px;
+	letter-spacing:1px;
+	color:white;
+	border:rgb(34,34,34) 1px solid;
+	cursor:pointer;
+	overflow:hidden;
+	float:left;
+}
+
+.footer li:hover, .footer2 li:hover{
+	background:#2B3856;
+}
+
+.footer ul, .footer2 ul{
+	margin:0;
+	padding:0;
+}
+
+div.menuitem {
+	background-color:orange;
+	height:32px;
+	display:inline-block;
+	text-align:center;
+	margin-left:auto;
+	margin-right:auto;
+	valign:middle;
+	vertical-align:middle;
+	border: 1px solid #D3D3D3;
+}
+
+div.menuitem:hover {
+	background-color:#00FF00;
+}
+
+input.menubutton {
+	height:25px;
+}
+
+a.menubutton {
+	position: relative;
+	top: 20%;
+	color:black;
+	text-decoration:none;
+	font-weight:bold;
+	valign:middle;
+	vertical-align:middle;
+}
+
+a.menubutton:hover {
+	color:red;
+}
+
+.mountsrc, .ew_name{
+	width:300px;
+	max-width:300px;
+	overflow:hidden;
+	white-space:nowrap;
+}
+
+.mountdst, .ew_ip, .ew_mac{
+	width:190px;
+	max-width:190px;
+	overflow:hidden;
+	white-space:nowrap;
+}
+
+.mountfstype{
+	width:50px;
+	max-width:50px;
+	overflow:hidden;
+	text-align:center;
+}
+
+.mountuname, .ew_pass, .ew_opt, .ew_autowake{
+	width:100px;
+	max-width:100px;
+	overflow:hidden;
+	text-align:center;
+	white-space:nowrap;
+}
+
+.mountauto, .mountedit, .ew_edit{
+	width:80px;
+	max-width:80px;
+	overflow:hidden;
+	text-align:center;
+}
+
+.run{
+	overflow: auto;
+	height: 400; /* height: 430px; */
+	width: 99%;
+	white-space: pre-wrap;                 /* CSS3 browsers  */
+	white-space: -moz-pre-wrap !important; /* 1999+ Mozilla  */
+	white-space: -pre-wrap;                /* Opera 4 thru 6 */
+	white-space: -o-pre-wrap;              /* Opera 7 and up */
+	word-wrap: break-word;                 /* IE 5.5+ and up */
+	z-index: 99;
+}

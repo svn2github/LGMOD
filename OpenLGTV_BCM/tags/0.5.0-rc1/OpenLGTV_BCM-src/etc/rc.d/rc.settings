@@ -1,0 +1,40 @@
+#!/bin/sh
+# OpenLGTV BCM script rc.settings
+# Settings setup script by xeros
+# Source code released under GPL License
+
+if [ -n "`grep '#' /mnt/user/cfg/settings 2>/dev/null`" ]
+then
+    echo "OpenLGTV_BCM-WARN: OpenLGTV BCM settings config file (/mnt/user/cfg/settings) is BROKEN, creating new settings files with default values"
+    rm -f /mnt/user/cfg/settings*
+fi
+
+settings_depreciated="confirmations rebooting netcast_kill_browser netcast_keyboard_mouse_support use_samsung_ywe_instead_of_lg force_copy_config_netcast force_copy_config_ywe"
+
+if [ "$uver" != "$ver" -o ! -f "/mnt/user/cfg/settings" ]
+then
+    echo "OpenLGTV_BCM-INFO: last booted version ($uver) is different than current one ($ver) or settings file is missing - checking if all current settings are set"
+    [ ! -d "/mnt/user/cfg" ] && mkdir -p /mnt/user/cfg
+    for svarx in `cat /etc/default/settings.default | cut -d" " -f1`
+    do
+	svar=`echo $svarx | cut -d= -f1`
+	if [ -z "`grep -m 1 $svar /mnt/user/cfg/settings`" ]
+	then
+	    echo "OpenLGTV_BCM-INFO: adding $svarx to /mnt/user/cfg/settings"
+	    echo "$svarx" >> /mnt/user/cfg/settings
+	fi
+    done
+    echo "OpenLGTV_BCM-INFO: removing depreciated settings"
+    settings_sed=""
+    settings_egrep="^NONEXISTENT"
+    for svar in $settings_depreciated; do settings_egrep="^$svar=|$settings_egrep"; done
+    egrep -v "$settings_egrep" /mnt/user/cfg/settings > /tmp/settings.tmp
+    cat /tmp/settings.tmp > /mnt/user/cfg/settings
+    rm /tmp/settings.tmp
+fi
+
+echo "OpenLGTV_BCM-INFO: reading settings configuration"
+source /mnt/user/cfg/settings
+
+echo "OpenLGTV_BCM-INFO: exporting settings configuration variables"
+for svar in `cat /mnt/user/cfg/settings | cut -d= -f1`; do export $svar; done

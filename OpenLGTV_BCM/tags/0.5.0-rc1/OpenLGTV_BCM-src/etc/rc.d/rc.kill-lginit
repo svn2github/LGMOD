@@ -1,0 +1,68 @@
+#!/bin/sh
+# OpenLGTV BCM script rc.kill-lginit
+# lginit partition cleaning script for LG Broadcom platform based TVs by xeros
+# Source code released under GPL License
+
+# TODO: use partitions numbers from check function, not static numbers
+# TODO: finish US and KR second rootfs handling
+
+magic=hsqs
+magic_clean=377377377377
+
+[ -f "/mnt/user/etc/vars" ] && source /mnt/user/etc/vars
+[ -z "$country_model" -o -z "$platform" ] && source /etc/rc.d/rc.platform
+
+if [ -n "`grep -m 1 '^mtd4:.*lginit' /proc/mtd`" ]
+then
+    [ -z "$country_model" -o "$platform" != "GP2B" ] && echo "OpenLGTV_BCM-WARN: detected platform: ${platform}, country_model: ${country_model}, not touching lginit" && exit 1
+    # TODO: improve check code with maybe hexdump?
+    if [ "`head -c4 /dev/mtd4 | od -c | head -n1 | awk '{print $2 $3 $4 $5}'`" != "$magic_clean" ]
+    then
+	echo "OpenLGTV_BCM-WARN: lginit partition (mtd4) is not clean, erasing it..."
+	flash_eraseall /dev/mtd4
+    fi
+else
+    echo "OpenLGTV_BCM-ERROR: /dev/mtd4 IS NOT lginit partition, please give yours firmware dump to OpenLGTV BCM developers for making better support yours TV model..."
+fi
+
+if [ "$country_model" = "EU" ]
+then
+    if [ -n "`grep -m 1 '^mtd27:.*lginit' /proc/mtd`" ]
+    then
+	# TODO: improve check code with maybe hexdump?
+	if [ "`head -c4 /dev/mtd27 | od -c | head -n1 | awk '{print $2 $3 $4 $5}'`" != "$magic_clean" ]
+	then
+	    echo "OpenLGTV_BCM-WARN: lginit backup partition (mtd27) is not clean, erasing it..."
+	    flash_eraseall /dev/mtd27
+	fi
+    else
+	echo "OpenLGTV_BCM-ERROR: /dev/mtd27 IS NOT lginit partition, please give yours firmware dump to OpenLGTV BCM developers for making better support yours TV model..."
+    fi
+### on US and KR 2010 models there currently shouldn't be second lginit erasing as it needs to handle second rootfs, too
+#else
+#    if [ -n "`grep -m 1 '^mtd26:.*rootfs' /proc/mtd`" ]
+#    then
+#	echo "OpenLGTV_BCM-INFO: found second rootfs partition (mtd26), checking if there is OpenLGTV BCM also..."
+#	mount -t squashfs /dev/mtdblock26 /mnt/backup/rootfs
+#	if [ ! -f "/mnt/backup/rootfs/etc/ver2" ]
+#	then
+#	    echo "OpenLGTV_BCM-WARN: there is no OpenLGTV BCM on second rootfs partition (mtd26), making copy of OpenLGTV BCM rootfs to backup partition..."
+#	    umount -f /mnt/backup/rootfs
+#	    flash_eraseall /dev/mtd26
+#	    sync
+#	    cat /dev/mtd3 > /dev/mtd26
+#	    sync
+#	    # TODO: check for errors
+#	fi
+#    fi
+#    if [ -n "`grep -m 1 '^mtd25:.*lginit' /proc/mtd`" ]
+#    then
+#	if [ "`head -c4 /dev/mtd25 | od -c | head -n1 | awk '{print $2 $3 $4 $5}'`" != "$magic_clean" ]
+#	then
+#	    echo "OpenLGTV_BCM-WARN: lginit backup partition (mtd25) is not clean, erasing it..."
+#	    flash_eraseall /dev/mtd25
+#	fi
+#    else
+#	echo "OpenLGTV_BCM-ERROR: /dev/mtd25 IS NOT lginit partition, please give yours firmware dump to OpenLGTV BCM developers for making better support yours TV model..."
+#    fi
+fi

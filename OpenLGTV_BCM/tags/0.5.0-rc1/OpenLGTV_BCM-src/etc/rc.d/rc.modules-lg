@@ -1,0 +1,25 @@
+#!/bin/sh
+# OpenLGTV BCM script rc.modules-lg
+# Kernel modules loading script for LG Broadcom platform based TVs by xeros
+# Source code released under GPL License
+
+targetpth=/mnt/lg/res/lgres
+
+if [ -n "`ls /mnt/user/modules/lg/ 2>/dev/null`" ]
+then
+    for lgmodule in /mnt/user/modules/lg/*
+    do
+	lgmodulex="${lgmodule##*/}"
+	echo "OpenLGTV_BCM-INFO: binding $lgmodule to $targetpth/$lgmodulex..."
+	mount --bind ${lgmodule} ${targetpth}/${lgmodulex}
+    done
+fi
+
+for bcmdriver in /mnt/lg/res/lglib/bcmdriver.ko /mnt/lg/res/lgres/bcmdriver.ko
+do
+    if [ -f "$bcmdriver" ]
+    then
+	echo "OpenLGTV_BCM-INFO: loading $bcmdriver kernel module..."
+	insmod $bcmdriver
+    fi
+done
