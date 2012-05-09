@@ -8,15 +8,18 @@ echo "OpenLGTV_BCM-INFO: icons_download.sh: running..."
 icons_dir="/home/netcast_icons/www"
 ilink1="http://svn.openlgtv.org.ru/OpenLGTV_BCM/tags/0.5.0-rc1/addons/images/www/icons-SVN20120426.zip"
 ilink2="http://addon.vpscript.com/icons-SVN20120426.zip"
-# TODO: more mirrors
+ilink3="http://dl.dropbox.com/u/43758310/icons.zip"
+ilink4="http://smarttv.net46.net/icons.zip"
+ilink5="http://smarttv.abcz8.com/icons.zip"
+ilink6="http://smarttv.awardspace.info/icons.xxx"
 imd5="422fe11f1151752d716c10c6ca16b999"
+imd5_last="`cat "$icons_dir/icons.md5" 2>/dev/null`"
 useragent="Mozilla/5.0 (X11; Linux i686; rv:12.0) Gecko/20100101 Firefox/12.0"
-##ilinks_count=6
-ilinks_count=2
+ilinks_count=6
 unpacked_ok=0
 try_count=0
 
-if [ "$uver" != "$ver" -o ! -f "$icons_dir/unknown.png" ]
+if [ "$imd5" != "$imd5_last" ]
 then
     echo "OpenLGTV_BCM-INFO: icons_download.sh: OpenLGTV BCM upgrade/downgrade detected - downloading currently supported icons..."
     while [ "$unpacked_ok" -eq 0 -a "$try_count" -lt 10 ]
@@ -58,5 +61,6 @@ then
 	rm -f /tmp/icons.zip
     done
 fi
+[ "$unpacked_ok" = "1" ] && echo "$imd5" > "$icons_dir/icons.md5"
 cd "$cur_dir"
 echo "OpenLGTV_BCM-INFO: icons_download.sh: exit"
