@@ -6,7 +6,7 @@
 echo "OpenLGTV_BCM-INFO: icons_download.sh: running..."
 
 icons_dir="/home/netcast_icons/www"
-ilink1="http://svn.openlgtv.org.ru/OpenLGTV_BCM/trunk/addons/images/www/icons-SVN20120426.zip"
+ilink1="http://svn.openlgtv.org.ru/OpenLGTV_BCM/tags/0.5.0-rc1/addons/images/www/icons-SVN20120426.zip"
 ilink2="http://addon.vpscript.com/icons-SVN20120426.zip"
 # TODO: more mirrors
 imd5="422fe11f1151752d716c10c6ca16b999"
