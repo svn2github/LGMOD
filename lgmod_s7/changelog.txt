@@ -113,6 +113,16 @@ Changelog 1.0.7 :
   (If you write to USB drive - do 'sync' or 'eject' before poweroff)
 
 
+Changelog 1.7.14 :
+==================
+* ASIX driver new Version 4.11.0 Aug 8, 2013
+ * Add VID:DID 2001:1A02 for D-Link DUB-E100.
+ * Add Lenovo's vendor and product ID.
+ * Added support for ASIX AX88772C.
+ * Force link up in AX88772B resume function when it is in PHY mode.
+ * For AX88178, added Marvell PHY 88E1510 support.
+ * Fix bugs. 
+
 Changelog 1.6.10 :
 ==================
 * DM9601 two new IDs added
