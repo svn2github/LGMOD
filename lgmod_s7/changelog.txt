@@ -112,6 +112,10 @@ Changelog 1.0.7 :
 * Fixed unmount before reboot. Unmount before poweroff (remote control) is not solved (yet)
   (If you write to USB drive - do 'sync' or 'eject' before poweroff)
 
+Changelog 1.7.15 :
+==================
+* ASIX driver
+ * fix authentic check
 
 Changelog 1.7.14 :
 ==================
